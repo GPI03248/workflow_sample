@@ -1,6 +1,6 @@
 # Multi-Agent Workflow Sample
 
-A minimal Python project demonstrating how to use **multi-agent / agentic coding workflows** to add numerical schemes to a 1D scalar advection solver.
+A minimal Python project demonstrating how to use **multi-agent / agentic coding workflows** to add numerical schemes to a 1D scalar advection solver, with **analytic-solution verification**.
 
 ## Purpose
 
@@ -17,6 +17,19 @@ example that showcases a new engineering paradigm:
 | Human follows a checklist | skill encodes the workflow once, runs every time |
 | Human remembers rules | hooks enforce rules automatically |
 
+## Verification Mechanism
+
+The solver solves the **1D linear advection equation** with a known analytic
+solution, enabling systematic verification of numerical schemes:
+
+- **PDE**:  u_t + a * u_x = 0,  a = 1.0
+- **Domain**:  x in [0, 1), periodic boundary
+- **Initial condition**:  u(x, 0) = sin(2*pi*x) + 1
+- **Analytic solution**:  u_exact(x, t) = sin(2*pi*(x - a*t)) + 1
+
+Each numerical scheme is compared against the analytic solution using L1, L2,
+Linf, and mass-conservation error metrics.
+
 ## Project Structure
 
 ```
@@ -27,13 +40,19 @@ workflow_sample/
   solver/
     __init__.py
     grid.py                          # 1D grid utilities
-    schemes.py                       # Numerical schemes (currently: upwind)
-    simulate.py                      # High-level simulation driver
+    schemes.py                       # Numerical schemes (upwind, lax_wendroff)
+    simulate.py                      # Simulation driver + analytic solution + errors
   tests/
-    test_upwind.py                   # Upwind correctness tests
+    test_upwind.py                   # Scheme correctness tests
     test_mass_conservation.py        # Mass conservation tests
+  examples/
+    compare_advection_schemes.py     # Benchmark: compare schemes vs analytic
+  results/                           # Generated benchmark outputs
+    advection_error_summary.csv
+    advection_solution_comparison.png
+    advection_analysis.md
   docs/
-    feature_request_lax_wendroff.md  # Task: add Lax-Wendroff scheme
+    feature_request_lax_wendroff.md  # Task: add Lax-Wendroff scheme (completed)
   .claude/
     agents/                          # Sub-agent definitions
       repo-analyst.md
@@ -53,43 +72,45 @@ workflow_sample/
 ## Installation
 
 ```bash
-# Clone
 git clone git@gitee.com:gpiii/workflow_sample.git
 cd workflow_sample
-
-# Create a virtual environment (recommended)
-python -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install numpy pytest
+pip install numpy pytest matplotlib
 ```
+
+> Note: matplotlib is optional — the comparison script will still produce CSV
+> and markdown reports without it.
 
 ## Run Tests
 
 ```bash
-pytest -q
+bash -ic 'module-conda && pytest -q'
 ```
 
-## Use the Skill with Claude Code
+## Generate Benchmark Results
 
-The `add-numerical-scheme` skill orchestrates the full multi-agent workflow:
+```bash
+bash -ic 'module-conda && python examples/compare_advection_schemes.py'
+```
 
-1. **repo-analyst** — analyses the repository
-2. **scheme-designer** — translates requirements into an implementation plan
-3. **implementer** — makes minimal code changes
-4. **test-engineer** — adds tests and runs pytest
-5. **reviewer** — reviews the final diff
+This produces:
+- `results/advection_error_summary.csv` — error metrics per scheme
+- `results/advection_solution_comparison.png` — overlay plot (if matplotlib is available)
+- `results/advection_analysis.md` — qualitative analysis report
 
-### Recommended Demo Prompt
+## How to Add a New Numerical Scheme
 
-Open this repo in Claude Code and paste:
+1. Implement the scheme function in `solver/schemes.py`.
+2. Register it in the `_SCHEMES` dict.
+3. Add tests (shape, uniform field, mass conservation).
+4. Update `examples/compare_advection_schemes.py` to include the new scheme in `SCHEMES`.
+5. Re-run tests and the comparison script to verify.
+
+Or use the multi-agent workflow:
 
 ```
 使用 add-numerical-scheme skill，根据 docs/feature_request_lax_wendroff.md 完成需求。
 要求先分析仓库，再设计方案，再实现，再补测试，再审查。
-不要修改无关文件。
-完成后运行 pytest -q，并给出最终报告。
+不要修改无关文件。完成后运行 pytest -q，并给出最终报告。
 ```
 
 ## How This Maps to Real CFD Projects
@@ -97,13 +118,13 @@ Open this repo in Claude Code and paste:
 | This toy project | Real CFD project |
 |---|---|
 | 1D scalar advection | 3D RANS / LES / DNS |
-| Upwind scheme | HLLC, WENO, DG schemes |
+| Upwind / Lax-Wendroff | HLLC, WENO, DG schemes |
 | `schemes.py` (one file) | Multi-file flux / limiter libraries |
-| Gaussian IC | Complex geometry + mesh |
+| sin(2*pi*x) + 1 IC | Complex geometry + mesh |
 | `np.roll` periodic BC | MPI halo exchange |
+| Analytic L2 error | Manufactured solutions / convergence studies |
 | `pytest` | Regression suites + verification cases |
 | 5 agents | 10-20 agents (mesh, BC, I/O, performance, etc.) |
 
-The workflow pattern (analyse -> design -> implement -> test -> review) scales
-directly. The skill, agents, and hooks in this repo are a minimal but faithful
-template for what a production CFD multi-agent workflow would look like.
+The workflow pattern (analyse -> design -> implement -> test -> review -> verify
+against analytic solution) scales directly to production CFD.
