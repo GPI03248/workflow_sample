@@ -3,20 +3,22 @@
 Slope limiters for high-order reconstruction.
 
 Responsibilities:
-    - Provide limiter functions (minmod, etc.) for MUSCL-type reconstruction.
-    - Currently NOT connected to the main solver loop — reserved for future use.
+    - Provide limiter functions for MUSCL-type reconstruction.
+    - All limiters take two slope arrays (a, b) and return limited slopes.
 
 Does NOT:
     - Perform reconstruction itself (see reconstruction.py).
-
-Extension notes:
-    To use in MUSCL, compute slopes and limit them with one of these functions
-    before passing to the reconstruction step.
 
 ## Functions
 
 ### `minmod(a, b)`
 Minmod limiter: returns the smaller slope in magnitude if signs agree, else 0.
+
+### `van_leer(a, b)`
+van Leer limiter: (a*b)(a+b) / (a^2 + b^2) when a*b > 0, else 0.
+
+### `get_limiter(name)`
+Return limiter function by name.
 
 ## Extension Notes
 

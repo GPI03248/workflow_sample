@@ -1,23 +1,65 @@
-"""Conservative variable update (forward Euler).
+"""Spatial discretisation and conservative variable update.
 
 Responsibilities:
-    - Compute the net flux divergence and update U by one time step.
+    - Compute the spatial residual L(U) = -(dF/dx + dG/dy).
+    - Apply forward Euler or return residual for multi-stage methods.
     - Apply the update only to interior cells.
 
 Does NOT:
     - Compute dt (see timestep.py).
     - Handle boundary conditions (see boundary/).
+    - Implement time integration loops (see time_integration.py).
 """
 
 from __future__ import annotations
 import numpy as np
 
 from ..constants import GAMMA
-from .reconstruction import reconstruct
+from .reconstruction import reconstruct, reconstruct_y
 from .riemann import rusanov_flux_x, rusanov_flux_y
 
 
-def euler_update(
+def compute_residual(
+    U: np.ndarray,
+    dx: float,
+    dy: float,
+    ng: int,
+    gamma: float = GAMMA,
+    flux_type: str = "rusanov",
+    reconstruction: str = "piecewise_constant",
+    limiter: str = "minmod",
+) -> np.ndarray:
+    """Compute spatial residual L(U) = -(dF/dx + dG/dy) for interior cells.
+
+    Returns
+    -------
+    L : np.ndarray, shape (4, ny, nx)
+        Residual for interior cells only (no ghost cells in output).
+    """
+    # x-direction
+    UL_x, UR_x = reconstruct(U, ng, method=reconstruction,
+                              limiter_name=limiter, gamma=gamma)
+    Fnum = rusanov_flux_x(UL_x, UR_x, gamma)
+
+    # y-direction
+    UL_y, UR_y = reconstruct_y(U, ng, method=reconstruction,
+                                limiter_name=limiter, gamma=gamma)
+    Gnum = rusanov_flux_y(UL_y, UR_y, gamma)
+
+    # Flux divergence for interior cells.
+    nxt = U.shape[2]
+    nyt = U.shape[1]
+
+    dFdx = (Fnum[:, ng:-ng, ng:nxt - ng] -
+            Fnum[:, ng:-ng, ng - 1:nxt - ng - 1]) / dx
+
+    dGdy = (Gnum[:, ng:nyt - ng, ng:-ng] -
+            Gnum[:, ng - 1:nyt - ng - 1, ng:-ng]) / dy
+
+    return -(dFdx + dGdy)
+
+
+def apply_euler_step(
     U: np.ndarray,
     dx: float,
     dy: float,
@@ -26,55 +68,17 @@ def euler_update(
     gamma: float = GAMMA,
     flux_type: str = "rusanov",
     reconstruction: str = "piecewise_constant",
+    limiter: str = "minmod",
 ) -> np.ndarray:
-    """Forward Euler update: U^{n+1} = U^n - dt * (dF/dx + dG/dy).
+    """Apply one forward-Euler update to U in-place: U += dt * L(U).
 
-    Operates on interior cells only.  Ghost cells should already be filled.
-
-    Parameters
-    ----------
-    U : np.ndarray, shape (4, nyt, nxt)
-        Conservative variables (will be modified in-place and returned).
-    dx, dy : float
-        Cell sizes.
-    dt : float
-        Time step.
-    ng : int
-        Ghost-cell layers.
-    gamma : float
-    flux_type : str
-        "rusanov" (only option for now).
-    reconstruction : str
-        "piecewise_constant" (only option for now).
-
-    Returns
-    -------
-    U : np.ndarray
-        Updated conservative variables (same array, modified in-place).
+    Returns U (same array).
     """
-    # --- x-direction fluxes ---
-    UL_x, UR_x = reconstruct(U, ng, method=reconstruction)
-    Fnum = rusanov_flux_x(UL_x, UR_x, gamma)
-
-    # --- y-direction fluxes ---
-    UL_y = U[:, :-1, :].copy()
-    UR_y = U[:, 1:, :].copy()
-    Gnum = rusanov_flux_y(UL_y, UR_y, gamma)
-
-    # Flux divergence for interior cells.
-    # x-flux: Fnum has shape (4, nyt, nxt-1). Interior in x is [ng:-ng].
-    # For cell (j, i), dF/dx = (F[j, i] - F[j, i-1]) / dx
-    # Fnum[:, j, k] is the flux at interface between cell k and cell k+1.
-    # So for interior cell i (with ng offset), fluxes are Fnum[:, j, i+ng-1] and Fnum[:, j, i+ng]
-    dFdx = (Fnum[:, ng:-ng, ng:U.shape[2] - ng] -
-            Fnum[:, ng:-ng, ng - 1:U.shape[2] - ng - 1]) / dx
-
-    # y-flux: Gnum has shape (4, nyt-1, nxt). Interior in y is [ng:-ng].
-    dGdy = (Gnum[:, ng:U.shape[1] - ng, ng:-ng] -
-            Gnum[:, ng - 1:U.shape[1] - ng - 1, ng:-ng]) / dy
-
-    # Update interior cells only.
+    L = compute_residual(U, dx, dy, ng, gamma, flux_type, reconstruction, limiter)
     s = (slice(None), slice(ng, -ng), slice(ng, -ng))
-    U[s] = U[s] - dt * (dFdx + dGdy)
-
+    U[s] = U[s] + dt * L
     return U
+
+
+# Backward-compatible alias.
+euler_update = apply_euler_step

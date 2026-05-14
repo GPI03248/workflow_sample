@@ -1,19 +1,24 @@
 # API: cfd.numerics_update
 
-Conservative variable update (forward Euler).
+Spatial discretisation and conservative variable update.
 
 Responsibilities:
-    - Compute the net flux divergence and update U by one time step.
+    - Compute the spatial residual L(U) = -(dF/dx + dG/dy).
+    - Apply forward Euler or return residual for multi-stage methods.
     - Apply the update only to interior cells.
 
 Does NOT:
     - Compute dt (see timestep.py).
     - Handle boundary conditions (see boundary/).
+    - Implement time integration loops (see time_integration.py).
 
 ## Functions
 
-### `euler_update(U, dx, dy, dt, ng, gamma, flux_type, reconstruction)`
-Forward Euler update: U^{n+1} = U^n - dt * (dF/dx + dG/dy).
+### `compute_residual(U, dx, dy, ng, gamma, flux_type, reconstruction, limiter)`
+Compute spatial residual L(U) = -(dF/dx + dG/dy) for interior cells.
+
+### `apply_euler_step(U, dx, dy, dt, ng, gamma, flux_type, reconstruction, limiter)`
+Apply one forward-Euler update to U in-place: U += dt * L(U).
 
 ## Extension Notes
 

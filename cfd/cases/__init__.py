@@ -10,6 +10,14 @@ from .entropy_wave import (
     entropy_wave_conservative,
     entropy_wave_exact_solution,
 )
+from .isentropic_vortex import (
+    IsentropicVortexParams,
+    isentropic_vortex_config,
+    isentropic_vortex_ic,
+    isentropic_vortex_primitive,
+    isentropic_vortex_conservative,
+    isentropic_vortex_exact_solution,
+)
 
 __all__ = [
     "uniform_flow_config",
@@ -22,4 +30,10 @@ __all__ = [
     "entropy_wave_primitive",
     "entropy_wave_conservative",
     "entropy_wave_exact_solution",
+    "IsentropicVortexParams",
+    "isentropic_vortex_config",
+    "isentropic_vortex_ic",
+    "isentropic_vortex_primitive",
+    "isentropic_vortex_conservative",
+    "isentropic_vortex_exact_solution",
 ]

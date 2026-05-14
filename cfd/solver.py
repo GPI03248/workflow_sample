@@ -72,6 +72,7 @@ def run_solver(
         gamma=config.gamma,
         flux_type=config.flux_type,
         reconstruction=config.reconstruction,
+        limiter=config.limiter,
         time_integrator=config.time_integrator,
     )
 

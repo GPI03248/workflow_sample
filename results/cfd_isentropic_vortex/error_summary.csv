@@ -1,0 +1,3 @@
+method,reconstruction,limiter,time_integrator,nx,cfl,final_time,actual_final_time,rho_l1_error,rho_l2_error,rho_linf_error,rho_mass_error
+baseline,piecewise_constant,minmod,euler,64,0.4,0.5,0.5,3.5997835970e-01,1.1365274065e-01,9.7209261995e-02,3.4400151456e-10
+muscl_minmod_rk2,muscl,minmod,ssp_rk2,64,0.4,0.5,0.5,9.6493658641e-02,2.6613207293e-02,2.4248673578e-02,3.4400062551e-10

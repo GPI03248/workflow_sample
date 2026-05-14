@@ -41,9 +41,11 @@ class CFDConfig:
     flux_type : str
         Numerical flux: "rusanov".
     reconstruction : str
-        Reconstruction method: "piecewise_constant".
+        Reconstruction method: "piecewise_constant" or "muscl".
+    limiter : str
+        Slope limiter for MUSCL: "minmod" or "vanleer".
     time_integrator : str
-        Time integration: "euler".
+        Time integration: "euler" or "ssp_rk2".
     """
 
     nx: int = 100
@@ -61,4 +63,5 @@ class CFDConfig:
     bc_y: str = "transmissive"
     flux_type: str = "rusanov"
     reconstruction: str = "piecewise_constant"
+    limiter: str = "minmod"
     time_integrator: str = "euler"

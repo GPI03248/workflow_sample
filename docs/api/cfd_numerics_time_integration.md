@@ -4,15 +4,15 @@ Time integration driver.
 
 Responsibilities:
     - Run the main time loop: compute dt -> update -> apply BC -> repeat.
+    - Support forward Euler and SSP RK2.
     - Handle final-step truncation to hit exact final_time.
-    - Collect intermediate output snapshots.
 
 Does NOT:
     - Implement individual update steps (see update.py).
 
 ## Functions
 
-### `advance(U, dx, dy, ng, cfl, final_time, bc_x, bc_y, n_output, gamma, flux_type, reconstruction, time_integrator)`
+### `advance(U, dx, dy, ng, cfl, final_time, bc_x, bc_y, n_output, gamma, flux_type, reconstruction, limiter, time_integrator)`
 Advance solution from t=0 to t=final_time.
 
 ## Extension Notes

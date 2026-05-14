@@ -60,12 +60,12 @@ Validation (cfd.validation -> compare against analytic solution)
 | `cfd.variables` | Primitive <-> Conservative conversion |
 | `cfd.physics` | EOS, physical fluxes, wave speeds |
 | `cfd.boundary` | Ghost-cell boundary conditions |
-| `cfd.numerics.reconstruction` | Interface reconstruction |
-| `cfd.numerics.limiters` | Slope limiters (reserved for MUSCL) |
+| `cfd.numerics.reconstruction` | Piecewise constant + MUSCL reconstruction |
+| `cfd.numerics.limiters` | Slope limiters (minmod, van Leer) |
 | `cfd.numerics.riemann` | Numerical flux (Rusanov) |
 | `cfd.numerics.timestep` | CFL dt computation |
-| `cfd.numerics.update` | Conservative update (Euler) |
-| `cfd.numerics.time_integration` | Time loop driver |
+| `cfd.numerics.update` | Spatial residual + Euler update |
+| `cfd.numerics.time_integration` | Time loop (Euler, SSP RK2) |
 | `cfd.cases` | Pre-built initial conditions |
 | `cfd.validation` | Error metrics, analytic comparison |
 | `cfd.io` | Result output |
@@ -81,9 +81,14 @@ Validation (cfd.validation -> compare against analytic solution)
 ## One Time Step (Call Sequence)
 
 ```python
+# Forward Euler
 apply_boundary_conditions(U, ng, bc_x, bc_y)
 dt = compute_dt(U, dx, dy, cfl, gamma)
-U = euler_update(U, dx, dy, dt, ng, gamma, flux_type, reconstruction)
+U = apply_euler_step(U, dx, dy, dt, ng, gamma, flux_type, reconstruction, limiter)
+
+# SSP RK2
+U1 = U + dt * compute_residual(U, dx, dy, ng, gamma, flux_type, reconstruction, limiter)
+U = 0.5*U + 0.5*(U1 + dt * compute_residual(U1, dx, dy, ng, gamma, flux_type, reconstruction, limiter))
 ```
 
 ## How to Add Extensions

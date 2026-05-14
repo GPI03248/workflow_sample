@@ -24,6 +24,11 @@
 - `cfd/solver.py` is orchestration only — no numerical detail.
 - Conservative array shape: `(4, nyt, nxt)` where `nyt = ny + 2*ng`.
 - Ghost cells are always included in the array.
+- MUSCL reconstruction operates on **primitive variables** (rho, u, v, p), not conservative.
+- `reconstruct_y` handles y-direction interfaces; `reconstruct` handles x-direction.
+- Slope limiters (minmod, van Leer) are vectorized NumPy functions: `limiter(a, b) -> slope`.
+- SSP RK2 uses `compute_residual` for the spatial operator, NOT `euler_update`.
+- `limiter` parameter must be threaded through `update.py` -> `time_integration.py` -> `solver.py`.
 
 ### cfd/ Directory Responsibilities
 
@@ -33,7 +38,7 @@
 | `variables/` | Primitive <-> Conservative | Spatial operations |
 | `physics/` | EOS, physical fluxes, wave speeds | Numerical fluxes |
 | `boundary/` | Ghost-cell filling | Numerical methods |
-| `numerics/` | Reconstruction, Riemann, dt, update, time loop | Physics |
+| `numerics/` | Reconstruction, limiters, Riemann, dt, update, time loop | Physics |
 | `cases/` | IC + config for a specific problem | Solver loop |
 | `validation/` | Error metrics, analytic comparison | Solver logic |
 | `io/` | Output to disk | Computation |

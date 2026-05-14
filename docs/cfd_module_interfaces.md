@@ -16,8 +16,9 @@ This document lists the public interface of every CFD module.
 | final_time | float | 0.1 | Simulation end time |
 | bc_x, bc_y | str | "transmissive" | Boundary type |
 | flux_type | str | "rusanov" | Numerical flux |
-| reconstruction | str | "piecewise_constant" | Reconstruction method |
-| time_integrator | str | "euler" | Time integration |
+| reconstruction | str | "piecewise_constant" | Reconstruction: "piecewise_constant" or "muscl" |
+| limiter | str | "minmod" | Slope limiter: "minmod" or "vanleer" |
+| time_integrator | str | "euler" | Time integration: "euler" or "ssp_rk2" |
 
 ---
 
@@ -81,9 +82,21 @@ This document lists the public interface of every CFD module.
 
 ## cfd.numerics
 
-### `reconstruction.reconstruct(U, ng, method="piecewise_constant") -> (UL, UR)`
-- `method`: "piecewise_constant" (or "muscl" — reserved)
-- Returns left/right states at x-interfaces
+### `reconstruction.reconstruct(U, ng, method="piecewise_constant", limiter_name="minmod") -> (UL, UR)`
+- `method`: "piecewise_constant" or "muscl"
+- Returns left/right states at x-interfaces, shape `(4, nyt, nxt-1)`
+
+### `reconstruction.reconstruct_y(U, ng, method="piecewise_constant", limiter_name="minmod") -> (UB, UT)`
+- Returns bottom/top states at y-interfaces, shape `(4, nyt-1, nxt)`
+
+### `limiters.minmod(a, b) -> slope`
+- Vectorized minmod limiter
+
+### `limiters.van_leer(a, b) -> slope`
+- Vectorized van Leer limiter
+
+### `limiters.get_limiter(name) -> callable`
+- Returns limiter function by name; raises ValueError for unknown
 
 ### `riemann.rusanov_flux_x(UL, UR, gamma=1.4) -> Fnum`
 - Input: `(4, nyt, nxt-1)`
@@ -97,12 +110,17 @@ This document lists the public interface of every CFD module.
 - Returns positive float
 - Raises: ValueError for non-physical states
 
-### `update.euler_update(U, dx, dy, dt, ng, gamma, flux_type, reconstruction) -> U`
-- Modifies `U` in-place
-- Updates interior cells only
+### `update.compute_residual(U, dx, dy, ng, gamma, flux_type, reconstruction, limiter) -> L`
+- Returns spatial residual L(U) = -(dF/dx + dG/dy) for interior cells
+- Shape matches U
 
-### `time_integration.advance(U, dx, dy, ng, cfl, final_time, ...) -> dict`
+### `update.apply_euler_step(U, dx, dy, dt, ng, gamma, flux_type, reconstruction, limiter) -> U`
+- Applies U += dt*L(U) in-place
+- `euler_update` is a backward-compatible alias
+
+### `time_integration.advance(U, dx, dy, ng, cfl, final_time, ..., time_integrator="euler", limiter="minmod") -> dict`
 - Returns `{"U", "n_steps", "actual_final_time", "snapshots"}`
+- `time_integrator`: "euler" or "ssp_rk2"
 
 ---
 
@@ -148,6 +166,25 @@ This document lists the public interface of every CFD module.
 - Full analytic solution on the mesh at time t
 
 ### `entropy_wave_ic(nxt, nyt, gamma=1.4, params=None) -> U`
+- IC compatible with run_solver
+
+---
+
+## cfd.cases.isentropic_vortex
+
+### `IsentropicVortexParams` (dataclass)
+- rho_inf, u_inf, v_inf, p_inf, beta, x0, y0
+
+### `isentropic_vortex_primitive(X, Y, t=0.0, params=None) -> V`
+- Output: (4, ...) — [rho, u, v, p]
+
+### `isentropic_vortex_conservative(X, Y, t=0.0, params=None) -> U`
+- Output: (4, ...) — [rho, rho*u, rho*v, E]
+
+### `isentropic_vortex_exact_solution(mesh, t, params=None) -> U`
+- Full analytic solution on the mesh at time t
+
+### `isentropic_vortex_ic(nxt, nyt, gamma=1.4, params=None) -> U`
 - IC compatible with run_solver
 
 ---

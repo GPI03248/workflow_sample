@@ -28,20 +28,25 @@ pytest tests/test_cfd_fluxes.py tests/test_cfd_update.py -q
 
 ---
 
-## 2. Adding a New Reconstruction Method (e.g. MUSCL)
+## 2. Adding a New Reconstruction Method
 
 **Files to modify:**
-- `cfd/numerics/reconstruction.py` — add the MUSCL reconstruction path
-- `cfd/numerics/limiters.py` — connect the chosen limiter
+- `cfd/numerics/reconstruction.py` — add the reconstruction path
+- `cfd/numerics/limiters.py` — add limiters if needed
 
-**Steps:**
-1. In `reconstruct()`, add a `"muscl"` branch that computes slopes using `minmod()` from `limiters.py`.
-2. The reconstruction should return `(UL, UR)` with the same shapes as piecewise constant.
-3. Update `CFDConfig.reconstruction` docstring.
+**Current implementations:**
+- `piecewise_constant` — 1st order, simply copies cell values to interfaces
+- `muscl` — 2nd order, reconstructs in **primitive variables** with slope limiter
+
+**MUSCL implementation notes:**
+- `_muscl_x` handles x-direction, `_muscl_y` handles y-direction
+- Both convert to primitive variables, compute limited slopes, extrapolate, then convert back
+- Safety fallback: if reconstructed rho <= 0 or p <= 0, falls back to piecewise constant
+- The `limiter_name` parameter selects the slope limiter from `limiters.py`
 
 **Tests to run:**
 ```bash
-pytest tests/test_cfd_update.py tests/test_cfd_solver_uniform.py -q
+pytest tests/test_cfd_muscl_reconstruction.py tests/test_cfd_update.py -q
 ```
 
 ---
@@ -49,25 +54,49 @@ pytest tests/test_cfd_update.py tests/test_cfd_solver_uniform.py -q
 ## 3. Adding a New Limiter
 
 **Files to modify:**
-- `cfd/numerics/limiters.py` — add the limiter function (e.g. `van_leer`)
-- `cfd/numerics/reconstruction.py` — use it in MUSCL branch
+- `cfd/numerics/limiters.py` — add the limiter function
+
+**Current implementations:**
+- `minmod` — most diffusive, very stable
+- `van_leer` — less diffusive, sharper discontinuities
 
 **Steps:**
 1. Implement the limiter as a pure function `(a, b) -> result` following the `minmod` pattern.
-2. Add it to `__all__` in `limiters.py` and `__init__.py`.
+2. Register it in the `LIMITERS` dict in `limiters.py`.
+3. Add it to `__all__` and export from `__init__.py`.
+
+**Tests to run:**
+```bash
+pytest tests/test_cfd_limiters.py -q
+```
 
 ---
 
-## 4. Adding a New Time Integration Method (e.g. RK3)
+## 4. Adding a New Time Integration Method
 
 **Files to modify:**
-- `cfd/numerics/time_integration.py` — add RK3 stage loop
-- `cfd/numerics/update.py` — may need a single-stage function
+- `cfd/numerics/time_integration.py` — add the time integrator stage loop
+
+**Current implementations:**
+- `euler` — Forward Euler, 1st order, CFL <= 0.5 typically
+- `ssp_rk2` — Strong Stability Preserving RK2, 2nd order
+
+**SSP RK2 implementation:**
+```
+U1 = U^n + dt * L(U^n)
+U^{n+1} = 0.5*U^n + 0.5*(U1 + dt*L(U1))
+```
+where `L(U) = compute_residual(U, ...)` is the spatial operator.
 
 **Steps:**
-1. In `advance()`, add an `elif time_integrator == "rk3"` branch.
-2. RK3 requires 3 stages: compute k1, k2, k3 using `euler_update` (or a dedicated stage function).
+1. Add a new `_method_step(U, dt, ...)` function in `time_integration.py`.
+2. Add dispatch branch in `advance()`.
 3. Update `CFDConfig.time_integrator` docstring.
+
+**Tests to run:**
+```bash
+pytest tests/test_cfd_time_integration.py -q
+```
 
 ---
 
@@ -129,17 +158,16 @@ integrator, follow this validation sequence:
 
 1. **Run unit tests**: `pytest -q`
 2. **Run entropy wave validation**: `python examples/run_cfd_entropy_wave.py`
-3. **Run convergence study**: `python examples/run_cfd_entropy_wave_convergence.py`
-4. **Check error_summary.csv** — errors should not increase significantly.
-5. **Check convergence_summary.csv** — observed order should improve or stay the same.
-6. **Check density comparison plots** — visual inspection for anomalies.
-7. **Update analysis.md** if observations change.
+3. **Run entropy wave convergence**: `python examples/run_cfd_entropy_wave_convergence.py`
+4. **Run isentropic vortex validation**: `python examples/run_cfd_isentropic_vortex.py`
+5. **Run isentropic vortex convergence**: `python examples/run_cfd_isentropic_vortex_convergence.py`
+6. **Check error_summary.csv** — errors should not increase significantly.
+7. **Check convergence_summary.csv** — observed order should improve or stay the same.
 8. **Only then** run Sod shock tube or other non-analytic cases.
 
-The entropy wave is the primary analytic benchmark because it has an exact
-solution with periodic BCs, making it suitable for convergence measurement.
-Sod shock tube is useful for robustness but has no simple analytic solution
-for error quantification.
+The entropy wave is the primary first-order benchmark. The isentropic vortex
+is the primary second-order benchmark because its nonlinear smooth solution
+properly exercises MUSCL reconstruction and SSP RK2 time integration.
 
 ---
 

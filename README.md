@@ -60,9 +60,9 @@ p = (gamma - 1) * (E - 0.5 * rho * (u^2 + v^2))
 | Component | Current | Extensible to |
 |-----------|---------|--------------|
 | Numerical flux | Rusanov (local Lax-Friedrichs) | HLLC, Roe |
-| Reconstruction | Piecewise constant (1st order) | MUSCL, WENO |
-| Limiters | minmod (reserved) | van Leer, superbee |
-| Time integration | Forward Euler | RK2, RK3 |
+| Reconstruction | Piecewise constant, MUSCL (2nd order) | WENO |
+| Limiters | minmod, van Leer | superbee, MC |
+| Time integration | Forward Euler, SSP RK2 | RK3, RK4 |
 | Boundary conditions | Periodic, transmissive, reflective | Inlet, outlet, far-field |
 
 ### CFD Directory Structure
@@ -83,15 +83,17 @@ cfd/
     conditions.py        — Periodic, transmissive, reflective BCs
     ghost_cells.py       — BC dispatch
   numerics/
-    reconstruction.py    — Piecewise constant (MUSCL reserved)
-    limiters.py          — minmod limiter (reserved)
+    reconstruction.py    — Piecewise constant, MUSCL (2nd order)
+    limiters.py          — minmod, van Leer slope limiters
     riemann.py           — Rusanov numerical flux
     timestep.py          — CFL dt computation
-    update.py            — Conservative update (forward Euler)
-    time_integration.py  — Time loop driver
+    update.py            — Spatial residual + Euler update
+    time_integration.py  — Time loop (Euler, SSP RK2)
   cases/
     uniform_flow.py      — Uniform flow preservation test
     sod_shock_tube_2d.py — 2D Sod shock tube
+    entropy_wave.py      — Advected entropy wave (analytic)
+    isentropic_vortex.py — Isentropic vortex (analytic)
   io/
     output.py            — CSV, NPZ, PNG, MD output
   solver.py              — Orchestration entry point
@@ -137,13 +139,50 @@ See `docs/cfd_iteration_guide.md` for detailed instructions. Quick reference:
 
 ### Current Limitations
 
-- **First-order accurate only** (piecewise constant reconstruction)
 - **No turbulence modelling** (Euler equations only)
 - **No adaptive mesh refinement**
 - **No parallelisation** (single CPU thread)
 - **No moving meshes or complex geometries**
-- Forward Euler time integration limits effective CFL
 - Rusanov flux is very diffusive — better fluxes needed for sharp shocks
+
+---
+
+## Analytic CFD Validation: 2D Isentropic Vortex
+
+The isentropic vortex is a nonlinear smooth analytic solution of the 2D
+compressible Euler equations, used to verify second-order convergence of
+MUSCL + SSP RK2.
+
+### Equations and Analytic Solution
+
+```
+r = sqrt((x - x0 - u_inf*t)^2 + (y - y0 - v_inf*t)^2)
+T = T_inf - (gamma-1)*beta^2/(8*pi^2*gamma) * exp(1 - r^2)
+rho = T_inf^(1/(gamma-1)) * (T/T_inf)^(1/(gamma-1))
+u = u_inf - beta/(2*pi) * (y - y0 - v_inf*t) * exp((1 - r^2)/2)
+v = v_inf + beta/(2*pi) * (x - x0 - u_inf*t) * exp((1 - r^2)/2)
+p = rho * T
+```
+
+Default parameters: rho_inf=1, u_inf=1, v_inf=1, p_inf=1, beta=5, x0=5, y0=5.
+Domain [0,10]x[0,10], periodic BCs.
+
+### Run Validation
+
+```bash
+bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
+bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+```
+
+### Current Convergence Results
+
+| Method | nx=32 L2 | nx=64 L2 | nx=128 L2 |
+|--------|----------|----------|-----------|
+| baseline (piecewise_constant + euler) | 1.97e-01 | 1.14e-01 | 6.16e-02 |
+| MUSCL + minmod + SSP_RK2 | 7.41e-02 | 2.66e-02 | 8.31e-03 |
+
+MUSCL + SSP RK2 achieves ~2nd-order convergence on the isentropic vortex,
+a significant improvement over the baseline first-order method.
 
 ---
 
@@ -255,7 +294,7 @@ bash -ic 'module-conda && pytest -q'
 | 2D Euler (NumPy) | 3D RANS/LES/DNS (C++/Fortran) |
 | Rusanov flux | HLLC, WENO, DG schemes |
 | 50x50 uniform grid | 10M+ cells, AMR |
-| Forward Euler | RK3, IMEX, dual time stepping |
+| Forward Euler / SSP RK2 | RK3, IMEX, dual time stepping |
 | np.roll / ghost cells | MPI halo exchange |
 | pytest | Regression suites + verification cases |
 | 5 agents | 10-20 agents (mesh, BC, I/O, performance, etc.) |
