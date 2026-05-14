@@ -35,6 +35,7 @@
 | `boundary/` | Ghost-cell filling | Numerical methods |
 | `numerics/` | Reconstruction, Riemann, dt, update, time loop | Physics |
 | `cases/` | IC + config for a specific problem | Solver loop |
+| `validation/` | Error metrics, analytic comparison | Solver logic |
 | `io/` | Output to disk | Computation |
 | `solver.py` | Orchestration | Numerical details |
 
@@ -43,6 +44,14 @@
 - When adding a new 1D advection scheme, update `examples/compare_advection_schemes.py`.
 - When adding a new CFD method, add a test case in `cfd/cases/` and an example script.
 - Result files go in `results/`.
+
+## Analytic Validation (CFD)
+
+- After adding any new CFD numerical method, **must** run at least one analytic validation case.
+- For the Euler solver, prefer the **entropy wave** (`examples/run_cfd_entropy_wave.py`).
+- After modifying reconstruction, Riemann solver, or time integrator, **must** re-run the convergence study (`examples/run_cfd_entropy_wave_convergence.py`).
+- Final report **must** include error metrics and result file paths.
+- Passing pytest alone is **not sufficient** to claim numerical correctness.
 
 ## Testing
 

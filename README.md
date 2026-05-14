@@ -147,6 +147,73 @@ See `docs/cfd_iteration_guide.md` for detailed instructions. Quick reference:
 
 ---
 
+## Analytic CFD Validation: 2D Advected Entropy Wave
+
+The entropy wave is an exact solution of the 2D compressible Euler equations
+with periodic boundary conditions, used to verify solver correctness and measure
+convergence order.
+
+### Equations and Analytic Solution
+
+```
+rho(x,y,t) = rho0 + eps * sin(2*pi*(kx*(x - u0*t) + ky*(y - v0*t)))
+u(x,y,t) = u0
+v(x,y,t) = v0
+p(x,y,t) = p0
+E = p0/(gamma-1) + 0.5*rho*(u0^2 + v0^2)
+```
+
+Default parameters: rho0=1, eps=0.1, u0=1, v0=0.5, p0=1, kx=1, ky=1, gamma=1.4.
+
+This case is ideal for validation because:
+- The exact solution is known at all times
+- Periodic BCs are exact (no boundary artifacts)
+- It tests the full Euler solver (conservative/primitive conversion, fluxes, CFL, update)
+- Grid convergence can be measured against the analytic solution
+
+### Run Validation
+
+```bash
+bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
+```
+
+### Run Convergence Study
+
+```bash
+bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
+```
+
+### View Results
+
+```bash
+cat results/cfd_entropy_wave/error_summary.csv
+cat results/cfd_entropy_wave/analysis.md
+cat results/cfd_entropy_wave_convergence/convergence_summary.csv
+cat results/cfd_entropy_wave_convergence/convergence_analysis.md
+```
+
+Plots (if matplotlib is available):
+- `results/cfd_entropy_wave/density_initial.png` — initial density field
+- `results/cfd_entropy_wave/density_numerical.png` — numerical solution
+- `results/cfd_entropy_wave/density_exact.png` — analytic solution
+- `results/cfd_entropy_wave/density_error.png` — error field
+- `results/cfd_entropy_wave/density_centerline_comparison.png` — overlay
+- `results/cfd_entropy_wave_convergence/density_l2_convergence.png` — convergence plot
+
+### Current Convergence Results
+
+With Rusanov + piecewise constant + forward Euler:
+
+| nx=ny | rho L2 error | Observed order |
+|-------|-------------|----------------|
+| 32 | 1.37e-02 | — |
+| 64 | 7.19e-03 | 0.93 |
+| 128 | 3.69e-03 | 0.96 |
+
+Close to first-order, as expected for a first-order scheme.
+
+---
+
 ## Installation
 
 ```bash

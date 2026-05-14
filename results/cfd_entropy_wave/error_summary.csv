@@ -1,0 +1,2 @@
+case,nx,ny,cfl,final_time,actual_final_time,reconstruction,riemann,time_integrator,rho_l1_error,rho_l2_error,rho_linf_error,rho_mass_error
+entropy_wave,64,64,0.4,0.1,0.1,piecewise_constant,rusanov,euler,6.4724270754e-03,7.1897968490e-03,1.0424331551e-02,2.6291902683e-17

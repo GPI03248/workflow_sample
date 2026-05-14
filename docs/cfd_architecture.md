@@ -45,6 +45,9 @@ Initial condition (cfd.cases.*.py -> U array)
   |
   v
 Output (cfd.io.output -> CSV, NPZ, PNG, MD)
+  |
+  v
+Validation (cfd.validation -> compare against analytic solution)
 ```
 
 ## Module Responsibilities
@@ -64,6 +67,7 @@ Output (cfd.io.output -> CSV, NPZ, PNG, MD)
 | `cfd.numerics.update` | Conservative update (Euler) |
 | `cfd.numerics.time_integration` | Time loop driver |
 | `cfd.cases` | Pre-built initial conditions |
+| `cfd.validation` | Error metrics, analytic comparison |
 | `cfd.io` | Result output |
 | `cfd.solver` | Orchestration (ties everything together) |
 

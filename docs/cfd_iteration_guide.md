@@ -122,7 +122,28 @@ bash -ic 'module-conda && pytest -q'
 
 ---
 
-## 8. Files NOT to Modify Casually
+## 8. Validation Flow After Adding New Numerical Methods
+
+After implementing a new reconstruction, Riemann solver, limiter, or time
+integrator, follow this validation sequence:
+
+1. **Run unit tests**: `pytest -q`
+2. **Run entropy wave validation**: `python examples/run_cfd_entropy_wave.py`
+3. **Run convergence study**: `python examples/run_cfd_entropy_wave_convergence.py`
+4. **Check error_summary.csv** — errors should not increase significantly.
+5. **Check convergence_summary.csv** — observed order should improve or stay the same.
+6. **Check density comparison plots** — visual inspection for anomalies.
+7. **Update analysis.md** if observations change.
+8. **Only then** run Sod shock tube or other non-analytic cases.
+
+The entropy wave is the primary analytic benchmark because it has an exact
+solution with periodic BCs, making it suitable for convergence measurement.
+Sod shock tube is useful for robustness but has no simple analytic solution
+for error quantification.
+
+---
+
+## 9. Files NOT to Modify Casually
 
 | File | Reason |
 |------|--------|

@@ -127,3 +127,33 @@ This document lists the public interface of every CFD module.
 
 ### `save_results(output_dir, U, mesh, n_steps, actual_final_time, ...) -> dict`
 - Returns dict with keys "csv", "npz", "md", "png"
+
+---
+
+## cfd.cases.entropy_wave
+
+### `EntropyWaveParams` (dataclass)
+- rho0, eps, u0, v0, p0, kx, ky, gamma
+
+### `entropy_wave_config(params=None) -> CFDConfig`
+
+### `entropy_wave_primitive(X, Y, t=0.0, params=None) -> V`
+- Input: 2D coordinate arrays
+- Output: (4, nyt, nxt) — [rho, u, v, p]
+
+### `entropy_wave_conservative(X, Y, t=0.0, params=None) -> U`
+- Output: (4, nyt, nxt) — [rho, rho*u, rho*v, E]
+
+### `entropy_wave_exact_solution(mesh, t, params=None) -> U`
+- Full analytic solution on the mesh at time t
+
+### `entropy_wave_ic(nxt, nyt, gamma=1.4, params=None) -> U`
+- IC compatible with run_solver
+
+---
+
+## cfd.validation.errors
+
+### `compute_field_errors(U_num, U_exact, dx, dy, variable_names=None) -> dict`
+- Input: (4, ny, nx) arrays (interior only, no ghosts)
+- Returns: rho_l1_error, rho_l2_error, rho_linf_error, rho_mass_error, plus per-variable metrics
