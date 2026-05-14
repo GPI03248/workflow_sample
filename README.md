@@ -285,7 +285,86 @@ bash -ic 'module-conda && pytest -q'
 | `docs/cfd_architecture.md` | CFD solver architecture overview |
 | `docs/cfd_module_interfaces.md` | Public interface reference |
 | `docs/cfd_iteration_guide.md` | How to extend the solver |
+| `docs/cfd_definition_of_done.md` | Completion checklists for each task type |
 | `docs/api/` | Auto-generated API docs |
+
+## Recommended Claude Code Workflows
+
+This project provides **5 CFD skills** in `.claude/skills/` that encode the
+agentic workflow. Use short prompts to trigger them:
+
+### Add a new analytic validation case
+
+```
+使用 add-cfd-case skill，添加一个 Taylor-Green vortex 解析解算例，
+domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
+完成后运行 make compile test cfd-validation。
+```
+
+### Add a new numerical method
+
+```
+使用 add-numerical-method skill，添加 superbee limiter 到 cfd/numerics/limiters.py，
+注册到 LIMITERS dict，添加单元测试，运行 MUSCL + superbee 的 vortex convergence study。
+```
+
+### Add a new Riemann solver
+
+```
+使用 add-numerical-method skill，实现 HLLC flux（x 和 y 方向），
+在 update.py 中添加 dispatch，运行完整 validation。
+```
+
+### Add a new time integrator
+
+```
+使用 add-numerical-method skill，实现 SSP RK3，
+参考 cfd/numerics/time_integration.py 中的 SSP RK2 模式。
+```
+
+### Run full validation
+
+```
+使用 run-cfd-validation skill，运行完整验证套件并报告结果。
+```
+
+### Review before commit
+
+```
+使用 review-cfd-change skill，review 当前未提交的改动。
+```
+
+### Update docs after changes
+
+```
+使用 update-cfd-docs skill，更新所有文档。
+```
+
+### Quick reference
+
+| Skill | When to use |
+|-------|------------|
+| `add-cfd-case` | New flow problem or analytic case |
+| `add-numerical-method` | New reconstruction, limiter, flux, or time integrator |
+| `run-cfd-validation` | Verify correctness after changes |
+| `update-cfd-docs` | Update docs before commit |
+| `review-cfd-change` | Review diff before commit |
+
+## Makefile Commands
+
+| Target | Description |
+|--------|-------------|
+| `make compile` | Syntax-check all Python files |
+| `make test` | Run pytest |
+| `make docs` | Regenerate API docs |
+| `make scalar-validation` | Run 1D advection comparison |
+| `make cfd-uniform` | Uniform flow preservation test |
+| `make cfd-sod` | 2D Sod shock tube |
+| `make cfd-entropy` | Entropy wave single run |
+| `make cfd-entropy-convergence` | Entropy wave convergence (32/64/128) |
+| `make cfd-vortex` | Isentropic vortex single run |
+| `make cfd-vortex-convergence` | Isentropic vortex convergence (32/64/128) |
+| `make cfd-validation` | Full CFD validation suite |
 
 ## How This Maps to Real CFD Projects
 
