@@ -8,5 +8,8 @@ dependencies = ["numpy"]
 [project.optional-dependencies]
 dev = ["pytest"]
 
+[tool.setuptools.packages.find]
+include = ["solver*", "cfd*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

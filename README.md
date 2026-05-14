@@ -1,11 +1,15 @@
 # Multi-Agent Workflow Sample
 
-A minimal Python project demonstrating how to use **multi-agent / agentic coding workflows** to add numerical schemes to a 1D scalar advection solver, with **analytic-solution verification**.
+A Python project demonstrating **multi-agent / agentic coding workflows** with
+two solvers:
+
+1. **1D scalar advection** — toy solver with analytic-solution verification
+2. **2D compressible Euler** — CPU full-field CFD solver MVP
 
 ## Purpose
 
-This project is **not** about building a production CFD solver. It is a toy
-example that showcases a new engineering paradigm:
+This project showcases a new engineering paradigm where AI agents handle
+analysis, design, implementation, testing, and review in a structured workflow:
 
 | Traditional (script) | Agentic (this project) |
 |---|---|
@@ -17,57 +21,131 @@ example that showcases a new engineering paradigm:
 | Human follows a checklist | skill encodes the workflow once, runs every time |
 | Human remembers rules | hooks enforce rules automatically |
 
-## Verification Mechanism
+---
 
-The solver solves the **1D linear advection equation** with a known analytic
-solution, enabling systematic verification of numerical schemes:
+## Part 1: 1D Scalar Advection with Analytic Verification
+
+The toy solver solves the **1D linear advection equation** with a known analytic
+solution:
 
 - **PDE**:  u_t + a * u_x = 0,  a = 1.0
 - **Domain**:  x in [0, 1), periodic boundary
-- **Initial condition**:  u(x, 0) = sin(2*pi*x) + 1
-- **Analytic solution**:  u_exact(x, t) = sin(2*pi*(x - a*t)) + 1
+- **IC**:  u(x, 0) = sin(2*pi*x) + 1
+- **Analytic**:  u_exact(x, t) = sin(2*pi*(x - a*t)) + 1
+- **Schemes**: upwind (1st order), Lax-Wendroff (2nd order)
 
-Each numerical scheme is compared against the analytic solution using L1, L2,
-Linf, and mass-conservation error metrics.
+```bash
+bash -ic 'module-conda && pytest -q'
+bash -ic 'module-conda && python examples/compare_advection_schemes.py'
+```
 
-## Project Structure
+---
+
+## Part 2: Python CPU CFD Full-Field Solver MVP
+
+A minimal but complete **2D compressible Euler solver** for an ideal gas
+(gamma = 1.4), implemented entirely in NumPy.
+
+### Equations
 
 ```
-workflow_sample/
-  README.md                          # This file
-  CLAUDE.md                          # Project rules for Claude Code
-  pyproject.toml                     # Dependencies & pytest config
-  solver/
-    __init__.py
-    grid.py                          # 1D grid utilities
-    schemes.py                       # Numerical schemes (upwind, lax_wendroff)
-    simulate.py                      # Simulation driver + analytic solution + errors
-  tests/
-    test_upwind.py                   # Scheme correctness tests
-    test_mass_conservation.py        # Mass conservation tests
-  examples/
-    compare_advection_schemes.py     # Benchmark: compare schemes vs analytic
-  results/                           # Generated benchmark outputs
-    advection_error_summary.csv
-    advection_solution_comparison.png
-    advection_analysis.md
-  docs/
-    feature_request_lax_wendroff.md  # Task: add Lax-Wendroff scheme (completed)
-  .claude/
-    agents/                          # Sub-agent definitions
-      repo-analyst.md
-      scheme-designer.md
-      implementer.md
-      test-engineer.md
-      reviewer.md
-    skills/
-      add-numerical-scheme/
-        SKILL.md                     # Orchestrating skill
-    hooks/
-      block-dangerous-bash.sh        # Blocks rm -rf, git push --force, etc.
-      quick-check.sh                 # Runs compile check + pytest after edits
-    settings.json                    # Hook configuration
+dU/dt + dF(U)/dx + dG(U)/dy = 0
+
+U = [rho, rho*u, rho*v, E]
+p = (gamma - 1) * (E - 0.5 * rho * (u^2 + v^2))
 ```
+
+### Supported Methods
+
+| Component | Current | Extensible to |
+|-----------|---------|--------------|
+| Numerical flux | Rusanov (local Lax-Friedrichs) | HLLC, Roe |
+| Reconstruction | Piecewise constant (1st order) | MUSCL, WENO |
+| Limiters | minmod (reserved) | van Leer, superbee |
+| Time integration | Forward Euler | RK2, RK3 |
+| Boundary conditions | Periodic, transmissive, reflective | Inlet, outlet, far-field |
+
+### CFD Directory Structure
+
+```
+cfd/
+  config.py              — Solver configuration (CFDConfig dataclass)
+  constants.py           — Index constants, gamma
+  mesh/
+    structured.py        — 2D uniform Cartesian grid with ghost cells
+  variables/
+    conversion.py        — Primitive <-> Conservative conversion
+  physics/
+    eos.py               — Equation of state (ideal gas)
+    fluxes.py            — Euler physical flux F(U), G(U)
+    wavespeeds.py        — Wave speed estimation
+  boundary/
+    conditions.py        — Periodic, transmissive, reflective BCs
+    ghost_cells.py       — BC dispatch
+  numerics/
+    reconstruction.py    — Piecewise constant (MUSCL reserved)
+    limiters.py          — minmod limiter (reserved)
+    riemann.py           — Rusanov numerical flux
+    timestep.py          — CFL dt computation
+    update.py            — Conservative update (forward Euler)
+    time_integration.py  — Time loop driver
+  cases/
+    uniform_flow.py      — Uniform flow preservation test
+    sod_shock_tube_2d.py — 2D Sod shock tube
+  io/
+    output.py            — CSV, NPZ, PNG, MD output
+  solver.py              — Orchestration entry point
+```
+
+### Run CFD Examples
+
+```bash
+# Uniform flow preservation (should be exact to machine precision)
+bash -ic 'module-conda && python examples/run_cfd_uniform_flow.py'
+
+# 2D Sod shock tube
+bash -ic 'module-conda && python examples/run_cfd_sod_2d.py'
+```
+
+### View Results
+
+Results are saved to `results/`:
+
+| Case | Directory | Outputs |
+|------|-----------|---------|
+| Uniform flow | `results/cfd_uniform_flow/` | summary.csv, final_state.npz, analysis.md, density.png, pressure.png |
+| Sod 2D | `results/cfd_sod_2d/` | summary.csv, final_state.npz, analysis.md, density.png, pressure.png, centerline_density.png |
+
+### Generate API Docs
+
+```bash
+bash -ic 'module-conda && python tools/generate_cfd_api_docs.py'
+```
+
+### How to Add New Methods
+
+See `docs/cfd_iteration_guide.md` for detailed instructions. Quick reference:
+
+| To add... | Modify... |
+|-----------|-----------|
+| New flux | `cfd/numerics/riemann.py`, `cfd/numerics/update.py` |
+| New reconstruction | `cfd/numerics/reconstruction.py` |
+| New limiter | `cfd/numerics/limiters.py` |
+| New time integrator | `cfd/numerics/time_integration.py` |
+| New boundary condition | `cfd/boundary/conditions.py`, `cfd/boundary/ghost_cells.py` |
+| New test case | `cfd/cases/`, `examples/` |
+
+### Current Limitations
+
+- **First-order accurate only** (piecewise constant reconstruction)
+- **No turbulence modelling** (Euler equations only)
+- **No adaptive mesh refinement**
+- **No parallelisation** (single CPU thread)
+- **No moving meshes or complex geometries**
+- Forward Euler time integration limits effective CFL
+- Rusanov flux is very diffusive — better fluxes needed for sharp shocks
+
+---
 
 ## Installation
 
@@ -77,35 +155,15 @@ cd workflow_sample
 pip install numpy pytest matplotlib
 ```
 
-> Note: matplotlib is optional — the comparison script will still produce CSV
-> and markdown reports without it.
+> matplotlib is optional — scripts degrade gracefully without it.
 
-## Run Tests
+## Run All Tests
 
 ```bash
 bash -ic 'module-conda && pytest -q'
 ```
 
-## Generate Benchmark Results
-
-```bash
-bash -ic 'module-conda && python examples/compare_advection_schemes.py'
-```
-
-This produces:
-- `results/advection_error_summary.csv` — error metrics per scheme
-- `results/advection_solution_comparison.png` — overlay plot (if matplotlib is available)
-- `results/advection_analysis.md` — qualitative analysis report
-
-## How to Add a New Numerical Scheme
-
-1. Implement the scheme function in `solver/schemes.py`.
-2. Register it in the `_SCHEMES` dict.
-3. Add tests (shape, uniform field, mass conservation).
-4. Update `examples/compare_advection_schemes.py` to include the new scheme in `SCHEMES`.
-5. Re-run tests and the comparison script to verify.
-
-Or use the multi-agent workflow:
+## Multi-Agent Workflow Demo
 
 ```
 使用 add-numerical-scheme skill，根据 docs/feature_request_lax_wendroff.md 完成需求。
@@ -113,18 +171,24 @@ Or use the multi-agent workflow:
 不要修改无关文件。完成后运行 pytest -q，并给出最终报告。
 ```
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| `CLAUDE.md` | Project rules |
+| `docs/cfd_architecture.md` | CFD solver architecture overview |
+| `docs/cfd_module_interfaces.md` | Public interface reference |
+| `docs/cfd_iteration_guide.md` | How to extend the solver |
+| `docs/api/` | Auto-generated API docs |
+
 ## How This Maps to Real CFD Projects
 
-| This toy project | Real CFD project |
+| This project | Real CFD project |
 |---|---|
-| 1D scalar advection | 3D RANS / LES / DNS |
-| Upwind / Lax-Wendroff | HLLC, WENO, DG schemes |
-| `schemes.py` (one file) | Multi-file flux / limiter libraries |
-| sin(2*pi*x) + 1 IC | Complex geometry + mesh |
-| `np.roll` periodic BC | MPI halo exchange |
-| Analytic L2 error | Manufactured solutions / convergence studies |
-| `pytest` | Regression suites + verification cases |
+| 2D Euler (NumPy) | 3D RANS/LES/DNS (C++/Fortran) |
+| Rusanov flux | HLLC, WENO, DG schemes |
+| 50x50 uniform grid | 10M+ cells, AMR |
+| Forward Euler | RK3, IMEX, dual time stepping |
+| np.roll / ghost cells | MPI halo exchange |
+| pytest | Regression suites + verification cases |
 | 5 agents | 10-20 agents (mesh, BC, I/O, performance, etc.) |
-
-The workflow pattern (analyse -> design -> implement -> test -> review -> verify
-against analytic solution) scales directly to production CFD.
