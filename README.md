@@ -286,7 +286,74 @@ bash -ic 'module-conda && pytest -q'
 | `docs/cfd_module_interfaces.md` | Public interface reference |
 | `docs/cfd_iteration_guide.md` | How to extend the solver |
 | `docs/cfd_definition_of_done.md` | Completion checklists for each task type |
+| `docs/paper_to_code_workflow.md` | Paper-to-code workflow guide |
 | `docs/api/` | Auto-generated API docs |
+
+## Paper-to-Code CFD Workflow
+
+This project supports a structured workflow for implementing numerical methods
+from research papers. The workflow ensures formulas are verified, variable
+mappings are checked, and the implementation is validated before commit.
+
+### Why This Exists
+
+Directly jumping from a PDF to code is error-prone: formulas lose formatting,
+papers use different notation, and not all methods fit our solver architecture.
+The workflow enforces human review at the critical decision point.
+
+### How to Use
+
+**1. Place the PDF:**
+```bash
+cp ~/Downloads/paper.pdf docs/papers/
+```
+
+**2. Extract and analyze:**
+```
+使用 extract-paper-scheme skill 分析 docs/papers/paper.pdf。
+只生成 extraction report，不要实现代码。
+```
+
+**3. Generate scheme spec:**
+```
+使用 write-scheme-spec skill，根据 docs/paper_reviews/paper_extraction.md 生成 scheme spec。
+默认不要实现代码。
+```
+
+**4. Review and approve:**
+
+Open `docs/scheme_specs/<scheme>.md`, verify formulas and mappings, then set:
+```
+Approved for implementation: yes
+```
+
+**5. Implement:**
+```
+我已经确认 docs/scheme_specs/<scheme>.md，并将 Approved for implementation 改为 yes。
+请使用 implement-paper-scheme skill 实现它，并运行 required validation。
+```
+
+**6. Validate:**
+```
+使用 validate-paper-scheme skill，验证实现的数值方法。
+```
+
+### Tools
+
+```bash
+# Extract text from PDF
+make paper-extract PAPER=docs/papers/<name>.pdf
+
+# Build agent context from extracted text
+make paper-context PAPER_TEXT=docs/paper_reviews/<name>_text.md
+```
+
+### Key Rules
+
+- Never implement without an approved scheme spec
+- Never fabricate formulas — flag unclear ones as `[AMBIGUOUS]`
+- Always run analytic validation after implementation
+- See `docs/paper_to_code_workflow.md` for full details
 
 ## Recommended Claude Code Workflows
 

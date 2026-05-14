@@ -44,6 +44,25 @@
 | `io/` | Output to disk | Computation |
 | `solver.py` | Orchestration | Numerical details |
 
+## Paper-to-Code Rules (MANDATORY)
+
+1. **When a user asks to add a method from a paper**, must use `extract-paper-scheme` skill first.
+2. **Never jump from PDF directly to code.** Always go through extraction → spec → approval → implementation.
+3. **Unapproved specs must not be implemented.** The spec must contain `Approved for implementation: yes`.
+4. **If PDF extraction is incomplete**, must report the issue and ask the user to provide the method section text.
+5. **Formulas, variable mappings, and applicability** must be explicitly written into the scheme spec.
+6. **After implementation**, must run `validate-paper-scheme` skill or required CFD validation.
+7. **Final report for paper-derived work** must include:
+   - Paper path
+   - Extraction report path (`docs/paper_reviews/<id>_extraction.md`)
+   - Scheme spec path (`docs/scheme_specs/<scheme>.md`)
+   - Validation result path (`results/<scheme>_validation/`)
+   - Unresolved assumptions
+   - Tests run
+   - Remaining risks
+
+See `docs/paper_to_code_workflow.md` for the full workflow description.
+
 ## CFD Task Workflow (MANDATORY)
 
 1. **Read Definition of Done first**: Before starting ANY CFD task, read

@@ -7,7 +7,8 @@
         cfd-uniform cfd-sod \
         cfd-entropy cfd-entropy-convergence \
         cfd-vortex cfd-vortex-convergence \
-        cfd-validation
+        cfd-validation \
+        paper-extract paper-context
 
 # --- Compilation ---
 
@@ -59,3 +60,15 @@ cfd-vortex-convergence:
 
 cfd-validation: cfd-entropy cfd-entropy-convergence cfd-vortex cfd-vortex-convergence
 	@echo "=== Full CFD validation complete ==="
+
+# --- Paper-to-Code Tools ---
+
+# Usage: make paper-extract PAPER=docs/papers/example.pdf
+paper-extract:
+	@if [ -z "$(PAPER)" ]; then echo "Usage: make paper-extract PAPER=docs/papers/<name>.pdf"; exit 1; fi
+	bash -ic 'module-conda && python tools/extract_pdf_text.py $(PAPER)'
+
+# Usage: make paper-context PAPER_TEXT=docs/paper_reviews/example_text.md
+paper-context:
+	@if [ -z "$(PAPER_TEXT)" ]; then echo "Usage: make paper-context PAPER_TEXT=docs/paper_reviews/<name>_text.md"; exit 1; fi
+	bash -ic 'module-conda && python tools/build_paper_context.py $(PAPER_TEXT)'
