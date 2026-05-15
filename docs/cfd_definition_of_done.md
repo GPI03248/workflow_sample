@@ -163,6 +163,34 @@ All items from "Add CFD Case" PLUS:
 
 ---
 
+## 8. Paper-to-Code Implementation
+
+**Applies when**: Implementing a numerical method derived from a research paper
+via the paper-to-code workflow.
+
+All items from the corresponding method type checklist (3-6) PLUS:
+
+- [ ] Scheme spec exists at `docs/scheme_specs/<scheme>.md`
+- [ ] Extraction report exists at `docs/paper_reviews/<id>_extraction.md`
+- [ ] **Deterministic approval gate passed**:
+  ```bash
+  tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py docs/scheme_specs/<scheme>.md
+  ```
+  Exit code must be 0.
+- [ ] Traceability manifest exists at `docs/tasks/<task_id>/traceability.md`
+- [ ] Final report includes:
+  - Paper path
+  - Extraction report path
+  - Scheme spec path
+  - Approval checker result (exit code + output)
+  - Traceability manifest path
+  - Validation result path
+  - Commit hash
+  - Unresolved assumptions
+  - Remaining risks
+
+---
+
 ## Universal Checklist (applies to ALL tasks)
 
 - [ ] `python -m compileall solver cfd tests examples tools` — no syntax errors
@@ -176,3 +204,5 @@ All items from "Add CFD Case" PLUS:
   5. Error metrics (if applicable)
   6. Result file paths
   7. Generated docs
+  8. Approval checker result (for paper-to-code tasks)
+  9. Traceability manifest path (for paper-to-code tasks)

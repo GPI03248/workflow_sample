@@ -22,6 +22,57 @@ The workflow forces a **review gate** between extraction and implementation.
 
 ---
 
+## Deterministic Approval Gate
+
+The approval gate is enforced by a **deterministic checker script**, not by
+manual reading of the spec markdown.  This prevents accidental implementation
+of unapproved specs.
+
+### Checker Tool
+
+```bash
+# Check a scheme spec (exit 0 = approved, 1 = not approved, 2 = file error)
+tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py docs/scheme_specs/<scheme>.md
+
+# JSON output
+tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py docs/scheme_specs/<scheme>.md --json
+
+# Via Makefile
+make check-spec SPEC=docs/scheme_specs/<scheme>.md
+```
+
+### Rules
+
+1. Only `Approved for implementation: yes` (exact match, case-insensitive)
+   results in exit code 0.
+2. `no`, missing line, misspellings, and file-not-found all return non-zero.
+3. The `implement-paper-scheme` skill runs this checker as **Step 0**.
+   If it fails, implementation is blocked — no exceptions.
+4. The checker is the authoritative source.  Manual reading of the spec
+   is NOT sufficient to proceed.
+
+### Traceability Manifest
+
+Every paper-to-code task must maintain a traceability manifest at
+`docs/tasks/<task_id>/traceability.md`.  This records the full provenance:
+
+```bash
+# Create/update manifest
+tools/run_in_project_env.sh python tools/create_task_traceability.py \
+    --task-id <id> \
+    --source docs/papers/<paper>.md \
+    --extraction-report docs/paper_reviews/<id>_extraction.md \
+    --scheme-spec docs/scheme_specs/<scheme>.md
+
+# Via Makefile
+make trace-task TASK_ID=<id>
+```
+
+The manifest includes: source material, approval status, code changes,
+tests, validation, review, and git commit.
+
+---
+
 ## Recommended Flow
 
 ```
@@ -34,16 +85,23 @@ The workflow forces a **review gate** between extraction and implementation.
 4. Extract method info  → docs/paper_reviews/<id>_extraction.md
        ↓
 5. Generate scheme spec → docs/scheme_specs/<scheme>.md
+       (Approved for implementation: no)
        ↓
 6. HUMAN REVIEWS AND APPROVES THE SPEC
+       (changes to: Approved for implementation: yes)
        ↓
-7. Implement code       → cfd/numerics/<module>.py
+7. DETERMINISTIC APPROVAL GATE CHECK
+       (tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py)
        ↓
-8. Run validation       → results/<scheme>_validation/
+8. Implement code       → cfd/numerics/<module>.py
        ↓
-9. Review changes       → review-cfd-change skill
+9. Run validation       → results/<scheme>_validation/
        ↓
-10. Commit and push
+10. Review changes      → review-cfd-change skill
+       ↓
+11. Commit and push
+       ↓
+12. Update traceability manifest
 ```
 
 ---
@@ -201,7 +259,15 @@ tools/run_in_project_env.sh python tools/extract_pdf_text.py docs/papers/<name>.
 # Build agent context
 tools/run_in_project_env.sh python tools/build_paper_context.py docs/paper_reviews/<name>_text.md
 
+# Check spec approval (deterministic gate)
+tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py docs/scheme_specs/<scheme>.md
+
+# Create traceability manifest
+tools/run_in_project_env.sh python tools/create_task_traceability.py --task-id <id>
+
 # Or use Makefile
 make paper-extract PAPER=docs/papers/<name>.pdf
 make paper-context PAPER_TEXT=docs/paper_reviews/<name>_text.md
+make check-spec SPEC=docs/scheme_specs/<scheme>.md
+make trace-task TASK_ID=<id>
 ```
