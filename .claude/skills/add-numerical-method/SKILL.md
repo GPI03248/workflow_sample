@@ -33,13 +33,13 @@ The user must specify:
 5. **Update config**: Update `CFDConfig` field docstring in `cfd/config.py`.
 6. **Update exports**: `cfd/numerics/__init__.py`.
 7. **Write tests**: Add to existing test file or create new one.
-8. **Run unit tests**: `bash -ic 'module-conda && pytest -q'`.
+8. **Run unit tests**: `tools/run_in_project_env.sh pytest -q`.
 9. **Run analytic validation** (MANDATORY — not optional):
    ```bash
-   bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
-   bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
-   bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
-   bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+   tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
+   tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py
+   tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
+   tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
    ```
 10. **Compare errors**: New method must NOT increase errors significantly.
 11. **Update docs**: Follow `update-cfd-docs` skill.
@@ -81,16 +81,16 @@ The user must specify:
 
 ```bash
 # Compile check
-bash -ic 'module-conda && python -m compileall solver cfd tests examples tools'
+tools/run_in_project_env.sh python -m compileall solver cfd tests examples tools
 
 # Unit tests (MUST pass)
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh pytest -q
 
 # Analytic validation (MUST run, errors must NOT regress)
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
 ```
 
 ## Result Files to Generate

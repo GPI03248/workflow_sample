@@ -77,8 +77,8 @@ description: Review a CFD code change for correctness, consistency, and complete
 
 ```bash
 # Verify everything still works
-bash -ic 'module-conda && python -m compileall solver cfd tests examples tools'
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh python -m compileall solver cfd tests examples tools
+tools/run_in_project_env.sh pytest -q
 ```
 
 ## Result Files to Generate

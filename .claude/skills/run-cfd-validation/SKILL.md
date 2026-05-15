@@ -21,42 +21,42 @@ description: Run full CFD analytic validation suite and report results
 
 1. **Compile check**:
    ```bash
-   bash -ic 'module-conda && python -m compileall solver cfd tests examples tools'
+   tools/run_in_project_env.sh python -m compileall solver cfd tests examples tools
    ```
 2. **Run all unit tests**:
    ```bash
-   bash -ic 'module-conda && pytest -q'
+   tools/run_in_project_env.sh pytest -q
    ```
    All must pass. If any fail, STOP and fix before continuing.
 
 3. **Run 1D scalar advection validation** (optional, if solver/ changed):
    ```bash
-   bash -ic 'module-conda && python examples/compare_advection_schemes.py'
+   tools/run_in_project_env.sh python examples/compare_advection_schemes.py
    ```
 
 4. **Run CFD uniform flow** (must be exact to machine precision):
    ```bash
-   bash -ic 'module-conda && python examples/run_cfd_uniform_flow.py'
+   tools/run_in_project_env.sh python examples/run_cfd_uniform_flow.py
    ```
 
 5. **Run entropy wave validation**:
    ```bash
-   bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
+   tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
    ```
 
 6. **Run entropy wave convergence**:
    ```bash
-   bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
+   tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py
    ```
 
 7. **Run isentropic vortex validation**:
    ```bash
-   bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
+   tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
    ```
 
 8. **Run isentropic vortex convergence**:
    ```bash
-   bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+   tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
    ```
 
 9. **Collect and compare results**: Read all `error_summary.csv` and `convergence_summary.csv` files.
@@ -79,12 +79,12 @@ description: Run full CFD analytic validation suite and report results
 ## Tests to Run
 
 ```bash
-bash -ic 'module-conda && python -m compileall solver cfd tests examples tools'
-bash -ic 'module-conda && pytest -q'
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+tools/run_in_project_env.sh python -m compileall solver cfd tests examples tools
+tools/run_in_project_env.sh pytest -q
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
 ```
 
 Or use Makefile:

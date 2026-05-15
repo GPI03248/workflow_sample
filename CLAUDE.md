@@ -6,6 +6,27 @@
 - Do **not** modify unrelated files, tests, or documentation.
 - Do **not** refactor code that is not in scope.
 
+## Environment Rules
+
+- Do **not** use `bash -ic 'module-conda && ...'`. It starts an interactive shell and is unreliable in automated contexts.
+- Do **not** depend on user shell aliases (e.g., `module-conda`).
+- Do **not** source `~/.bashrc` from tools or hooks.
+- All Python / pytest / project tool commands must use:
+  ```
+  tools/run_in_project_env.sh <command>
+  ```
+- If environment discovery fails, run:
+  ```
+  tools/run_in_project_env.sh python tools/discover_project_env.py --json
+  ```
+- To manually specify conda, set environment variables:
+  ```
+  export WORKFLOW_SAMPLE_CONDA_SH=/path/to/conda.sh
+  export WORKFLOW_SAMPLE_CONDA_ENV=base
+  ```
+- The wrapper auto-discovers conda via a 5-level priority chain (see `tools/discover_project_env.py`).
+- Local config is stored in `.local/project_env.sh` (git-ignored).
+
 ## Numerical Correctness (1D Advection)
 
 - All numerical schemes must preserve the **array shape** of the input.
@@ -48,7 +69,11 @@
 
 1. **When a user asks to add a method from a paper**, must use `extract-paper-scheme` skill first.
 2. **Never jump from PDF directly to code.** Always go through extraction → spec → approval → implementation.
-3. **Unapproved specs must not be implemented.** The spec must contain `Approved for implementation: yes`.
+3. **Unapproved specs must not be implemented.** The spec must pass:
+   ```
+   tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py <spec>
+   ```
+   If this returns non-zero, implementation is blocked.
 4. **If PDF extraction is incomplete**, must report the issue and ask the user to provide the method section text.
 5. **Formulas, variable mappings, and applicability** must be explicitly written into the scheme spec.
 6. **After implementation**, must run `validate-paper-scheme` skill or required CFD validation.
@@ -56,6 +81,8 @@
    - Paper path
    - Extraction report path (`docs/paper_reviews/<id>_extraction.md`)
    - Scheme spec path (`docs/scheme_specs/<scheme>.md`)
+   - Approval checker result
+   - Traceability manifest path (`docs/tasks/<id>/traceability.md`)
    - Validation result path (`results/<scheme>_validation/`)
    - Unresolved assumptions
    - Tests run
@@ -76,13 +103,13 @@ See `docs/paper_to_code_workflow.md` for the full workflow description.
 3. **No pytest-only claims**: Passing `pytest -q` alone is **NOT sufficient** to claim
    numerical correctness. Analytic validation must be run and results reported.
 4. **New numerical methods**: After adding any new CFD numerical method, **must** run:
-   - `python examples/run_cfd_entropy_wave.py`
-   - `python examples/run_cfd_entropy_wave_convergence.py`
-   - `python examples/run_cfd_isentropic_vortex.py`
-   - `python examples/run_cfd_isentropic_vortex_convergence.py`
+   - `tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py`
+   - `tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py`
+   - `tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py`
+   - `tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py`
    Errors must NOT increase significantly vs. previous method.
 5. **Public interface changes**: After modifying any public CFD interface, **must**:
-   - Run `python tools/generate_cfd_api_docs.py`
+   - Run `tools/run_in_project_env.sh python tools/generate_cfd_api_docs.py`
    - Update `docs/cfd_module_interfaces.md`
 
 ## Benchmarking
@@ -93,10 +120,10 @@ See `docs/paper_to_code_workflow.md` for the full workflow description.
 
 ## Testing
 
-- After any code change, run: `make test` or `bash -ic 'module-conda && pytest -q'`
+- After any code change, run: `make test` or `tools/run_in_project_env.sh pytest -q`
 - All existing tests must continue to pass.
 - New CFD features require tests in `tests/test_cfd_*.py`.
-- All verification commands must use `bash -ic 'module-conda && <command>'`.
+- All verification commands must use `tools/run_in_project_env.sh <command>`.
 - Use `make compile` for syntax checking.
 
 ## Documentation
@@ -136,3 +163,6 @@ When a task is complete, the final response must include:
 | `make cfd-vortex` | Isentropic vortex single run |
 | `make cfd-entropy-convergence` | Entropy wave convergence |
 | `make cfd-vortex-convergence` | Isentropic vortex convergence |
+| `make check-spec SPEC=<path>` | Check scheme spec approval status |
+| `make trace-task TASK_ID=<id>` | Create traceability manifest |
+| `make discover-env` | Show environment discovery result |

@@ -35,8 +35,8 @@ solution:
 - **Schemes**: upwind (1st order), Lax-Wendroff (2nd order)
 
 ```bash
-bash -ic 'module-conda && pytest -q'
-bash -ic 'module-conda && python examples/compare_advection_schemes.py'
+tools/run_in_project_env.sh pytest -q
+tools/run_in_project_env.sh python examples/compare_advection_schemes.py
 ```
 
 ---
@@ -103,10 +103,10 @@ cfd/
 
 ```bash
 # Uniform flow preservation (should be exact to machine precision)
-bash -ic 'module-conda && python examples/run_cfd_uniform_flow.py'
+tools/run_in_project_env.sh python examples/run_cfd_uniform_flow.py
 
 # 2D Sod shock tube
-bash -ic 'module-conda && python examples/run_cfd_sod_2d.py'
+tools/run_in_project_env.sh python examples/run_cfd_sod_2d.py
 ```
 
 ### View Results
@@ -121,7 +121,7 @@ Results are saved to `results/`:
 ### Generate API Docs
 
 ```bash
-bash -ic 'module-conda && python tools/generate_cfd_api_docs.py'
+tools/run_in_project_env.sh python tools/generate_cfd_api_docs.py
 ```
 
 ### How to Add New Methods
@@ -170,8 +170,8 @@ Domain [0,10]x[0,10], periodic BCs.
 ### Run Validation
 
 ```bash
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
 ```
 
 ### Current Convergence Results
@@ -213,13 +213,13 @@ This case is ideal for validation because:
 ### Run Validation
 
 ```bash
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
 ```
 
 ### Run Convergence Study
 
 ```bash
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py
 ```
 
 ### View Results
@@ -258,15 +258,17 @@ Close to first-order, as expected for a first-order scheme.
 ```bash
 git clone git@gitee.com:gpiii/workflow_sample.git
 cd workflow_sample
-pip install numpy pytest matplotlib
 ```
 
-> matplotlib is optional — scripts degrade gracefully without it.
+> **Environment Setup:** `tools/run_in_project_env.sh` auto-discovers the
+> project conda environment. No manual `pip install` is needed when using the
+> wrapper script. If running outside the wrapper, install dependencies with
+> `pip install numpy pytest matplotlib` (matplotlib is optional).
 
 ## Run All Tests
 
 ```bash
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh pytest -q
 ```
 
 ## Multi-Agent Workflow Demo

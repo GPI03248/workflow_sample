@@ -10,17 +10,6 @@
           }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -ic 'module-conda && cd \"$CLAUDE_PROJECT_DIR\" && python -m compileall solver cfd tests examples tools'"
-          }
-        ]
-      }
     ]
   }
 }

@@ -109,8 +109,8 @@ Options:
 
 Or manually:
 ```bash
-bash -ic 'module-conda && python tools/extract_pdf_text.py docs/papers/xxx.pdf --out docs/paper_reviews/xxx_text.md'
-bash -ic 'module-conda && python tools/build_paper_context.py docs/paper_reviews/xxx_text.md --out docs/paper_reviews/xxx_context.md'
+tools/run_in_project_env.sh python tools/extract_pdf_text.py docs/papers/xxx.pdf --out docs/paper_reviews/xxx_text.md
+tools/run_in_project_env.sh python tools/build_paper_context.py docs/paper_reviews/xxx_text.md --out docs/paper_reviews/xxx_context.md
 ```
 
 Then ask Claude to read the context and generate the extraction report.
@@ -196,10 +196,10 @@ cp ~/Downloads/toro_2009_hllc.pdf docs/papers/
 
 ```bash
 # Extract PDF text
-bash -ic 'module-conda && python tools/extract_pdf_text.py docs/papers/<name>.pdf'
+tools/run_in_project_env.sh python tools/extract_pdf_text.py docs/papers/<name>.pdf
 
 # Build agent context
-bash -ic 'module-conda && python tools/build_paper_context.py docs/paper_reviews/<name>_text.md'
+tools/run_in_project_env.sh python tools/build_paper_context.py docs/paper_reviews/<name>_text.md
 
 # Or use Makefile
 make paper-extract PAPER=docs/papers/<name>.pdf

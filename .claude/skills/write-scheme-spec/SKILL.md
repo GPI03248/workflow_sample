@@ -76,7 +76,7 @@ description: Generate an implementation-ready scheme spec from a paper extractio
 
 - **DO NOT implement any code** — this skill produces a document only
 - **DO NOT modify `cfd/`** — no code changes
-- The spec MUST have `Approved for implementation: no` until the user explicitly changes it
+- The spec MUST have `Approved for implementation: no` — the deterministic checker must reject it until the user explicitly changes it.
 - If the extraction report says `ready for scheme spec: no`, **STOP** and tell the user what's missing
 - If the method is incompatible, write the spec but clearly mark it with a warning
 

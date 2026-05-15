@@ -28,7 +28,7 @@ Read the scheme spec to determine:
 ### Step 2: Run Unit Tests
 
 ```bash
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh pytest -q
 ```
 
 All must pass. If any fail, STOP and fix before continuing.
@@ -39,10 +39,10 @@ All must pass. If any fail, STOP and fix before continuing.
 
 Run all applicable analytic validation cases:
 ```bash
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
 ```
 
 Or use: `make cfd-validation`
@@ -58,8 +58,8 @@ Then:
 
 Run benchmark cases and check qualitative properties:
 ```bash
-bash -ic 'module-conda && python examples/run_cfd_uniform_flow.py'
-bash -ic 'module-conda && python examples/run_cfd_sod_2d.py'
+tools/run_in_project_env.sh python examples/run_cfd_uniform_flow.py
+tools/run_in_project_env.sh python examples/run_cfd_sod_2d.py
 ```
 
 Check:
@@ -89,6 +89,14 @@ Determine:
 ### Step 6: Report
 
 Present clear conclusions with evidence.
+
+### Traceability
+
+- After validation, update or create the traceability manifest:
+  ```bash
+  tools/run_in_project_env.sh python tools/create_task_traceability.py --task-id <id> --validation-result <path>
+  ```
+- The manifest must record the validation result path.
 
 ## What Results CAN Support
 
@@ -121,7 +129,7 @@ Present clear conclusions with evidence.
 ## Tests to Run
 
 ```bash
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh pytest -q
 # Plus all applicable validation scripts (see workflow step 3)
 ```
 

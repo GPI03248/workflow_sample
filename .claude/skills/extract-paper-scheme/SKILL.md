@@ -31,11 +31,11 @@ One of:
      a. Try reading the PDF directly (Claude can read PDFs).
      b. If direct reading is unreliable or insufficient, run:
         ```bash
-        bash -ic 'module-conda && python tools/extract_pdf_text.py docs/papers/<name>.pdf --out docs/paper_reviews/<name>_text.md'
+        tools/run_in_project_env.sh python tools/extract_pdf_text.py docs/papers/<name>.pdf --out docs/paper_reviews/<name>_text.md
         ```
      c. Then run:
         ```bash
-        bash -ic 'module-conda && python tools/build_paper_context.py docs/paper_reviews/<name>_text.md --out docs/paper_reviews/<name>_context.md'
+        tools/run_in_project_env.sh python tools/build_paper_context.py docs/paper_reviews/<name>_text.md --out docs/paper_reviews/<name>_context.md
         ```
      d. Read the generated context file.
    - If text/markdown: read it directly.
@@ -76,6 +76,10 @@ One of:
 - **DO NOT fabricate formulas** — if a formula is unclear, mark confidence as "low" and ask
 - If PDF text extraction fails or is incomplete, **must** report the issue and ask the user to provide the method section text
 - If the paper describes a method incompatible with the current solver architecture, **must** flag this explicitly
+- After generating the extraction report, suggest creating a traceability manifest:
+  ```bash
+  tools/run_in_project_env.sh python tools/create_task_traceability.py --task-id <id> --extraction-report <path>
+  ```
 
 ## Files to Inspect
 

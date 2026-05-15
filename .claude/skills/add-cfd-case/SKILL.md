@@ -33,8 +33,8 @@ The user must provide (or the agent must determine):
 5. **Create example script**: `examples/run_cfd_<case_name>.py`.
    - If analytic: also create `examples/run_cfd_<case_name>_convergence.py`.
 6. **Create tests**: `tests/test_cfd_<case_name>.py`.
-7. **Run tests**: `bash -ic 'module-conda && pytest -q'`.
-8. **Run example**: `bash -ic 'module-conda && python examples/run_cfd_<case_name>.py'`.
+7. **Run tests**: `tools/run_in_project_env.sh pytest -q`.
+8. **Run example**: `tools/run_in_project_env.sh python examples/run_cfd_<case_name>.py`.
 9. **If analytic**: Run convergence study and verify convergence order.
 10. **Update docs**: Follow `update-cfd-docs` skill.
 
@@ -60,11 +60,11 @@ The user must provide (or the agent must determine):
 ## Tests to Run
 
 ```bash
-bash -ic 'module-conda && python -m compileall cfd tests examples tools'
-bash -ic 'module-conda && pytest -q'
-bash -ic 'module-conda && python examples/run_cfd_<case_name>.py'
+tools/run_in_project_env.sh python -m compileall cfd tests examples tools
+tools/run_in_project_env.sh pytest -q
+tools/run_in_project_env.sh python examples/run_cfd_<case_name>.py
 # If analytic:
-bash -ic 'module-conda && python examples/run_cfd_<case_name>_convergence.py'
+tools/run_in_project_env.sh python examples/run_cfd_<case_name>_convergence.py
 ```
 
 ## Result Files to Generate

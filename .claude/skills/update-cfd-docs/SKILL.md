@@ -23,7 +23,7 @@ description: Update CFD documentation after code changes
 
 2. **Regenerate API docs**:
    ```bash
-   bash -ic 'module-conda && python tools/generate_cfd_api_docs.py'
+   tools/run_in_project_env.sh python tools/generate_cfd_api_docs.py
    ```
 
 3. **Update `docs/cfd_module_interfaces.md`** if any of:
@@ -79,8 +79,8 @@ description: Update CFD documentation after code changes
 
 ```bash
 # Verify no syntax errors introduced
-bash -ic 'module-conda && python -m compileall cfd tests examples tools'
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh python -m compileall cfd tests examples tools
+tools/run_in_project_env.sh pytest -q
 ```
 
 ## Result Files to Generate

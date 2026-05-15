@@ -20,13 +20,13 @@ description: Implement a numerical method from an approved scheme spec
 ### Step 0: Gate Check
 
 1. Read the scheme spec file.
-2. Search for `Approved for implementation: yes` (exact match).
-3. If NOT found → **STOP**. Tell the user:
+2. Run the deterministic approval checker:
+   ```bash
+   tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py <SPEC_PATH>
    ```
-   The scheme spec does not have "Approved for implementation: yes".
-   Implementation is blocked. Please review the spec and update it.
-   ```
+3. If the command returns non-zero exit code → **STOP**. Tell the user the spec is not approved.
 4. Do NOT proceed with any code changes.
+5. The approval checker is the authoritative source — do not rely on manual reading alone.
 
 ### Step 1: Read Context
 
@@ -72,7 +72,7 @@ Create or update test files per the spec's "Tests required" section and `docs/cf
 
 1. Update `docs/cfd_module_interfaces.md` with new function signatures
 2. Update `docs/cfd_iteration_guide.md` if extension instructions changed
-3. Run `bash -ic 'module-conda && python tools/generate_cfd_api_docs.py'`
+3. Run `tools/run_in_project_env.sh python tools/generate_cfd_api_docs.py`
 4. Update `README.md` if user-visible features changed
 5. Update `CLAUDE.md` if new project rules are needed
 
@@ -80,16 +80,16 @@ Create or update test files per the spec's "Tests required" section and `docs/cf
 
 Per the spec's "Validation required" section:
 ```bash
-bash -ic 'module-conda && python -m compileall solver cfd tests examples tools'
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh python -m compileall solver cfd tests examples tools
+tools/run_in_project_env.sh pytest -q
 ```
 
 Then run the required analytic validation:
 ```bash
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave_convergence.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave_convergence.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
 ```
 
 Or use: `make compile test cfd-validation`
@@ -101,6 +101,8 @@ Use the `review-cfd-change` skill to review all changes before reporting.
 ## Mandatory Rules
 
 - **NEVER implement without `Approved for implementation: yes`** in the spec
+- **MUST run `tools/run_in_project_env.sh python tools/check_scheme_spec_approval.py` before any implementation**
+- If the approval checker returns non-zero, implementation is blocked — no exceptions
 - **NEVER skip the validation step** — pytest alone is not sufficient
 - **NEVER fabricate formulas** — use only what's in the spec
 - Follow the spec exactly — if something is unclear, ask rather than guess
@@ -129,11 +131,11 @@ Per the spec's "Required code changes" table. Typically:
 ## Tests to Run
 
 ```bash
-bash -ic 'module-conda && python -m compileall solver cfd tests examples tools'
-bash -ic 'module-conda && pytest -q'
-bash -ic 'module-conda && python examples/run_cfd_entropy_wave.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex.py'
-bash -ic 'module-conda && python examples/run_cfd_isentropic_vortex_convergence.py'
+tools/run_in_project_env.sh python -m compileall solver cfd tests examples tools
+tools/run_in_project_env.sh pytest -q
+tools/run_in_project_env.sh python examples/run_cfd_entropy_wave.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex.py
+tools/run_in_project_env.sh python examples/run_cfd_isentropic_vortex_convergence.py
 ```
 
 ## Result Files to Generate

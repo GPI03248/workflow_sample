@@ -140,8 +140,8 @@ pytest -q   # run all tests
 
 **Must run:**
 ```bash
-bash -ic 'module-conda && python -m compileall cfd tests examples tools'
-bash -ic 'module-conda && pytest -q'
+tools/run_in_project_env.sh python -m compileall cfd tests examples tools
+tools/run_in_project_env.sh pytest -q
 ```
 
 **Must update:**
