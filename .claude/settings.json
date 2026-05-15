@@ -3,13 +3,23 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command": "bash .claude/hooks/block-dangerous-bash.sh"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc '\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-dangerous-bash.sh'"
+          }
+        ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
-        "command": "bash .claude/hooks/quick-check.sh"
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -ic 'module-conda && cd \"$CLAUDE_PROJECT_DIR\" && python -m compileall solver cfd tests examples tools'"
+          }
+        ]
       }
     ]
   }
