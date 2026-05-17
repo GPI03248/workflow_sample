@@ -81,13 +81,13 @@ class TestCheckSpecApproval:
         assert result["approved"] is False
         assert "not found" in result["reason"].lower()
 
-    def test_hll_flux_spec_not_approved(self):
-        """Current hll_flux.md should be detected as not approved."""
+    def test_hll_flux_spec_now_approved(self):
+        """hll_flux.md was approved by user for implementation."""
         spec_path = Path("docs/scheme_specs/hll_flux.md")
         if not spec_path.exists():
             pytest.skip("hll_flux.md not present")
         result = check_spec_approval(spec_path)
-        assert result["approved"] is False
+        assert result["approved"] is True
 
 
 class TestApprovalCheckerCLI:

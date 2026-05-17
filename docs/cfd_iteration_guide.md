@@ -12,9 +12,13 @@ human developers and AI agents.
 - `cfd/numerics/update.py` — dispatch to the new flux based on `flux_type`
 - `cfd/numerics/__init__.py` — export the new function
 
+**Current implementations:**
+- `rusanov_flux_x/y` — Rusanov (local Lax-Friedrichs), single-wave solver
+- `hll_flux_x/y` — HLL (Harten-Lax-van Leer), two-wave solver with Roe-averaged wave speeds
+
 **Steps:**
 1. Implement `hllc_flux_x(UL, UR, gamma)` and `hllc_flux_y(UL, UR, gamma)` in `riemann.py`.
-2. In `update.py`, add a branch in `euler_update` that calls the new flux when `flux_type == "hllc"`.
+2. In `update.py`, add a branch in `compute_residual` that calls the new flux when `flux_type == "hllc"`.
 3. Update `CFDConfig.flux_type` docstring to list the new option.
 
 **Tests to run:**

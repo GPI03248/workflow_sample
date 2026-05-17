@@ -1,7 +1,7 @@
 # Scheme Specification
 
 ## Status
-Approved for implementation: no
+Approved for implementation: yes
 
 ## Source
 - paper: docs/papers/hll_flux_test_note.md (workflow test document)

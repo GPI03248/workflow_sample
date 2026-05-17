@@ -16,7 +16,7 @@ import numpy as np
 
 from ..constants import GAMMA
 from .reconstruction import reconstruct, reconstruct_y
-from .riemann import rusanov_flux_x, rusanov_flux_y
+from .riemann import rusanov_flux_x, rusanov_flux_y, hll_flux_x, hll_flux_y
 
 
 def compute_residual(
@@ -39,12 +39,22 @@ def compute_residual(
     # x-direction
     UL_x, UR_x = reconstruct(U, ng, method=reconstruction,
                               limiter_name=limiter, gamma=gamma)
-    Fnum = rusanov_flux_x(UL_x, UR_x, gamma)
+    if flux_type == "rusanov":
+        Fnum = rusanov_flux_x(UL_x, UR_x, gamma)
+    elif flux_type == "hll":
+        Fnum = hll_flux_x(UL_x, UR_x, gamma)
+    else:
+        raise ValueError(f"Unknown flux_type: {flux_type!r}")
 
     # y-direction
     UL_y, UR_y = reconstruct_y(U, ng, method=reconstruction,
                                 limiter_name=limiter, gamma=gamma)
-    Gnum = rusanov_flux_y(UL_y, UR_y, gamma)
+    if flux_type == "rusanov":
+        Gnum = rusanov_flux_y(UL_y, UR_y, gamma)
+    elif flux_type == "hll":
+        Gnum = hll_flux_y(UL_y, UR_y, gamma)
+    else:
+        raise ValueError(f"Unknown flux_type: {flux_type!r}")
 
     # Flux divergence for interior cells.
     nxt = U.shape[2]

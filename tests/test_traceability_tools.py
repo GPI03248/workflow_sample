@@ -115,20 +115,20 @@ class TestCreateTraceabilityManifest:
 
 class TestApprovalIntegration:
     def test_reads_hll_flux_spec_approval(self, tmp_path):
-        """When scheme spec is hll_flux.md (not approved), manifest reflects that."""
+        """hll_flux.md is now approved — manifest should reflect that."""
         spec_path = Path("docs/scheme_specs/hll_flux.md")
         if not spec_path.exists():
             pytest.skip("hll_flux.md not present")
 
         from check_scheme_spec_approval import check_spec_approval
         approval = check_spec_approval(spec_path)
-        assert approval["approved"] is False
+        assert approval["approved"] is True
 
         md = build_traceability_markdown(
             task_id="hll_flux_test",
             approval_info=approval,
         )
-        assert "no" in md.lower() or "false" in md.lower()
+        assert "yes" in md.lower() or "true" in md.lower()
 
     def test_no_spec_path_gives_none_approval(self):
         """When no spec path provided, approval_info should indicate no spec."""

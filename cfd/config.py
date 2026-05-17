@@ -39,7 +39,7 @@ class CFDConfig:
     bc_y : str
         Boundary type in y.
     flux_type : str
-        Numerical flux: "rusanov".
+        Numerical flux: "rusanov" or "hll".
     reconstruction : str
         Reconstruction method: "piecewise_constant" or "muscl".
     limiter : str

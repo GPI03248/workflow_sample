@@ -15,7 +15,7 @@ This document lists the public interface of every CFD module.
 | ng | int | 2 | Ghost-cell layers |
 | final_time | float | 0.1 | Simulation end time |
 | bc_x, bc_y | str | "transmissive" | Boundary type |
-| flux_type | str | "rusanov" | Numerical flux |
+| flux_type | str | "rusanov" | Numerical flux: "rusanov" or "hll" |
 | reconstruction | str | "piecewise_constant" | Reconstruction: "piecewise_constant" or "muscl" |
 | limiter | str | "minmod" | Slope limiter: "minmod" or "vanleer" |
 | time_integrator | str | "euler" | Time integration: "euler" or "ssp_rk2" |
@@ -106,12 +106,22 @@ This document lists the public interface of every CFD module.
 - Input: `(4, nyt-1, nxt)`
 - Output: `(4, nyt-1, nxt)`
 
+### `riemann.hll_flux_x(UL, UR, gamma=1.4) -> Fnum`
+- Input: `(4, nyt, nxt-1)`
+- Output: `(4, nyt, nxt-1)`
+- HLL (Harten-Lax-van Leer) approximate Riemann solver with Roe-averaged wave speeds
+
+### `riemann.hll_flux_y(UL, UR, gamma=1.4) -> Gnum`
+- Input: `(4, nyt-1, nxt)`
+- Output: `(4, nyt-1, nxt)`
+
 ### `timestep.compute_dt(U, dx, dy, cfl, gamma=1.4) -> dt`
 - Returns positive float
 - Raises: ValueError for non-physical states
 
 ### `update.compute_residual(U, dx, dy, ng, gamma, flux_type, reconstruction, limiter) -> L`
 - Returns spatial residual L(U) = -(dF/dx + dG/dy) for interior cells
+- `flux_type`: "rusanov" or "hll"
 - Shape matches U
 
 ### `update.apply_euler_step(U, dx, dy, dt, ng, gamma, flux_type, reconstruction, limiter) -> U`
