@@ -124,21 +124,37 @@ def main() -> None:
     csv_path = os.path.join(result_dir, "error_summary.csv")
     with open(csv_path, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow([
-            "case", "riemann", "reconstruction", "time_integrator",
-            "nx", "ny", "final_time", "rho_l1_error", "rho_l2_error",
-            "rho_linf_error", "rho_mass_error",
-        ])
+        writer.writerow(
+            [
+                "case",
+                "riemann",
+                "reconstruction",
+                "time_integrator",
+                "nx",
+                "ny",
+                "final_time",
+                "rho_l1_error",
+                "rho_l2_error",
+                "rho_linf_error",
+                "rho_mass_error",
+            ]
+        )
         for r in results:
-            writer.writerow([
-                r["case"], r["riemann"], r["reconstruction"],
-                r["time_integrator"], r["nx"], r["ny"],
-                f"{r['final_time']:.4f}",
-                f"{r['rho_l1_error']:.10e}",
-                f"{r['rho_l2_error']:.10e}",
-                f"{r['rho_linf_error']:.10e}",
-                f"{r['rho_mass_error']:.10e}",
-            ])
+            writer.writerow(
+                [
+                    r["case"],
+                    r["riemann"],
+                    r["reconstruction"],
+                    r["time_integrator"],
+                    r["nx"],
+                    r["ny"],
+                    f"{r['final_time']:.4f}",
+                    f"{r['rho_l1_error']:.10e}",
+                    f"{r['rho_l2_error']:.10e}",
+                    f"{r['rho_linf_error']:.10e}",
+                    f"{r['rho_mass_error']:.10e}",
+                ]
+            )
     print(f"\nCSV saved to {csv_path}")
 
     # Save analysis.md
@@ -159,20 +175,32 @@ def main() -> None:
             )
         f.write("\n## Notes\n\n")
         f.write("- HLL is an approximate Riemann solver (two-wave model).\n")
-        f.write("- This validation only demonstrates behavior on the tested benchmarks.\n")
+        f.write(
+            "- This validation only demonstrates behavior on the tested benchmarks.\n"
+        )
         f.write("- HLL may not outperform Rusanov on all problems.\n")
         f.write("- HLLC (three-wave solver) is not yet implemented.\n")
 
         # Compare entropy wave errors
-        ew_hll = [r for r in results if r["case"] == "entropy_wave" and r["riemann"] == "hll"]
-        ew_rus = [r for r in results if r["case"] == "entropy_wave" and r["riemann"] == "rusanov"]
+        ew_hll = [
+            r for r in results if r["case"] == "entropy_wave" and r["riemann"] == "hll"
+        ]
+        ew_rus = [
+            r
+            for r in results
+            if r["case"] == "entropy_wave" and r["riemann"] == "rusanov"
+        ]
         if ew_hll and ew_rus:
             ratio = ew_hll[0]["rho_l2_error"] / ew_rus[0]["rho_l2_error"]
             f.write(f"- HLL/Rusanov L2 ratio (entropy wave): {ratio:.4f}\n")
             if ratio < 1.0:
-                f.write("  HLL produces lower errors than Rusanov on this case, as expected.\n")
+                f.write(
+                    "  HLL produces lower errors than Rusanov on this case, as expected.\n"
+                )
             else:
-                f.write("  HLL errors are similar to or higher than Rusanov on this grid.\n")
+                f.write(
+                    "  HLL errors are similar to or higher than Rusanov on this grid.\n"
+                )
 
     print(f"Analysis saved to {md_path}")
     print("\nDone.")

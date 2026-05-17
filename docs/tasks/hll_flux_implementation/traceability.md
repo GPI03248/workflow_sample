@@ -41,6 +41,14 @@
 - unresolved questions: none
 - remaining risks: HLL is a two-wave solver; cannot resolve contact discontinuities (HLLC needed for that)
 
+## Remaining limitations
+- HLL is a two-wave solver — cannot resolve contact discontinuities or shear waves
+- HLLC (three-wave solver, contact-restoring) is not yet implemented
+- Roe flux is not yet implemented
+- Roe-averaged wave speeds may be poorly conditioned when both states have same density but opposite velocities
+
 ## Git
-- commit hash: pending
-- push status: pending
+- implementation commit hash: d74d4b5353dd16193e5b86b0f16161575872904f
+- implementation push status: pushed to origin/master
+- cleanup commit hash: to be created
+- cleanup push status: to be reported

@@ -194,10 +194,10 @@ def test_hll_vs_rusanov_less_diffusive():
 def test_update_raises_on_unknown_flux():
     """compute_residual should raise ValueError for unknown flux_type."""
     from cfd.numerics.update import compute_residual
+
     U, *_ = _make_uniform_state(10, 12)
     with pytest.raises(ValueError, match="flux_type"):
-        compute_residual(U, dx=0.1, dy=0.1, ng=2, gamma=GAMMA,
-                         flux_type="unknown")
+        compute_residual(U, dx=0.1, dy=0.1, ng=2, gamma=GAMMA, flux_type="unknown")
 
 
 def test_solver_runs_with_hll():

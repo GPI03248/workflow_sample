@@ -37,8 +37,9 @@ def compute_residual(
         Residual for interior cells only (no ghost cells in output).
     """
     # x-direction
-    UL_x, UR_x = reconstruct(U, ng, method=reconstruction,
-                              limiter_name=limiter, gamma=gamma)
+    UL_x, UR_x = reconstruct(
+        U, ng, method=reconstruction, limiter_name=limiter, gamma=gamma
+    )
     if flux_type == "rusanov":
         Fnum = rusanov_flux_x(UL_x, UR_x, gamma)
     elif flux_type == "hll":
@@ -47,8 +48,9 @@ def compute_residual(
         raise ValueError(f"Unknown flux_type: {flux_type!r}")
 
     # y-direction
-    UL_y, UR_y = reconstruct_y(U, ng, method=reconstruction,
-                                limiter_name=limiter, gamma=gamma)
+    UL_y, UR_y = reconstruct_y(
+        U, ng, method=reconstruction, limiter_name=limiter, gamma=gamma
+    )
     if flux_type == "rusanov":
         Gnum = rusanov_flux_y(UL_y, UR_y, gamma)
     elif flux_type == "hll":
@@ -60,11 +62,13 @@ def compute_residual(
     nxt = U.shape[2]
     nyt = U.shape[1]
 
-    dFdx = (Fnum[:, ng:-ng, ng:nxt - ng] -
-            Fnum[:, ng:-ng, ng - 1:nxt - ng - 1]) / dx
+    dFdx = (
+        Fnum[:, ng:-ng, ng : nxt - ng] - Fnum[:, ng:-ng, ng - 1 : nxt - ng - 1]
+    ) / dx
 
-    dGdy = (Gnum[:, ng:nyt - ng, ng:-ng] -
-            Gnum[:, ng - 1:nyt - ng - 1, ng:-ng]) / dy
+    dGdy = (
+        Gnum[:, ng : nyt - ng, ng:-ng] - Gnum[:, ng - 1 : nyt - ng - 1, ng:-ng]
+    ) / dy
 
     return -(dFdx + dGdy)
 

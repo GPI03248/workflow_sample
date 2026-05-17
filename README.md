@@ -59,7 +59,7 @@ p = (gamma - 1) * (E - 0.5 * rho * (u^2 + v^2))
 
 | Component | Current | Extensible to |
 |-----------|---------|--------------|
-| Numerical flux | Rusanov (local Lax-Friedrichs) | HLLC, Roe |
+| Numerical flux | Rusanov (local Lax-Friedrichs), HLL | HLLC, Roe |
 | Reconstruction | Piecewise constant, MUSCL (2nd order) | WENO |
 | Limiters | minmod, van Leer | superbee, MC |
 | Time integration | Forward Euler, SSP RK2 | RK3, RK4 |
@@ -85,7 +85,7 @@ cfd/
   numerics/
     reconstruction.py    — Piecewise constant, MUSCL (2nd order)
     limiters.py          — minmod, van Leer slope limiters
-    riemann.py           — Rusanov numerical flux
+    riemann.py           — Rusanov and HLL numerical fluxes
     timestep.py          — CFL dt computation
     update.py            — Spatial residual + Euler update
     time_integration.py  — Time loop (Euler, SSP RK2)
@@ -107,6 +107,9 @@ tools/run_in_project_env.sh python examples/run_cfd_uniform_flow.py
 
 # 2D Sod shock tube
 tools/run_in_project_env.sh python examples/run_cfd_sod_2d.py
+
+# HLL vs Rusanov validation
+tools/run_in_project_env.sh python examples/run_cfd_hll_validation.py
 ```
 
 ### View Results
@@ -117,6 +120,7 @@ Results are saved to `results/`:
 |------|-----------|---------|
 | Uniform flow | `results/cfd_uniform_flow/` | summary.csv, final_state.npz, analysis.md, density.png, pressure.png |
 | Sod 2D | `results/cfd_sod_2d/` | summary.csv, final_state.npz, analysis.md, density.png, pressure.png, centerline_density.png |
+| HLL validation | `results/cfd_hll_validation/` | error_summary.csv, analysis.md |
 
 ### Generate API Docs
 
@@ -143,7 +147,7 @@ See `docs/cfd_iteration_guide.md` for detailed instructions. Quick reference:
 - **No adaptive mesh refinement**
 - **No parallelisation** (single CPU thread)
 - **No moving meshes or complex geometries**
-- Rusanov flux is very diffusive — better fluxes needed for sharp shocks
+- Rusanov is available but diffusive; HLL is implemented and less diffusive on smooth problems; HLLC/Roe are not yet implemented
 
 ---
 
@@ -359,7 +363,7 @@ make paper-context PAPER_TEXT=docs/paper_reviews/<name>_text.md
 
 ## Recommended Claude Code Workflows
 
-This project provides **5 CFD skills** in `.claude/skills/` that encode the
+This project provides **9 CFD skills** in `.claude/skills/` that encode the
 agentic workflow. Use short prompts to trigger them:
 
 ### Add a new analytic validation case
@@ -418,6 +422,10 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | `run-cfd-validation` | Verify correctness after changes |
 | `update-cfd-docs` | Update docs before commit |
 | `review-cfd-change` | Review diff before commit |
+| `extract-paper-scheme` | Extract method info from a paper PDF |
+| `write-scheme-spec` | Generate scheme spec from extraction report |
+| `implement-paper-scheme` | Implement from an approved scheme spec |
+| `validate-paper-scheme` | Validate a paper-derived implementation |
 
 ## Makefile Commands
 
@@ -440,7 +448,7 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | This project | Real CFD project |
 |---|---|
 | 2D Euler (NumPy) | 3D RANS/LES/DNS (C++/Fortran) |
-| Rusanov flux | HLLC, WENO, DG schemes |
+| Rusanov / HLL flux | HLLC, WENO, DG schemes |
 | 50x50 uniform grid | 10M+ cells, AMR |
 | Forward Euler / SSP RK2 | RK3, IMEX, dual time stepping |
 | np.roll / ghost cells | MPI halo exchange |

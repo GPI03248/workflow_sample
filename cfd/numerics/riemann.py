@@ -19,11 +19,11 @@ from ..physics.wavespeeds import max_wavespeed
 def _local_wavespeed_x(UL: np.ndarray, UR: np.ndarray, gamma: float) -> np.ndarray:
     """Max wave speed at each x-interface: max(|u_L|+c_L, |u_R|+c_R)."""
     rhoL, uL = UL[0], UL[1] / UL[0]
-    pL = (gamma - 1.0) * (UL[3] - 0.5 * rhoL * (uL**2 + (UL[2] / rhoL)**2))
+    pL = (gamma - 1.0) * (UL[3] - 0.5 * rhoL * (uL**2 + (UL[2] / rhoL) ** 2))
     cL = np.sqrt(gamma * np.abs(pL) / rhoL)
 
     rhoR, uR = UR[0], UR[1] / UR[0]
-    pR = (gamma - 1.0) * (UR[3] - 0.5 * rhoR * (uR**2 + (UR[2] / rhoR)**2))
+    pR = (gamma - 1.0) * (UR[3] - 0.5 * rhoR * (uR**2 + (UR[2] / rhoR) ** 2))
     cR = np.sqrt(gamma * np.abs(pR) / rhoR)
 
     return np.maximum(np.abs(uL) + cL, np.abs(uR) + cR)
@@ -32,11 +32,11 @@ def _local_wavespeed_x(UL: np.ndarray, UR: np.ndarray, gamma: float) -> np.ndarr
 def _local_wavespeed_y(UL: np.ndarray, UR: np.ndarray, gamma: float) -> np.ndarray:
     """Max wave speed at each y-interface: max(|v_L|+c_L, |v_R|+c_R)."""
     rhoL, vL = UL[0], UL[2] / UL[0]
-    pL = (gamma - 1.0) * (UL[3] - 0.5 * rhoL * ((UL[1] / rhoL)**2 + vL**2))
+    pL = (gamma - 1.0) * (UL[3] - 0.5 * rhoL * ((UL[1] / rhoL) ** 2 + vL**2))
     cL = np.sqrt(gamma * np.abs(pL) / rhoL)
 
     rhoR, vR = UR[0], UR[2] / UR[0]
-    pR = (gamma - 1.0) * (UR[3] - 0.5 * rhoR * ((UR[1] / rhoR)**2 + vR**2))
+    pR = (gamma - 1.0) * (UR[3] - 0.5 * rhoR * ((UR[1] / rhoR) ** 2 + vR**2))
     cR = np.sqrt(gamma * np.abs(pR) / rhoR)
 
     return np.maximum(np.abs(vL) + cL, np.abs(vR) + cR)
@@ -200,8 +200,11 @@ def hll_flux_x(
     eps = 1e-14
 
     # Default: HLL middle state
-    F_hll = (S_R[np.newaxis] * FL - S_L[np.newaxis] * FR +
-             S_L[np.newaxis] * S_R[np.newaxis] * (UR - UL)) / dS[np.newaxis]
+    F_hll = (
+        S_R[np.newaxis] * FL
+        - S_L[np.newaxis] * FR
+        + S_L[np.newaxis] * S_R[np.newaxis] * (UR - UL)
+    ) / dS[np.newaxis]
 
     # Fallback when dS is too small
     small = np.abs(dS) < eps
@@ -270,8 +273,11 @@ def hll_flux_y(
     dS = S_T - S_B
     eps = 1e-14
 
-    G_hll = (S_T[np.newaxis] * GB - S_B[np.newaxis] * GT +
-             S_B[np.newaxis] * S_T[np.newaxis] * (UR - UL)) / dS[np.newaxis]
+    G_hll = (
+        S_T[np.newaxis] * GB
+        - S_B[np.newaxis] * GT
+        + S_B[np.newaxis] * S_T[np.newaxis] * (UR - UL)
+    ) / dS[np.newaxis]
 
     small = np.abs(dS) < eps
     if np.any(small):
