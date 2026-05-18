@@ -271,3 +271,13 @@ make paper-context PAPER_TEXT=docs/paper_reviews/<name>_text.md
 make check-spec SPEC=docs/scheme_specs/<scheme>.md
 make trace-task TASK_ID=<id>
 ```
+
+---
+
+## Completed Case Study: HLL Flux
+
+The HLL approximate Riemann solver is the first method implemented through
+this workflow. See `docs/case_studies/hll_flux_paper_to_code.md` for the
+full walkthrough.
+
+Quick reproduction: `make demo-hll-workflow`

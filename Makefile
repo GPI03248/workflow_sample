@@ -12,7 +12,8 @@ ENV = tools/run_in_project_env.sh
         cfd-vortex cfd-vortex-convergence \
         cfd-validation \
         paper-extract paper-context \
-        check-spec trace-task discover-env
+        check-spec trace-task discover-env \
+        demo-hll-workflow validation-index health
 
 # --- Compilation ---
 
@@ -100,3 +101,25 @@ trace-task:
 
 discover-env:
 	$(ENV) python tools/discover_project_env.py --json
+
+# --- v0.1 Demo ---
+
+demo-hll-workflow:
+	@echo "=== HLL Paper-to-Code Demo ==="
+	@echo "Step 1: Approval check"
+	$(ENV) python tools/check_scheme_spec_approval.py docs/scheme_specs/hll_flux.md
+	@echo "Step 2: Compile check"
+	$(ENV) python -m compileall solver cfd tests examples tools -q
+	@echo "Step 3: Tests"
+	$(ENV) pytest -q
+	@echo "Step 4: HLL validation"
+	$(ENV) python examples/run_cfd_hll_validation.py
+	@echo "Step 5: Validation index"
+	$(ENV) python tools/summarize_validation_results.py
+	@echo "=== Demo complete ==="
+
+validation-index:
+	$(ENV) python tools/summarize_validation_results.py
+
+health:
+	$(ENV) python tools/check_repo_health.py

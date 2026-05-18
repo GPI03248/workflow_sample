@@ -151,6 +151,15 @@ When a task is complete, the final response must include:
 6. **Result file paths** — paths to generated outputs.
 7. **Generated docs** — any documentation created or updated.
 
+## v0.1 Demo Workflow
+
+- The HLL paper-to-code demo is the project's primary showcase.
+- **Do not re-implement HLL.** To reproduce, run `make demo-hll-workflow`.
+- Case study: `docs/case_studies/hll_flux_paper_to_code.md`.
+- After adding new validation results, run `make validation-index` to update `docs/validation_index.md`.
+- After workflow changes, run `make health` to verify repo integrity.
+- All commands use `tools/run_in_project_env.sh`.
+
 ## Makefile Quick Reference
 
 | Target | Command |
@@ -166,3 +175,6 @@ When a task is complete, the final response must include:
 | `make check-spec SPEC=<path>` | Check scheme spec approval status |
 | `make trace-task TASK_ID=<id>` | Create traceability manifest |
 | `make discover-env` | Show environment discovery result |
+| `make demo-hll-workflow` | Run HLL paper-to-code demo end-to-end |
+| `make validation-index` | Generate `docs/validation_index.md` |
+| `make health` | Repo health check |

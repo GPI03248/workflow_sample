@@ -23,6 +23,46 @@ analysis, design, implementation, testing, and review in a structured workflow:
 
 ---
 
+## Quick Start
+
+```bash
+git clone git@gitee.com:gpiii/workflow_sample.git
+cd workflow_sample
+tools/run_in_project_env.sh python --version
+make test
+make demo-hll-workflow
+```
+
+### HLL Paper-to-Code Demo
+
+The HLL Riemann solver is the first method implemented through the full
+paper-to-code workflow with deterministic approval gating:
+
+| Artifact | Path |
+|----------|------|
+| Case study | `docs/case_studies/hll_flux_paper_to_code.md` |
+| Approved spec | `docs/scheme_specs/hll_flux.md` |
+| Validation output | `results/cfd_hll_validation/` |
+| Traceability | `docs/tasks/hll_flux_implementation/traceability.md` |
+
+Run the demo: `make demo-hll-workflow`
+
+### Validation Index
+
+```bash
+make validation-index
+# Output: docs/validation_index.md
+```
+
+### Repo Health Check
+
+```bash
+make health
+# Checks: old env commands, spec approval, HLL artifacts, README paths
+```
+
+---
+
 ## Part 1: 1D Scalar Advection with Analytic Verification
 
 The toy solver solves the **1D linear advection equation** with a known analytic
@@ -442,6 +482,9 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | `make cfd-vortex` | Isentropic vortex single run |
 | `make cfd-vortex-convergence` | Isentropic vortex convergence (32/64/128) |
 | `make cfd-validation` | Full CFD validation suite |
+| `make demo-hll-workflow` | Run HLL paper-to-code demo end-to-end |
+| `make validation-index` | Generate `docs/validation_index.md` |
+| `make health` | Repo health check |
 
 ## How This Maps to Real CFD Projects
 
