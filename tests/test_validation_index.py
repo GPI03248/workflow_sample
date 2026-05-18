@@ -18,6 +18,7 @@ from summarize_validation_results import (
     _read_csv_rows,
     _has_analysis,
     _detect_methods,
+    _extract_hll_comparison,
     scan_results,
     build_markdown,
 )
@@ -72,6 +73,86 @@ class TestDetectMethods:
         assert _detect_methods([]) == "N/A"
 
 
+class TestExtractHllComparison:
+    """Tests for _extract_hll_comparison: case-aware row selection."""
+
+    def _rows(self):
+        """Rows matching actual results/cfd_hll_validation/error_summary.csv."""
+        return [
+            {"case": "entropy_wave", "riemann": "rusanov", "rho_l2_error": "1.5928720708e-02"},
+            {"case": "uniform_flow", "riemann": "rusanov", "rho_l2_error": "0.0000000000e+00"},
+            {"case": "entropy_wave", "riemann": "hll", "rho_l2_error": "1.0726734638e-02"},
+            {"case": "uniform_flow", "riemann": "hll", "rho_l2_error": "0.0000000000e+00"},
+        ]
+
+    def test_prefers_entropy_wave_over_uniform_flow(self):
+        warnings = []
+        result = _extract_hll_comparison(self._rows(), warnings)
+        assert result["hll_comparison_case"] == "entropy_wave"
+        assert result["hll_l2"] == "1.0726734638e-02"
+        assert result["rusanov_l2"] == "1.5928720708e-02"
+
+    def test_computes_ratio(self):
+        warnings = []
+        result = _extract_hll_comparison(self._rows(), warnings)
+        assert result["hll_rusanov_ratio"] == "0.6734"
+
+    def test_no_uniform_flow_note_when_entropy_wave(self):
+        warnings = []
+        result = _extract_hll_comparison(self._rows(), warnings)
+        assert "hll_comparison_note" not in result
+
+    def test_falls_back_to_uniform_flow_with_note(self):
+        rows = [
+            {"case": "uniform_flow", "riemann": "rusanov", "rho_l2_error": "0.0"},
+            {"case": "uniform_flow", "riemann": "hll", "rho_l2_error": "0.0"},
+        ]
+        warnings = []
+        result = _extract_hll_comparison(rows, warnings)
+        assert result["hll_comparison_case"] == "uniform_flow"
+        assert "hll_comparison_note" in result
+
+    def test_warns_when_no_matching_pair(self):
+        rows = [
+            {"case": "entropy_wave", "riemann": "rusanov", "rho_l2_error": "1e-3"},
+        ]
+        warnings = []
+        result = _extract_hll_comparison(rows, warnings)
+        assert "hll_comparison_case" not in result
+        assert len(warnings) == 1
+
+    def test_prefers_nonzero_error_case(self):
+        rows = [
+            {"case": "zero_case", "riemann": "rusanov", "rho_l2_error": "0.0"},
+            {"case": "zero_case", "riemann": "hll", "rho_l2_error": "0.0"},
+            {"case": "nonzero_case", "riemann": "rusanov", "rho_l2_error": "2e-3"},
+            {"case": "nonzero_case", "riemann": "hll", "rho_l2_error": "1e-3"},
+        ]
+        warnings = []
+        result = _extract_hll_comparison(rows, warnings)
+        assert result["hll_comparison_case"] == "nonzero_case"
+        assert result["hll_rusanov_ratio"] == "0.5000"
+
+    def test_scan_results_includes_hll_comparison(self, tmp_path, monkeypatch):
+        import summarize_validation_results as mod
+        hll_dir = tmp_path / "cfd_hll_validation"
+        hll_dir.mkdir()
+        (hll_dir / "error_summary.csv").write_text(
+            "case,riemann,rho_l2_error\n"
+            "entropy_wave,rusanov,1.59e-02\n"
+            "uniform_flow,rusanov,0.0\n"
+            "entropy_wave,hll,1.07e-02\n"
+            "uniform_flow,hll,0.0\n"
+        )
+        (hll_dir / "analysis.md").write_text("# HLL")
+        monkeypatch.setattr(mod, "RESULTS_DIR", tmp_path)
+        scan = scan_results()
+        hll = [r for r in scan["results"] if "hll" in r["directory"]]
+        assert len(hll) == 1
+        assert hll[0]["hll_comparison_case"] == "entropy_wave"
+        assert hll[0]["hll_l2"] == "1.07e-02"
+
+
 class TestBuildMarkdown:
     def test_generates_markdown(self):
         scan = {"results": [
@@ -83,6 +164,7 @@ class TestBuildMarkdown:
                 "methods": "hll, rusanov",
                 "rows": 4,
                 "status": "ok",
+                "hll_comparison_case": "entropy_wave",
                 "hll_l2": "1.073e-02",
                 "rusanov_l2": "1.593e-02",
                 "hll_rusanov_ratio": "0.6734",
@@ -92,6 +174,8 @@ class TestBuildMarkdown:
         assert "# Validation Index" in md
         assert "cfd_hll_validation" in md
         assert "0.6734" in md
+        assert "entropy_wave" in md
+        assert "Comparison case" in md
 
     def test_includes_warnings(self):
         scan = {"results": [], "warnings": ["Missing directory: foo"]}

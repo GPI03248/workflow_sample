@@ -13,7 +13,8 @@ ENV = tools/run_in_project_env.sh
         cfd-validation \
         paper-extract paper-context \
         check-spec trace-task discover-env \
-        demo-hll-workflow validation-index health
+        demo-hll-workflow validation-index health \
+        release-check
 
 # --- Compilation ---
 
@@ -123,3 +124,8 @@ validation-index:
 
 health:
 	$(ENV) python tools/check_repo_health.py
+
+# --- Release Check ---
+
+release-check: compile test health validation-index
+	@echo "=== Release checks complete ==="

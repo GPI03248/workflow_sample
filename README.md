@@ -485,6 +485,7 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | `make demo-hll-workflow` | Run HLL paper-to-code demo end-to-end |
 | `make validation-index` | Generate `docs/validation_index.md` |
 | `make health` | Repo health check |
+| `make release-check` | Full release checks (compile + test + health + validation-index) |
 
 ## How This Maps to Real CFD Projects
 

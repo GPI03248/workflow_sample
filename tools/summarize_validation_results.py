@@ -74,6 +74,85 @@ def _detect_methods(rows: list[dict]) -> str:
     return ", ".join(sorted(methods)) if methods else "N/A"
 
 
+# Preferred cases for HLL/Rusanov diffusion comparison (in priority order)
+_HLL_COMPARISON_PRIORITY = ["entropy_wave", "isentropic_vortex"]
+
+
+def _extract_hll_comparison(rows: list[dict], warnings: list[str]) -> dict:
+    """Extract HLL vs Rusanov comparison from validation CSV rows.
+
+    Prefers analytic benchmark cases (entropy_wave) over preservation
+    tests (uniform_flow) to avoid zero-error rows masking real differences.
+    """
+    result: dict = {}
+
+    # Group rows by (case, riemann)
+    by_key: dict[tuple, dict] = {}
+    for row in rows:
+        case = row.get("case", "")
+        riemann = row.get("riemann", "")
+        by_key[(case, riemann)] = row
+
+    # Find a case that has both hll and rusanov rows
+    comparison_case = None
+    for preferred in _HLL_COMPARISON_PRIORITY:
+        if (preferred, "hll") in by_key and (preferred, "rusanov") in by_key:
+            comparison_case = preferred
+            break
+
+    # Fall back to any case with both flux types and non-trivial errors
+    if comparison_case is None:
+        for (case, riemann), row in by_key.items():
+            if riemann == "hll":
+                matching = by_key.get((case, "rusanov"))
+                if matching:
+                    l2 = row.get("rho_l2_error", "")
+                    try:
+                        if l2 and float(l2) > 0:
+                            comparison_case = case
+                            break
+                    except ValueError:
+                        pass
+
+    # Last resort: any case with both
+    if comparison_case is None:
+        cases_with_both = set()
+        for (case, riemann) in by_key:
+            if riemann == "hll" and (case, "rusanov") in by_key:
+                cases_with_both.add(case)
+        if cases_with_both:
+            comparison_case = sorted(cases_with_both)[0]
+
+    if comparison_case is None:
+        warnings.append("HLL validation: no case with both hll and rusanov rows found")
+        return result
+
+    hll_row = by_key.get((comparison_case, "hll"), {})
+    rus_row = by_key.get((comparison_case, "rusanov"), {})
+
+    hll_l2 = hll_row.get("rho_l2_error")
+    rus_l2 = rus_row.get("rho_l2_error")
+
+    result["hll_comparison_case"] = comparison_case
+    result["hll_l2"] = hll_l2
+    result["rusanov_l2"] = rus_l2
+
+    if comparison_case == "uniform_flow":
+        result["hll_comparison_note"] = (
+            "uniform flow has zero analytic error and is not a "
+            "diffusion comparison benchmark"
+        )
+
+    if hll_l2 and rus_l2:
+        try:
+            ratio = float(hll_l2) / float(rus_l2)
+            result["hll_rusanov_ratio"] = f"{ratio:.4f}"
+        except (ValueError, ZeroDivisionError):
+            pass
+
+    return result
+
+
 def scan_results() -> dict:
     """Scan all results directories and return structured summary."""
     results = []
@@ -106,21 +185,9 @@ def scan_results() -> dict:
 
         # Extract key metrics for HLL
         if dirname == "cfd_hll_validation" and rows:
-            hll_l2 = None
-            rus_l2 = None
-            for row in rows:
-                if row.get("riemann") == "hll":
-                    hll_l2 = row.get("rho_l2_error")
-                elif row.get("riemann") == "rusanov":
-                    rus_l2 = row.get("rho_l2_error")
-            entry["hll_l2"] = hll_l2
-            entry["rusanov_l2"] = rus_l2
-            if hll_l2 and rus_l2:
-                try:
-                    ratio = float(hll_l2) / float(rus_l2)
-                    entry["hll_rusanov_ratio"] = f"{ratio:.4f}"
-                except (ValueError, ZeroDivisionError):
-                    pass
+            entry.update(
+                _extract_hll_comparison(rows, warnings)
+            )
 
         results.append(entry)
 
@@ -150,12 +217,16 @@ def build_markdown(scan: dict) -> str:
         h = hll[0]
         lines.append(f"- CSV: `results/cfd_hll_validation/{h['primary_csv']}`")
         lines.append(f"- Analysis: `results/cfd_hll_validation/analysis.md`")
+        if h.get("hll_comparison_case"):
+            lines.append(f"- Comparison case: {h['hll_comparison_case']}")
         if h.get("hll_l2"):
             lines.append(f"- HLL rho_L2: {h['hll_l2']}")
         if h.get("rusanov_l2"):
             lines.append(f"- Rusanov rho_L2: {h['rusanov_l2']}")
         if h.get("hll_rusanov_ratio"):
             lines.append(f"- HLL/Rusanov L2 ratio: {h['hll_rusanov_ratio']}")
+        if h.get("hll_comparison_note"):
+            lines.append(f"- Note: {h['hll_comparison_note']}")
         lines.append("")
 
     # Warnings
