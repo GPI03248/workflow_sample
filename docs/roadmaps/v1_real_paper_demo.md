@@ -19,6 +19,18 @@ The v1.0 intake for the CFWENO paper (Zhou-Dong-Pan 2025, Phys. Fluids 37, 10613
 
 ## Phased Implementation Plan
 
+### Implementation Subsets
+
+The CFWENO scheme decomposes into three subsets with independent blockers:
+
+| Subset | Scope | Blocking dependencies | Target phase |
+|--------|-------|----------------------|--------------|
+| **Scalar 1D** | Linear advection, Burgers, CFWENO3 stencil, HJ flux | WENO weights from refs [6,7] | v1.2 |
+| **Euler 1D** | Characteristic decomposition, Algorithm 1, compact flux, p_m prediction | + Eigenvalue iteration, p_m verification | v1.3 |
+| **2D Euler** | Consistent cell-interface distribution, dimensional composition | None additional | v1.4 |
+
+Key insight: **Scalar subset can proceed independently** once WENO weights are obtained, even if Euler-specific items remain unresolved.
+
 ### v1.1 — Gap Resolution
 
 **Goal**: Resolve all 4 unresolved items from the extraction report.

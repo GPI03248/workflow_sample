@@ -25,30 +25,39 @@
 
 ## 2. Complexity Analysis
 
-### Tier: HIGH
+### Tier: HIGH (overall) — decomposed by subset
 
-**Why high:**
+**Why high (overall):**
 - Requires characteristic decomposition (Roe averages, eigenstructure extraction)
 - Multi-branch flux reconstruction with 4+ branches per interface
 - WENO reconstruction (weights from external references, not fully specified in paper)
 - Hermite interpolation for Hamilton-Jacobi potential
 - Eigenvalue iteration with unspecified convergence criteria
 
-### Estimated effort (new LOC):
+**Subset decomposition:**
 
-| Component | Lines | Difficulty |
-|-----------|-------|------------|
-| Characteristic decomposition | ~100-150 | Medium |
-| Hermite interpolation | ~50-80 | Low |
-| WENO reconstruction (3rd order) | ~80-120 | Medium |
-| WENO reconstruction (5th order) | ~80-120 | Medium |
-| WENO reconstruction (7th order) | ~80-120 | Medium |
-| CFWENO stencil (Eq. 30) | ~30-50 | Low |
-| Algorithm 1 flux reconstruction | ~100-150 | High |
-| Compact flux (Eq. 24) | ~60-80 | Medium |
-| Multi-dimensional extension | ~40-60 | Medium |
-| Tests | ~200-300 | Medium |
-| **Total** | **~820-1230** | — |
+| Subset | Components | Unresolved items | Dependencies | Estimated LOC | Difficulty |
+|--------|-----------|-----------------|--------------|---------------|------------|
+| **Scalar 1D** | HJ equation (Eq. 27), Hermite interpolation (Eq. 28-29), CFWENO stencil (Eq. 30), numerical flux (Eq. 32), update (Eq. 25) | CFL stability (low priority) | WENO weights [6,7] for reconstruction | ~150-250 | Medium |
+| **Euler 1D** | + Characteristic decomposition (Eq. 21-22), Algorithm 1 flux reconstruction, p_m prediction (Eq. 23), compact flux (Eq. 24) | + Eigenvalue iteration, p_m verification | + Same WENO refs | ~350-550 (total) | High |
+| **2D Euler** | + Consistent cell-interface distribution (Eq. 33), dimensional composition | None additional | None additional | ~450-700 (total) | High |
+
+### Estimated effort (new LOC, by component):
+
+| Component | Lines | Difficulty | Subset |
+|-----------|-------|------------|--------|
+| Hermite interpolation | ~50-80 | Low | Scalar |
+| WENO reconstruction (3rd order) | ~80-120 | Medium | Scalar |
+| CFWENO stencil (Eq. 30) | ~30-50 | Low | Scalar |
+| Numerical flux (Eq. 32) | ~40-60 | Medium | Scalar |
+| Characteristic decomposition | ~100-150 | Medium | Euler |
+| Algorithm 1 flux reconstruction | ~100-150 | High | Euler |
+| Compact flux (Eq. 24) | ~60-80 | Medium | Euler |
+| WENO reconstruction (5th order) | ~80-120 | Medium | Scalar (extended) |
+| WENO reconstruction (7th order) | ~80-120 | Medium | Scalar (extended) |
+| Multi-dimensional extension | ~40-60 | Medium | 2D |
+| Tests | ~200-300 | Medium | All |
+| **Total** | **~820-1230** | — | — |
 
 ---
 
@@ -77,6 +86,18 @@
 ---
 
 ## 4. Risk Assessment
+
+### Subset-Specific Risk Summary
+
+| Risk | Affects | Severity | Blocking? |
+|------|---------|----------|-----------|
+| WENO weight formulas not in paper | Scalar, Euler, 2D | High | YES — all subsets |
+| Eigenvalue iteration details missing | Euler, 2D | High | YES — Euler and 2D only |
+| p_m formula (Eq. 23) uncertainty | Euler, 2D | Medium | YES — Euler and 2D only |
+| CFL stability limit unproven | All subsets | Low | No — empirically verifiable |
+| Multi-dimensional extension correctness | 2D only | Medium | No — testable |
+
+**Key insight**: The scalar subset has only 1 blocking dependency (WENO weights) and 1 low-priority risk (CFL). If WENO weights can be resolved independently, scalar CFWENO3 could proceed without any Euler-specific blockers.
 
 ### High Risks
 
@@ -135,13 +156,15 @@
 
 4. **Eigenvalue iteration** is an algorithmic component with unspecified parameters. Implementing it without clear convergence criteria risks numerical instability.
 
-### Recommended path forward
+### Recommended path forward (updated with subset decomposition)
 
 1. **v1.0**: Keep CFWENO as intake-only (extraction report + scheme spec + feasibility = this document)
-2. **v1.1**: Obtain FWENO references [6,7], resolve the 4 unresolved items, create complete scheme spec
-3. **v1.2**: Implement CFWENO3 (scalar 1D only) as proof of concept
-4. **v1.3**: Extend to CFWENO3 Euler 1D with Algorithm 1
+2. **v1.1**: Obtain FWENO references [6,7], resolve WENO weight dependency (unblocks scalar subset)
+3. **v1.2**: Implement CFWENO3 scalar 1D as proof of concept (only WENO weight dependency needed)
+4. **v1.3**: Resolve eigenvalue iteration + verify p_m → extend to CFWENO3 Euler 1D with Algorithm 1
 5. **v1.4**: Add CFWENO5/7 and 2D extension
+
+**Scalar subset can proceed independently** once WENO weights [6,7] are obtained, even if Euler-specific items remain unresolved.
 
 ### What v1.0 delivers
 

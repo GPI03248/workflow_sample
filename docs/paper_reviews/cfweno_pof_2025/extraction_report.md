@@ -99,7 +99,37 @@ c = √((γ-1)(H - 0.5u²))
 Λ = {λ^k} = Λ(u,c),  L = {L^k} = L(u,c)
 ```
 
-### 3.2 Flux Reconstruction Strategy (Algorithm 1)
+### 3.2 Predicted Middle Pressure (Eq. 23)
+
+**Eq. (23)** — Predicted middle pressure `p_m` for Algorithm 1 branching:
+
+> **UNCERTAIN TRANSCRIPTION** — Extracted from page 10 of image-based PDF. Parentheses placement and denominator structure may have errors. Human verification required against the original paper.
+
+```
+p_m = max{
+    min(
+        max(0, (u_L - u_R)/2 + c_L/(γ-1) + c_R/(γ-1))
+            * 2 / (c_L/(γ-1) · (1/ρ_L) + c_R/(γ-1) · (1/ρ_R)),
+        (4/(√ρ_L + √ρ_R))²
+    ),
+    max(0, (u_L - u_R) / ((γ+1)/ρ_L + (γ+1)/ρ_R))²
+}
+```
+
+Where:
+- `u_L, u_R` — left/right velocities
+- `c_L, c_R` — left/right sound speeds
+- `ρ_L, ρ_R` — left/right densities
+- `γ` — ratio of specific heats
+
+**Uncertainty notes**:
+1. The nested `max/min/max` structure is clear but inner parentheses grouping is uncertain
+2. The factor `(4/(√ρ_L + √ρ_R))²` may be a bound on the pressure prediction
+3. The second branch `max(0, ...)` appears to handle the shock case
+4. Dimensional analysis suggests this formula may be expressed in terms of pressure variables rather than the primitive variables shown — verification needed
+5. See dependency register: `docs/papers/cfweno_dependency_register.md`
+
+### 3.3 Flux Reconstruction Strategy (Algorithm 1)
 
 This is the critical algorithmic component for Euler equations:
 
@@ -232,6 +262,7 @@ Key claims:
 | Core SFM derivation | Extracted | Eq. 27-29, connection to HJ equation |
 | WENO reconstruction | Partially extracted | Stencil formulas extracted; full weight computations not transcribed |
 | Flux reconstruction (Algorithm 1) | Fully extracted | All branches, constants s1=2, s2=1.05 |
+| p_m formula (Eq. 23) | Partially extracted | Transcription obtained but marked UNCERTAIN; human verification needed |
 | Euler characteristic decomposition | Extracted | Eq. 21-22, Roe averages |
 | Multi-dimensional extension | Extracted | Eq. 33, consistent interface distribution |
 | Computational cost data | Fully extracted | Tables V-VIII |
@@ -239,12 +270,13 @@ Key claims:
 | Exact numerical results | Partially extracted | Figures not numerically transcribed; convergence orders and error values are in figures |
 | References | Not extracted | References section not fully transcribed |
 
-### Unresolved Items
+### Unresolved Items (updated 2026-05-19)
 
-1. **Exact WENO weight formulas**: The paper references WENO weights from earlier FWENO work; full weight computation details may require consulting references
-2. **Eigenvalue iteration convergence**: The paper mentions iterative improvement of characteristic speed `a`; exact iteration count and convergence criteria not fully specified
-3. **p_m formula (Eq. 23)**: The middle pressure prediction formula is complex; full transcription needs verification
-4. **CFL condition**: Stated as CFL ≤ 1 sufficient; exact stability limit not rigorously proven in paper
+1. **Exact WENO weight formulas** [BLOCKING]: The paper references WENO weights from earlier FWENO work [6,7]; full weight computation details require obtaining and extracting these references. See dependency register.
+2. **Eigenvalue iteration convergence** [BLOCKING for Euler]: Iterative improvement of characteristic speed `a`; exact iteration count, starting guess, and convergence criteria not fully specified. May be documented in FWENO refs [6,7].
+3. **p_m formula (Eq. 23)** [PARTIALLY RESOLVED]: Transcription obtained (see Sec. 3.2 above) but marked UNCERTAIN due to image-based PDF quality. Human verification required against the original paper. The nested max/min structure is captured but parentheses grouping may have errors.
+4. **CFL condition** [LOW PRIORITY]: Stated as CFL ≤ 1 sufficient; exact stability limit not rigorously proven. Can be verified empirically during implementation.
+5. **Bibliography extraction** [DOCUMENTATION GAP]: References section not fully transcribed from PDF. Critical refs [6,7] identified from in-text citations but full bibliographic details not yet available.
 
 ---
 
