@@ -1,7 +1,7 @@
 # Scheme Specification: CFWENO Scalar 1D Subset
 
 ## Status
-Approved for implementation: no
+Approved for implementation: yes
 
 ## Phase 1 Target: Linear Advection CFWENO3 Prototype
 This spec's Phase 1 target is a **1D scalar linear advection CFWENO3 prototype** — the simplest non-trivial implementation with **ZERO external blockers**. All required formulas (Eq. 27-30) are self-contained in the paper.

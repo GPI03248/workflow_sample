@@ -47,6 +47,30 @@ paper-to-code workflow with deterministic approval gating:
 
 Run the demo: `make demo-hll-workflow`
 
+### CFWENO3 Scalar Prototype (Paper-to-Code)
+
+The CFWENO3 scalar prototype is the second method implemented through the
+paper-to-code workflow, derived from Zhou-Dong-Pan (2025):
+
+```bash
+# Single run with baseline comparison
+make cfweno-scalar-demo
+
+# Convergence study (40/80/160/320 cells)
+make cfweno-scalar-convergence
+
+# Full demo (both + validation index)
+make demo-real-paper-scalar
+```
+
+| Artifact | Path |
+|----------|------|
+| Approved spec | `docs/scheme_specs/cfweno_scalar_subset.md` |
+| Extraction report | `docs/paper_reviews/cfweno_pof_2025/extraction_report.md` |
+| Validation output | `results/cfweno_scalar_demo/` |
+| Convergence study | `results/cfweno_scalar_convergence/` |
+| Traceability | `docs/tasks/cfweno_scalar_prototype/traceability.md` |
+
 ### Validation Index
 
 ```bash
@@ -72,7 +96,7 @@ solution:
 - **Domain**:  x in [0, 1), periodic boundary
 - **IC**:  u(x, 0) = sin(2*pi*x) + 1
 - **Analytic**:  u_exact(x, t) = sin(2*pi*(x - a*t)) + 1
-- **Schemes**: upwind (1st order), Lax-Wendroff (2nd order)
+- **Schemes**: upwind (1st order), Lax-Wendroff (2nd order), CFWENO3 (3rd order)
 
 ```bash
 tools/run_in_project_env.sh pytest -q
@@ -482,6 +506,9 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | `make cfd-vortex` | Isentropic vortex single run |
 | `make cfd-vortex-convergence` | Isentropic vortex convergence (32/64/128) |
 | `make cfd-validation` | Full CFD validation suite |
+| `make cfweno-scalar-demo` | CFWENO3 scalar prototype demo |
+| `make cfweno-scalar-convergence` | CFWENO3 convergence study |
+| `make demo-real-paper-scalar` | Full CFWENO scalar demo |
 | `make demo-hll-workflow` | Run HLL paper-to-code demo end-to-end |
 | `make validation-index` | Generate `docs/validation_index.md` |
 | `make health` | Repo health check |

@@ -24,6 +24,9 @@ KNOWN_DIRS = [
     "cfd_hll_validation",
     "cfd_uniform_flow",
     "cfd_sod_2d",
+    # CFWENO scalar prototype
+    "cfweno_scalar_demo",
+    "cfweno_scalar_convergence",
     # 1D advection
     "",
 ]
@@ -35,6 +38,8 @@ _DIR_CSV_INFO = {
     "cfd_isentropic_vortex": ("error_summary.csv", ["riemann", "rho_l2_error"]),
     "cfd_isentropic_vortex_convergence": ("convergence_summary.csv", ["observed_order"]),
     "cfd_hll_validation": ("error_summary.csv", ["riemann", "rho_l2_error", "rho_mass_error"]),
+    "cfweno_scalar_demo": ("error_summary.csv", ["method", "l2_error"]),
+    "cfweno_scalar_convergence": ("error_summary.csv", ["method", "l2_error"]),
 }
 
 
@@ -246,6 +251,8 @@ def build_markdown(scan: dict) -> str:
     lines.append("tools/run_in_project_env.sh python examples/run_cfd_hll_validation.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfd_uniform_flow.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfd_sod_2d.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_demo.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_convergence.py")
     lines.append("```\n")
 
     return "\n".join(lines)
