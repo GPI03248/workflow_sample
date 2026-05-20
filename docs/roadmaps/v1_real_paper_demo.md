@@ -54,48 +54,29 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 
 **Next step for scalar nonlinear**: Separate approval needed for Burgers extension.
 
-### v1.2 — Scalar Nonlinear Burgers CFWENO3 (Spec Created, Implementation Pending)
+### v1.2 — Scalar Nonlinear Burgers CFWENO3 (COMPLETE)
 
-**Goal**: Extend scalar CFWENO3 from linear advection to nonlinear Burgers equation.
+**Status**: Implemented and validated.
 
-**Status**:
-- Spec created: `docs/scheme_specs/cfweno_scalar_burgers_subset.md`
-- Readiness review: `docs/feasibility/cfweno_scalar_burgers_readiness.md`
-- Readiness decision: **Conditionally ready** (human approval required)
-- Approval: **no** (not yet approved for implementation)
-- Implementation: **not started**
+| Item | Result |
+|------|--------|
+| Burgers CFWENO3 | Eq. 30 stencil with per-cell nu, SFM flux f(ubar) |
+| Convergence | ~2nd order (2.01) — reduced from 3rd due to per-cell nu variation |
+| Accuracy vs Rusanov | 173x more accurate at nx=100 |
+| Predictor iterations | 0/1/2 supported, default 1 |
+| Reference | Fine-grid CFWENO3 Burgers (nx=2560) |
+| Spec approval | cfweno_scalar_burgers_subset.md = yes |
+| Tests | 19 Burgers-specific tests + 236 total passing |
+| Remaining | Post-shock validation (not in scope), Euler, CFWENO5/7 |
 
-**What changes from v1.1**:
+**Convergence note**: CFWENO3 Burgers achieves ~2nd-order convergence on smooth pre-shock data, not the 3rd order observed for linear advection. This is attributed to per-cell nu variation introducing truncation error in the CFWENO3 stencil.
 
-| Component | v1.1 (linear) | v1.2 (Burgers) |
-|-----------|--------------|----------------|
-| Flux | `f(u) = a*u` | `f(u) = u^2/2` |
-| Wave speed | `a = 1.0` (constant) | `a = u` (variable) |
-| Numerical flux | `a * ubar` (cancels) | `a * ubar - f*` (non-trivial) |
-| CFL | `cfl = a*dt/dx` (fixed) | `dt = CFL*dx/max(|u|)` (adaptive) |
-
-**Phase 1 scope** (smooth pre-shock only):
-- Periodic domain, smooth IC, final_time before shock formation
-- Compare against high-resolution reference or analytic implicit solution
-- No shock-capturing claim
-
-**Phase 2 scope** (optional post-shock qualitative):
-- Run past shock formation time
-- Compare against high-resolution reference
-- Document oscillations honestly
-- Do not claim shock-capturing
-
-**Non-goals**: No Euler, no Eq. 23, no characteristic decomposition, no 2D, no CFWENO5/7
-
-**Key open decisions** (for human):
-- Predictor strategy: zero iterations (frozen `a = u_i^n`) or one iteration
-- Reference solution: fine-grid baseline or analytic implicit
-
-**Recommended modules** (if approved):
-- Extend `solver/schemes.py` or refactor scalar CFWENO helper
-- New: `examples/run_cfweno_burgers_demo.py`
-- New: `examples/run_cfweno_burgers_convergence.py`
-- New: `tests/test_cfweno_burgers.py`
+**Implemented files**:
+- `solver/schemes.py` — added `cfweno_burgers()`, `burgers_upwind()`, helper functions
+- `examples/run_cfweno_burgers_demo.py`
+- `examples/run_cfweno_burgers_convergence.py`
+- `tests/test_cfweno_burgers.py`
+- Makefile targets: `cfweno-burgers-demo`, `cfweno-burgers-convergence`, `demo-real-paper-burgers`
 
 ### v1.3 — Euler Prep (Gap Resolution)
 

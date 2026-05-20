@@ -28,6 +28,9 @@ KNOWN_DIRS = [
     "cfweno_scalar_demo",
     "cfweno_scalar_convergence",
     "cfweno_scalar_cfl_sweep",
+    # CFWENO Burgers prototype
+    "cfweno_burgers_demo",
+    "cfweno_burgers_convergence",
     # 1D advection
     "",
 ]
@@ -42,6 +45,8 @@ _DIR_CSV_INFO = {
     "cfweno_scalar_demo": ("error_summary.csv", ["method", "l2_error"]),
     "cfweno_scalar_convergence": ("error_summary.csv", ["method", "l2_error"]),
     "cfweno_scalar_cfl_sweep": ("error_summary.csv", ["method", "cfl", "l2_error"]),
+    "cfweno_burgers_demo": ("error_summary.csv", ["method", "l2_error"]),
+    "cfweno_burgers_convergence": ("error_summary.csv", ["method", "l2_error"]),
 }
 
 
@@ -256,6 +261,8 @@ def build_markdown(scan: dict) -> str:
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_demo.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_convergence.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_cfl_sweep.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_demo.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_convergence.py")
     lines.append("```\n")
 
     return "\n".join(lines)

@@ -71,6 +71,28 @@ make demo-real-paper-scalar
 | Convergence study | `results/cfweno_scalar_convergence/` |
 | Traceability | `docs/tasks/cfweno_scalar_prototype/traceability.md` |
 
+### CFWENO3 Burgers Prototype (Paper-to-Code)
+
+The CFWENO3 Burgers prototype extends the scalar CFWENO3 to nonlinear Burgers:
+
+```bash
+# Single run with baseline comparison
+make cfweno-burgers-demo
+
+# Convergence study (40/80/160/320 cells)
+make cfweno-burgers-convergence
+
+# Full demo (both + validation index)
+make demo-real-paper-burgers
+```
+
+| Artifact | Path |
+|----------|------|
+| Approved spec | `docs/scheme_specs/cfweno_scalar_burgers_subset.md` |
+| Validation output | `results/cfweno_burgers_demo/` |
+| Convergence study | `results/cfweno_burgers_convergence/` |
+| Traceability | `docs/tasks/cfweno_burgers_prototype/traceability.md` |
+
 ### Validation Index
 
 ```bash
@@ -96,7 +118,7 @@ solution:
 - **Domain**:  x in [0, 1), periodic boundary
 - **IC**:  u(x, 0) = sin(2*pi*x) + 1
 - **Analytic**:  u_exact(x, t) = sin(2*pi*(x - a*t)) + 1
-- **Schemes**: upwind (1st order), Lax-Wendroff (2nd order), CFWENO3 (3rd order)
+- **Schemes**: upwind (1st order), Lax-Wendroff (2nd order), CFWENO3 (3rd order), CFWENO3 Burgers (nonlinear)
 
 ```bash
 tools/run_in_project_env.sh pytest -q
@@ -510,6 +532,9 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | `make cfweno-scalar-convergence` | CFWENO3 convergence study |
 | `make cfweno-scalar-cfl-sweep` | CFWENO3 CFL stability sweep |
 | `make demo-real-paper-scalar` | Full CFWENO scalar demo |
+| `make cfweno-burgers-demo` | CFWENO3 Burgers prototype demo |
+| `make cfweno-burgers-convergence` | CFWENO3 Burgers convergence study |
+| `make demo-real-paper-burgers` | Full CFWENO Burgers demo |
 | `make demo-hll-workflow` | Run HLL paper-to-code demo end-to-end |
 | `make validation-index` | Generate `docs/validation_index.md` |
 | `make health` | Repo health check |

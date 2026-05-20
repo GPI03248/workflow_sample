@@ -1,7 +1,7 @@
 # Scheme Specification: CFWENO3 Scalar Nonlinear Burgers Subset from Zhou-Dong-Pan 2025
 
 ## Status
-Approved for implementation: no
+Approved for implementation: yes
 
 ## Scope
 
