@@ -65,6 +65,8 @@
 - results/cfweno_scalar_demo/cfweno_comparison.png (if matplotlib available)
 - results/cfweno_scalar_convergence/error_summary.csv
 - results/cfweno_scalar_convergence/analysis.md
+- results/cfweno_scalar_cfl_sweep/error_summary.csv
+- results/cfweno_scalar_cfl_sweep/analysis.md
 
 ## Numerical Assumptions
 1. CFL <= 1 for stability (empirically verified, not rigorously proven)
@@ -74,13 +76,14 @@
 5. Single-stage update (no multi-stage RK)
 
 ## Remaining Risks
-1. Convergence order may not reach exactly 3.0 — this is a prototype
-2. CFL stability near CFL=1.0 needs empirical verification
-3. Nonlinear extension (Burgers) not yet implemented
-4. Higher-order CFWENO5/7 not implemented
-5. Euler CFWENO requires eigenvalue iteration resolution
+1. CFL stability near CFL=1.0 empirically verified at CFL=0.9 (not a proof)
+2. Nonlinear extension (Burgers) not yet implemented — requires separate approval
+3. Higher-order CFWENO5/7 not implemented
+4. Euler CFWENO requires eigenvalue iteration resolution
 
 ## Commit
-- **Commit**: 2b580ef
+- **Implementation**: 2b580ef
+- **Traceability update**: b749eff
+- **Hardening**: pending
 - **Branch**: master
 - **Pushed to**: origin (gitee), github

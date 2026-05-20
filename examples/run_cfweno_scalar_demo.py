@@ -5,7 +5,7 @@ Implements the CFWENO3 prototype from the scalar subset spec:
 Paper: Zhou-Dong-Pan (2025), Phys. Fluids 37, 106131
 Equation: u_t + a*u_x = 0, a = 1.0, periodic BC
 
-Compares CFWENO3 (3rd-order compact) vs upwind (1st-order baseline).
+Compares CFWENO3 (3rd-order compact) vs upwind (1st-order) vs Lax-Wendroff (2nd-order).
 
 Outputs (results/cfweno_scalar_demo/):
   error_summary.csv
@@ -28,7 +28,7 @@ NX = 100
 CFL = 0.5
 FINAL_TIME = 0.25
 A = 1.0
-SCHEMES = ["upwind", "cfweno"]
+SCHEMES = ["upwind", "lax_wendroff", "cfweno"]
 
 RESULTS_DIR = os.path.join(
     os.path.dirname(__file__), "..", "results", "cfweno_scalar_demo"
@@ -70,15 +70,17 @@ def main() -> None:
     # line_profile.csv
     x = plot_data[SCHEMES[0]]["x"]
     exact = plot_data[SCHEMES[0]]["u_exact"]
-    baseline = plot_data[SCHEMES[0]]["u_num"]
+    upwind_u = plot_data["upwind"]["u_num"]
+    lw_u = plot_data["lax_wendroff"]["u_num"]
     cfweno_u = plot_data["cfweno"]["u_num"]
     profile_path = os.path.join(RESULTS_DIR, "line_profile.csv")
     with open(profile_path, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["x", "exact", "baseline", "cfweno3"])
+        writer.writerow(["x", "exact", "upwind", "lax_wendroff", "cfweno3"])
         for i in range(len(x)):
             writer.writerow([f"{x[i]:.10f}", f"{exact[i]:.10f}",
-                             f"{baseline[i]:.10f}", f"{cfweno_u[i]:.10f}"])
+                             f"{upwind_u[i]:.10f}", f"{lw_u[i]:.10f}",
+                             f"{cfweno_u[i]:.10f}"])
     print(f"Profile saved to {profile_path}")
 
     # plot (optional)
@@ -98,7 +100,7 @@ def main() -> None:
                     label=name)
         ax.set_xlabel("x")
         ax.set_ylabel("u")
-        ax.set_title(f"CFWENO3 vs Upwind  nx={NX} CFL={CFL}")
+        ax.set_title(f"CFWENO3 vs baselines  nx={NX} CFL={CFL}")
         ax.legend()
         ax.grid(True, alpha=0.3)
 
@@ -153,9 +155,14 @@ def main() -> None:
         f.write("\n## Observations\n\n")
         cfweno_row = [r for r in rows if r["method"] == "cfweno"][0]
         upwind_row = [r for r in rows if r["method"] == "upwind"][0]
-        ratio = upwind_row["l2_error"] / cfweno_row["l2_error"] if cfweno_row["l2_error"] > 0 else float("inf")
-        f.write(f"- CFWENO3 L2 error is **{ratio:.1f}x smaller** than upwind\n")
-        f.write("- CFWENO3 is expected to achieve ~3rd order convergence on smooth data\n")
+        lw_row = [r for r in rows if r["method"] == "lax_wendroff"][0]
+        ratio_u = upwind_row["l2_error"] / cfweno_row["l2_error"] if cfweno_row["l2_error"] > 0 else float("inf")
+        ratio_lw = lw_row["l2_error"] / cfweno_row["l2_error"] if cfweno_row["l2_error"] > 0 else float("inf")
+        f.write(f"- CFWENO3 L2 error is **{ratio_u:.1f}x smaller** than upwind\n")
+        f.write(f"- CFWENO3 L2 error is **{ratio_lw:.1f}x smaller** than Lax-Wendroff\n")
+        f.write("- These results are for **smooth linear advection only** — "
+                "discontinuous or nonlinear problems may show different behaviour\n")
+        f.write("- CFWENO3 achieves ~3rd order convergence on smooth data\n")
         f.write("- Mass conservation: mass error should be near machine precision\n")
     print(f"Analysis saved to {md_path}")
 

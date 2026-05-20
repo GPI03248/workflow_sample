@@ -27,6 +27,7 @@ KNOWN_DIRS = [
     # CFWENO scalar prototype
     "cfweno_scalar_demo",
     "cfweno_scalar_convergence",
+    "cfweno_scalar_cfl_sweep",
     # 1D advection
     "",
 ]
@@ -40,6 +41,7 @@ _DIR_CSV_INFO = {
     "cfd_hll_validation": ("error_summary.csv", ["riemann", "rho_l2_error", "rho_mass_error"]),
     "cfweno_scalar_demo": ("error_summary.csv", ["method", "l2_error"]),
     "cfweno_scalar_convergence": ("error_summary.csv", ["method", "l2_error"]),
+    "cfweno_scalar_cfl_sweep": ("error_summary.csv", ["method", "cfl", "l2_error"]),
 }
 
 
@@ -253,6 +255,7 @@ def build_markdown(scan: dict) -> str:
     lines.append("tools/run_in_project_env.sh python examples/run_cfd_sod_2d.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_demo.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_convergence.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_cfl_sweep.py")
     lines.append("```\n")
 
     return "\n".join(lines)

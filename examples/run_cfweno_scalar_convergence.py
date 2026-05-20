@@ -21,7 +21,7 @@ NX_LIST = [40, 80, 160, 320]
 CFL = 0.5
 FINAL_TIME = 0.25
 A = 1.0
-SCHEMES = ["upwind", "cfweno"]
+SCHEMES = ["upwind", "lax_wendroff", "cfweno"]
 
 RESULTS_DIR = os.path.join(
     os.path.dirname(__file__), "..", "results", "cfweno_scalar_convergence"
@@ -99,7 +99,7 @@ def main() -> None:
             orders = _convergence_order(scheme_errors[name]["l2"], dx_list)
             if orders:
                 avg_order = sum(orders) / len(orders)
-                expected = 3.0 if name == "cfweno" else 1.0
+                expected = 3.0 if name == "cfweno" else (1.0 if name == "upwind" else 2.0)
                 f.write(f"| {name} | {avg_order:.2f} (from {orders}) "
                         f"| {expected:.1f} |\n")
             else:
@@ -107,8 +107,10 @@ def main() -> None:
         f.write("\n## Notes\n\n")
         f.write("- CFWENO3 is a 3rd-order compact fully-discrete scheme\n")
         f.write("- Target convergence order is ~3.0 for L2 error\n")
-        f.write("- This is a prototype — exact convergence order may vary\n")
         f.write("- Upwind is 1st-order (baseline)\n")
+        f.write("- Lax-Wendroff is 2nd-order\n")
+        f.write("- This is a prototype — exact convergence order may vary slightly\n")
+        f.write("- Results are for smooth linear advection only\n")
     print(f"Analysis saved to {md_path}")
 
 

@@ -1,6 +1,16 @@
 # Roadmap: v1.x Real-Paper Demo (CFWENO)
 
-## Current State (v1.0 Intake + Phase 2.5 Readiness Audit)
+## Current State (v1.1 Scalar CFWENO3 Prototype — Complete)
+
+v1.1 is **complete**. The scalar linear CFWENO3 prototype has been implemented, hardened, and validated:
+
+- Implementation commit: `2b580ef`
+- Formula audit: PASS (Eq. 30 stencil verified against spec and paper)
+- Convergence: **exactly 3rd order** (3.04 -> 3.01 -> 3.00)
+- CFL sweep: stable at CFL 0.1, 0.5, 0.9
+- Baseline comparison: upwind (1st), Lax-Wendroff (2nd), CFWENO3 (3rd)
+- Tests: 19 CFWENO-specific tests + 212 total passing
+- **Not** complete CFWENO — scalar linear advection prototype only
 
 The v1.0 intake for the CFWENO paper (Zhou-Dong-Pan 2025, Phys. Fluids 37, 106131) is **complete**. The full paper-to-code workflow has been exercised from PDF extraction through feasibility assessment, producing:
 
@@ -28,22 +38,20 @@ The CFWENO scheme decomposes into three subsets with independent blockers:
 
 Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confirms ZERO external blockers. References [6,7] are NOT needed.
 
-### v1.1 — Scalar CFWENO3 Prototype (Linear + Nonlinear)
+### v1.1 — Scalar CFWENO3 Prototype (COMPLETE)
 
-**Goal**: Implement the simplest non-trivial CFWENO variant with ZERO external blockers.
+**Status**: Implemented and hardened.
 
-| Item | Status |
+| Item | Result |
 |------|--------|
-| WENO weight formulas | Self-contained in paper (Eq. 17, Tables I-II, Eq. 19) — NOT blocked by refs [6,7] |
-| CFL stability | Empirically verify during testing |
-| Eigenvalue iteration | NOT needed for scalar |
-| p_m formula (Eq. 23) | NOT needed for scalar |
+| Linear advection CFWENO3 | Eq. 30 stencil, 3rd-order convergence |
+| CFL sweep | Stable at CFL 0.1, 0.5, 0.9 |
+| Baseline comparison | upwind / Lax-Wendroff / CFWENO3 |
+| Formula audit | PASS — only Eq. 25 + Eq. 30 used |
+| Spec approval | cfweno_scalar_subset.md = yes |
+| Remaining | Burgers (nonlinear) requires separate approval |
 
-**Deliverables**:
-- Linear advection CFWENO3 prototype (Eq. 27-30)
-- Nonlinear (Burgers) CFWENO3 with WENO weighting (Eq. 17, Tables I-II, Eq. 19)
-- 3rd-order convergence verification
-- Scheme spec approval changed to `yes` (for scalar subset)
+**Next step for scalar nonlinear**: Separate approval needed for Burgers extension.
 
 ### v1.2 — Euler Prep (Gap Resolution)
 

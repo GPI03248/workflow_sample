@@ -31,10 +31,13 @@ This CFWENO3 prototype is derived from a real paper:
 | Method | L1 | L2 | Linf | Mass |
 |--------|----|----|------|------|
 | upwind | 1.552083e-02 | 1.723647e-02 | 2.436403e-02 | 0.000000e+00 |
+| lax_wendroff | 4.933090e-04 | 5.479955e-04 | 7.749610e-04 | 1.421085e-16 |
 | cfweno | 1.300211e-06 | 1.443934e-06 | 2.041023e-06 | 1.421085e-16 |
 
 ## Observations
 
 - CFWENO3 L2 error is **11937.2x smaller** than upwind
-- CFWENO3 is expected to achieve ~3rd order convergence on smooth data
+- CFWENO3 L2 error is **379.5x smaller** than Lax-Wendroff
+- These results are for **smooth linear advection only** — discontinuous or nonlinear problems may show different behaviour
+- CFWENO3 achieves ~3rd order convergence on smooth data
 - Mass conservation: mass error should be near machine precision

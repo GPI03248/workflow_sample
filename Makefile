@@ -11,7 +11,7 @@ ENV = tools/run_in_project_env.sh
         cfd-entropy cfd-entropy-convergence \
         cfd-vortex cfd-vortex-convergence \
         cfd-validation \
-        cfweno-scalar-demo cfweno-scalar-convergence demo-real-paper-scalar \
+        cfweno-scalar-demo cfweno-scalar-convergence cfweno-scalar-cfl-sweep demo-real-paper-scalar \
         paper-extract paper-context \
         check-spec trace-task discover-env \
         demo-hll-workflow validation-index health \
@@ -76,8 +76,10 @@ cfweno-scalar-demo:
 cfweno-scalar-convergence:
 	$(ENV) python examples/run_cfweno_scalar_convergence.py
 
-demo-real-paper-scalar: cfweno-scalar-demo cfweno-scalar-convergence
-	$(ENV) python tools/summarize_validation_results.py
+cfweno-scalar-cfl-sweep:
+	$(ENV) python examples/run_cfweno_scalar_cfl_sweep.py
+
+demo-real-paper-scalar: cfweno-scalar-demo cfweno-scalar-convergence cfweno-scalar-cfl-sweep validation-index
 	@echo "=== CFWENO scalar demo complete ==="
 
 cfd-validation: cfd-entropy cfd-entropy-convergence cfd-vortex cfd-vortex-convergence

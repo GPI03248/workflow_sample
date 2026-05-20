@@ -508,6 +508,7 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | `make cfd-validation` | Full CFD validation suite |
 | `make cfweno-scalar-demo` | CFWENO3 scalar prototype demo |
 | `make cfweno-scalar-convergence` | CFWENO3 convergence study |
+| `make cfweno-scalar-cfl-sweep` | CFWENO3 CFL stability sweep |
 | `make demo-real-paper-scalar` | Full CFWENO scalar demo |
 | `make demo-hll-workflow` | Run HLL paper-to-code demo end-to-end |
 | `make validation-index` | Generate `docs/validation_index.md` |
