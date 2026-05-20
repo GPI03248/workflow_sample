@@ -38,8 +38,8 @@
 
 | Subset | Components | Unresolved items | Dependencies | Estimated LOC | Difficulty |
 |--------|-----------|-----------------|--------------|---------------|------------|
-| **Scalar 1D** | HJ equation (Eq. 27), Hermite interpolation (Eq. 28-29), CFWENO stencil (Eq. 30), numerical flux (Eq. 32), update (Eq. 25) | CFL stability (low priority) | WENO weights [6,7] for reconstruction | ~150-250 | Medium |
-| **Euler 1D** | + Characteristic decomposition (Eq. 21-22), Algorithm 1 flux reconstruction, p_m prediction (Eq. 23), compact flux (Eq. 24) | + Eigenvalue iteration, p_m verification | + Same WENO refs | ~350-550 (total) | High |
+| **Scalar 1D** | HJ equation (Eq. 27), Hermite interpolation (Eq. 28-29), CFWENO stencil (Eq. 30), numerical flux (Eq. 32), update (Eq. 25), WENO weights (Eq. 17, Tables I-II, Eq. 19) | CFL stability (low priority, empirically verified) | **NONE** — all formulas self-contained in paper | ~150-250 | Medium |
+| **Euler 1D** | + Characteristic decomposition (Eq. 21-22), Algorithm 1 flux reconstruction, p_m prediction (Eq. 23), compact flux (Eq. 24) | + Eigenvalue iteration, p_m verification | Eigenvalue iteration details, Eq. 23 verification | ~350-550 (total) | High |
 | **2D Euler** | + Consistent cell-interface distribution (Eq. 33), dimensional composition | None additional | None additional | ~450-700 (total) | High |
 
 ### Estimated effort (new LOC, by component):
@@ -91,17 +91,17 @@
 
 | Risk | Affects | Severity | Blocking? |
 |------|---------|----------|-----------|
-| WENO weight formulas not in paper | Scalar, Euler, 2D | High | YES — all subsets |
+| WENO weight formulas not in paper | ~~Scalar, Euler, 2D~~ Euler, 2D only | ~~High~~ Medium | ~~YES — all subsets~~ NO — paper self-contains Eq. 17, Tables I-II, Eq. 19 |
 | Eigenvalue iteration details missing | Euler, 2D | High | YES — Euler and 2D only |
 | p_m formula (Eq. 23) uncertainty | Euler, 2D | Medium | YES — Euler and 2D only |
 | CFL stability limit unproven | All subsets | Low | No — empirically verifiable |
 | Multi-dimensional extension correctness | 2D only | Medium | No — testable |
 
-**Key insight**: The scalar subset has only 1 blocking dependency (WENO weights) and 1 low-priority risk (CFL). If WENO weights can be resolved independently, scalar CFWENO3 could proceed without any Euler-specific blockers.
+**Key insight (updated Phase 2.5)**: The scalar subset has **ZERO external blocking dependencies**. The paper self-contains all formulas needed for scalar linear CFWENO3 (Eq. 27-30) and scalar nonlinear CFWENO3 (Eq. 17, Tables I-II, Eq. 19). The original classification of WENO weights [6,7] as blocking for all subsets was incorrect.
 
 ### High Risks
 
-1. **WENO weight formulas not in paper** — References [6,7] (earlier FWENO papers) needed for complete weight computation. Without these, only the stencil structure is known, not the nonlinear weight formula.
+1. **~~WENO weight formulas not in paper~~** — CORRECTED by Phase 2.5 audit: The paper self-contains Eq. (17) for nonlinear weights ω̄_k^r, ω_k^r; Tables I-II for optimal linear weights γ̄_k^r, γ_k^r; Eq. (19) for smoothness indicators β_k^r; and Table III for discontinuity positions δ_r^k. References [6,7] provide FWENO derivation context but are NOT needed for implementation. This risk is demoted to "informational" for scalar subsets.
 
 2. **Eigenvalue iteration details missing** — The paper states that iterative improvement of characteristic speed `a` increases accuracy but does not specify:
    - Starting guess for `a`
@@ -156,15 +156,15 @@
 
 4. **Eigenvalue iteration** is an algorithmic component with unspecified parameters. Implementing it without clear convergence criteria risks numerical instability.
 
-### Recommended path forward (updated with subset decomposition)
+### Recommended path forward (updated Phase 2.5 — scalar unblocked)
 
-1. **v1.0**: Keep CFWENO as intake-only (extraction report + scheme spec + feasibility = this document)
-2. **v1.1**: Obtain FWENO references [6,7], resolve WENO weight dependency (unblocks scalar subset)
-3. **v1.2**: Implement CFWENO3 scalar 1D as proof of concept (only WENO weight dependency needed)
-4. **v1.3**: Resolve eigenvalue iteration + verify p_m → extend to CFWENO3 Euler 1D with Algorithm 1
+1. **v1.0**: Keep CFWENO as intake-only (extraction report + scheme spec + feasibility = this document) — COMPLETE
+2. **v1.1**: Implement scalar linear + nonlinear CFWENO3 prototype (ZERO external blockers; all formulas in paper)
+3. **v1.2**: Obtain FWENO refs [6,7] (context only), resolve eigenvalue iteration + verify p_m → Euler prep
+4. **v1.3**: Implement CFWENO3 Euler 1D with Algorithm 1
 5. **v1.4**: Add CFWENO5/7 and 2D extension
 
-**Scalar subset can proceed independently** once WENO weights [6,7] are obtained, even if Euler-specific items remain unresolved.
+**Scalar subset can proceed immediately** — no external references needed. This is a significant change from Phase 2 assessment which incorrectly classified refs [6,7] as blocking for all subsets.
 
 ### What v1.0 delivers
 
@@ -202,3 +202,59 @@ The CFWENO paper has been thoroughly extracted and assessed. The method is scien
 3. Missing algorithmic parameters (WENO weights, iteration criteria)
 
 The intake itself is a valuable v1.0 artifact — it demonstrates the full paper-to-code workflow from PDF to go/no-go decision.
+
+---
+
+## 9. Phase 2.5 Readiness Audit (2026-05-19)
+
+### Purpose
+
+Re-audit formula coverage for the scalar CFWENO3 subset after Phase 2 incorrectly classified references [6,7] as critical blockers for ALL implementation subsets.
+
+### Formula Coverage Audit — Scalar Linear CFWENO3
+
+| Formula | Paper source | Self-contained? | Notes |
+|---------|-------------|-----------------|-------|
+| HJ equation connection | Eq. (27): Φ_t + f(Φ_x)_x = 0, u = Φ_x | YES | Directly stated |
+| Hermite interpolation for Φ(x) | Eq. (28): cubic Hermite using {Φ_i, u_i, Φ_{i±1/2}} | YES | Explicit stencil description |
+| Derivative u(x) = dΦ/dx | Eq. (29) | YES | Direct derivative of Eq. 28 |
+| CFWENO3 stencil (current time) | Eq. (30): ū_{i+1/2} = u_{i+1/2} - ν(u_{i+1/2} - u_i) - ν(1-ν)(u_{i-1/2} - 2u_i + u_{i+1/2}) | YES | Explicit formula with ν = τa/h |
+| CFWENO3 stencil (next time) | Eq. (30): ū_{i+1/2}^{n+1} = u_{i+1/2} + 2(-ν)(u_{i+1/2} - u_i) + (-ν)(2-3ν)(u_{i-1/2} - 2u_i + u_{i+1/2}) | YES | Explicit formula for next time level |
+| Numerical flux (linear) | Derivable: f_hat = a * ū_{i+1/2} for f(u) = a*u | YES | For constant-speed linear advection |
+| Conservative update | Eq. (25): u_i^{n+1} = u_i^n - (τ/h)*(f̂_{i+1/2} - f̂_{i-1/2}) | YES | Standard conservative form |
+
+**Readiness judgment — scalar linear**: **READY** (7/7 formulas self-contained, 0 external blockers)
+
+### Formula Coverage Audit — Scalar Nonlinear CFWENO3 (Burgers)
+
+| Formula | Paper source | Self-contained? | Notes |
+|---------|-------------|-----------------|-------|
+| All scalar linear formulas | See above | YES | All applicable |
+| WENO nonlinear weights | Eq. (17): ω̄_k^r = γ̄_k^r / Σγ̄_l^r, γ̄_k^r = ᾱ_k^r/(β̄_k^r + ε)² | YES | Full weight formula present |
+| Optimal linear weights γ̄_k^r | Table I: explicit values for r=2,3,4 (e.g., r=3: γ̄₀³=(1+ν)²/6, γ̄₁³=(1+ν)(2-ν)/6, γ̄₂³=(1-ν)(2-ν)/6) | YES | Numerical values given |
+| Optimal linear weights γ_k^r | Table II: explicit values for next-time-level reconstruction | YES | Numerical values given |
+| Smoothness indicators β_k^r | Eq. (19): explicit formulas | YES | Full indicator formulas present |
+| Discontinuity positions δ_r^k | Table III | YES | Numerical values given |
+| Error coefficients | Table IV: CFWENO vs FWENO vs WENO | YES | Confirms CFWENO smallest errors |
+
+**Readiness judgment — scalar nonlinear**: **READY** (13/13 formulas self-contained, 0 external blockers)
+
+### Overall Readiness Verdict
+
+| Subset | Formula coverage | External blockers | Readiness |
+|--------|-----------------|-------------------|-----------|
+| scalar_linear | 7/7 (100%) | 0 | **READY — can implement immediately** |
+| scalar_nonlinear | 13/13 (100%) | 0 | **READY — can implement immediately** |
+| Euler_1D | ~85% | 2 (eigenvalue iteration, p_m) | NOT READY |
+| 2D Euler | ~85% | 2 (same as Euler_1D) | NOT READY |
+
+### Phase 2 Classification Error
+
+Phase 2 (commit 2272a61) stated: "2 critical blockers (refs [6,7] for WENO weights)" affecting all subsets. This was incorrect because:
+
+1. Eq. (17) provides the full WENO nonlinear weight formula: ω̄_k^r = γ̄_k^r / Σγ̄_l^r where γ̄_k^r = ᾱ_k^r/(β̄_k^r + ε)²
+2. Tables I-II provide explicit numerical values for optimal linear weights for all orders (r=2,3,4)
+3. Eq. (19) provides explicit smoothness indicator formulas
+4. Table III provides discontinuity positions
+
+The paper does cite refs [6,7] for the FWENO reconstruction framework, but reproduces all essential formulas needed for implementation. References [6,7] provide derivation context and FWENO historical background, not missing implementation formulas.

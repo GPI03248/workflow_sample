@@ -25,7 +25,7 @@ This scheme decomposes into three progressively larger subsets with independent 
 
 | Subset | Scope | Required equations | Blocking dependencies | Estimated LOC |
 |--------|-------|-------------------|----------------------|---------------|
-| **Scalar 1D** | Linear advection + Burgers | Eq. 27-30, 32, 25 | WENO weights [6,7] only | ~150-250 |
+| **Scalar 1D** | Linear advection + Burgers | Eq. 27-30, 32, 25 | **NONE** — self-contained: Eq. 17, Tables I-II, Eq. 19 | ~150-250 |
 | **Euler 1D** | 1D compressible Euler with characteristic decomposition | + Eq. 21-24, Algorithm 1 | + Eigenvalue iteration, p_m verification | ~350-550 |
 | **2D Euler** | Full 2D Euler with dimensional composition | + Eq. 33 | None additional | ~450-700 |
 

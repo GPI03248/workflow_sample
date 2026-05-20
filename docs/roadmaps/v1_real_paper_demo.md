@@ -1,6 +1,6 @@
 # Roadmap: v1.x Real-Paper Demo (CFWENO)
 
-## Current State (v1.0 Intake)
+## Current State (v1.0 Intake + Phase 2.5 Readiness Audit)
 
 The v1.0 intake for the CFWENO paper (Zhou-Dong-Pan 2025, Phys. Fluids 37, 106131) is **complete**. The full paper-to-code workflow has been exercised from PDF extraction through feasibility assessment, producing:
 
@@ -10,10 +10,7 @@ The v1.0 intake for the CFWENO paper (Zhou-Dong-Pan 2025, Phys. Fluids 37, 10613
 - Feasibility assessment (verdict: intake complete, implementation deferred)
 - Traceability manifest
 
-**Implementation is deferred** because:
-1. 4 unresolved extraction items (WENO weights, eigenvalue iteration, p_m formula, CFL limit)
-2. High complexity (~820-1230 LOC vs. ~150 for HLL v0.1 demo)
-3. External reference dependencies (FWENO papers [6,7])
+**Phase 2.5 correction**: The original Phase 2 assessment classified references [6,7] as CRITICAL blockers for ALL subsets. The Phase 2.5 readiness audit confirms this was incorrect — the paper self-contains Eq. (17), Tables I-II, Eq. (19) for WENO weights, and Eq. (27-30) for the CFWENO3 stencil. **Scalar CFWENO3 has ZERO external blockers and can proceed immediately.**
 
 ---
 
@@ -25,38 +22,43 @@ The CFWENO scheme decomposes into three subsets with independent blockers:
 
 | Subset | Scope | Blocking dependencies | Target phase |
 |--------|-------|----------------------|--------------|
-| **Scalar 1D** | Linear advection, Burgers, CFWENO3 stencil, HJ flux | WENO weights from refs [6,7] | v1.2 |
-| **Euler 1D** | Characteristic decomposition, Algorithm 1, compact flux, p_m prediction | + Eigenvalue iteration, p_m verification | v1.3 |
+| **Scalar 1D** | Linear advection, Burgers, CFWENO3 stencil, HJ flux, WENO weights | **NONE** — all formulas self-contained in paper | v1.1 |
+| **Euler 1D** | Characteristic decomposition, Algorithm 1, compact flux, p_m prediction | Eigenvalue iteration, p_m verification | v1.3 |
 | **2D Euler** | Consistent cell-interface distribution, dimensional composition | None additional | v1.4 |
 
-Key insight: **Scalar subset can proceed independently** once WENO weights are obtained, even if Euler-specific items remain unresolved.
+Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confirms ZERO external blockers. References [6,7] are NOT needed.
 
-### v1.1 — Gap Resolution
+### v1.1 — Scalar CFWENO3 Prototype (Linear + Nonlinear)
 
-**Goal**: Resolve all 4 unresolved items from the extraction report.
+**Goal**: Implement the simplest non-trivial CFWENO variant with ZERO external blockers.
+
+| Item | Status |
+|------|--------|
+| WENO weight formulas | Self-contained in paper (Eq. 17, Tables I-II, Eq. 19) — NOT blocked by refs [6,7] |
+| CFL stability | Empirically verify during testing |
+| Eigenvalue iteration | NOT needed for scalar |
+| p_m formula (Eq. 23) | NOT needed for scalar |
+
+**Deliverables**:
+- Linear advection CFWENO3 prototype (Eq. 27-30)
+- Nonlinear (Burgers) CFWENO3 with WENO weighting (Eq. 17, Tables I-II, Eq. 19)
+- 3rd-order convergence verification
+- Scheme spec approval changed to `yes` (for scalar subset)
+
+### v1.2 — Euler Prep (Gap Resolution)
+
+**Goal**: Resolve Euler-specific gaps and prepare for Euler 1D implementation.
 
 | Item | Action | Dependency |
 |------|--------|------------|
-| WENO weight formulas | Obtain and extract FWENO references [6,7] from the paper bibliography | Access to referenced papers |
-| Eigenvalue iteration | Identify iteration start guess, count, and convergence from FWENO literature | Same as above |
+| Eigenvalue iteration | Identify iteration start guess, count, and convergence from FWENO literature | Access to refs [6,7] |
 | p_m formula (Eq. 23) | Re-read paper page containing Eq. 23 at higher resolution or transcribe manually | Paper access |
-| CFL stability | Verify CFL <= 1 claim against test cases; document empirical limit | Code from v1.2 |
+| CFL stability | Verify CFL <= 1 claim against test cases; document empirical limit | Code from v1.1 |
+| FWENO refs [6,7] | Obtain for derivation context (not blocking for scalar) | Access to referenced papers |
 
 **Deliverables**:
-- Updated extraction report with all items resolved
-- Updated scheme spec with complete algorithmic detail
-- Scheme spec approval changed to `yes`
-
-### v1.2 — Scalar CFWENO3 (Proof of Concept)
-
-**Goal**: Implement the simplest non-trivial CFWENO variant.
-
-| Component | Scope |
-|-----------|-------|
-| Reconstruction | 3rd-order WENO only |
-| Equation | 1D scalar advection + 1D Burgers |
-| Time integration | Single-stage CFWENO update |
-| Validation | Linear advection convergence, Burgers shock |
+- Updated extraction report with Euler-specific items resolved
+- Updated full scheme spec with complete algorithmic detail
 
 **Files**:
 - New: `cfd/numerics/weno.py` (3rd-order weights only)
@@ -110,19 +112,19 @@ Key insight: **Scalar subset can proceed independently** once WENO weights are o
 
 ## Comparison with v0.1 HLL Demo
 
-| Aspect | v0.1 (HLL) | v1.2-v1.4 (CFWENO) |
+| Aspect | v0.1 (HLL) | v1.1-v1.4 (CFWENO) |
 |--------|------------|---------------------|
 | Scope | Single Riemann solver | Full scheme (reconstruction + flux + time integration) |
-| New LOC | ~150 | ~820-1230 (total across v1.2-v1.4) |
-| Phases | Single implementation | 3 phased implementations |
-| External refs needed | None | 2+ FWENO papers |
+| New LOC | ~150 | ~150-250 (v1.1 scalar) + ~820-1230 (total across v1.1-v1.4) |
+| Phases | Single implementation | 4 phased implementations |
+| External refs needed | None | 0 for scalar (v1.1); refs [6,7] useful for Euler context (v1.2+) |
 | Demo value | First paper-to-code workflow | Second method, higher complexity |
 
 ---
 
 ## Success Metrics
 
-1. **v1.1**: All extraction gaps resolved, scheme spec approved
-2. **v1.2**: 3rd-order convergence verified on scalar equations
+1. **v1.1**: Scalar CFWENO3 prototype (linear advection + Burgers) with 3rd-order convergence verified — NO external blockers
+2. **v1.2**: Euler-specific gaps resolved (eigenvalue iteration, p_m)
 3. **v1.3**: Algorithm 1 produces correct wave selection; Shu-Osher matches published results
 4. **v1.4**: 2D extension maintains formal order; CFWENO5/7 converge at expected rates

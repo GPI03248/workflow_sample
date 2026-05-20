@@ -103,7 +103,7 @@ Phase 2 performed gap analysis and subset decomposition without code changes.
 1. **Eq. 23 p_m formula** — Transcribed but marked UNCERTAIN; requires human verification
 2. **Subset decomposition** — Scalar subset has only 1 blocking dependency (WENO weights), can proceed independently of Euler blockers
 3. **Bibliography extraction** — Not completed; PDF reference pages not successfully extracted by image analysis
-4. **WENO weights [6,7]** remain the critical blocker for all subsets
+4. **WENO weights [6,7]** ~~remain the critical blocker for all subsets~~ CORRECTED by Phase 2.5: NOT blockers for scalar subsets (paper self-contains Eq. 17, Tables I-II, Eq. 19)
 5. **Eigenvalue iteration** and **p_m verification** are Euler-specific blockers, do not affect scalar subset
 
 ### Decisions updated
@@ -119,3 +119,28 @@ Phase 2 performed gap analysis and subset decomposition without code changes.
 - **Commit**: (to be created)
 - **Branch**: master
 - **Files added**: 5 new documentation files
+
+## Phase 2.5 Update (2026-05-19): Scalar Readiness Audit
+
+Phase 2.5 corrected Phase 2's dependency classification. Refs [6,7] are NOT blockers for scalar CFWENO3.
+
+### Key findings from Phase 2.5
+
+1. **WENO weights are self-contained** — Eq. (17) provides nonlinear weight formulas; Tables I-II provide linear weights; Eq. (19) provides smoothness indicators
+2. **Scalar linear CFWENO3**: ZERO external blockers (7/7 formulas self-contained)
+3. **Scalar nonlinear CFWENO3**: ZERO external blockers (13/13 formulas self-contained)
+4. **v1.1 target changed**: From "gap resolution" to "scalar CFWENO3 prototype"
+5. **Refs [6,7]**: Demoted from CRITICAL to "useful for FWENO context"
+
+### Updated decisions
+
+| Decision | Rationale | Date |
+|----------|-----------|------|
+| v1.1 = scalar CFWENO3 prototype | Zero external blockers; ~150-250 LOC; all formulas in paper | 2026-05-19 |
+| Refs [6,7] NOT blocking for scalar | Paper self-contains all WENO formulas needed | 2026-05-19 |
+
+### Phase 2.5 artifacts
+
+| Artifact | Path |
+|----------|------|
+| Phase 2.5 traceability | `docs/tasks/cfweno_scalar_readiness_audit/traceability.md` |

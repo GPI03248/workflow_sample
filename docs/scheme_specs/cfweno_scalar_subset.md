@@ -2,6 +2,12 @@
 
 ## Status
 Approved for implementation: no
+
+## Phase 1 Target: Linear Advection CFWENO3 Prototype
+This spec's Phase 1 target is a **1D scalar linear advection CFWENO3 prototype** — the simplest non-trivial implementation with **ZERO external blockers**. All required formulas (Eq. 27-30) are self-contained in the paper.
+
+Phase 2 target extends to nonlinear scalar (Burgers) with WENO weighting (Eq. 17, Tables I-II, Eq. 19) — also **ZERO external blockers**.
+
 (Parent spec: `docs/scheme_specs/cfweno_pof_2025.md` — also set to `no`)
 
 ## Source
@@ -30,10 +36,12 @@ It does NOT include Euler equations, characteristic decomposition, Algorithm 1, 
 
 ## Blocking dependencies
 
-| Dependency | Status | Resolution plan |
-|-----------|--------|-----------------|
-| WENO nonlinear weight formulas [6,7] | NOT obtained | Obtain FWENO references, extract weight formulas |
-| CFL stability limit | Stated as <= 1, not proven | Empirically verify during testing |
+| Dependency | Subset affected | Status | Resolution plan |
+|-----------|----------------|--------|-----------------|
+| WENO nonlinear weight formulas [6,7] | ~~scalar_linear~~ | NOT needed — Eq. 17, Tables I-II, Eq. 19 are self-contained | References [6,7] provide FWENO context only |
+| CFL stability limit | All scalar | Stated as <= 1, not proven | Empirically verify during testing (non-blocking) |
+
+**Phase 2.5 correction**: References [6,7] were previously classified as CRITICAL blockers for ALL subsets. Phase 2.5 audit confirms the paper self-contains all needed formulas. Scalar linear and scalar nonlinear CFWENO3 have ZERO external blockers.
 
 ## Mathematical definition
 
@@ -100,14 +108,14 @@ u_i^{n+1} = u_i^n - (tau/h)*(f_hat_{i+1/2} - f_hat_{i-1/2})
 5. Compute numerical flux f_hat_{i+1/2} from HJ integral (Eq. 32)
 6. Update: u_i^{n+1} = u_i^n - (tau/h)*(f_hat_{i+1/2} - f_hat_{i-1/2})
 
-**Note**: Steps 3-5 require WENO weight formulas from refs [6,7]. Without these, the stencil structure (Eq. 30) is known but the nonlinear weights that determine accuracy and non-oscillatory properties are missing.
+**Note**: Steps 3-5 are fully self-contained in the paper for the linear case. For nonlinear (Burgers), WENO weights come from Eq. (17), Tables I-II, and Eq. (19) — also self-contained. References [6,7] provide FWENO derivation context but are NOT required for implementation.
 
 ## Required code changes
 
 | Module | Required change |
 |---|---|
 | `cfd/numerics/` (new module) | Hermite interpolation for Phi and u at interfaces |
-| `cfd/numerics/` (new module) | WENO reconstruction (3rd order weight computation) — BLOCKED by [6,7] |
+| `cfd/numerics/` (new module) | WENO reconstruction (3rd order weight computation) — self-contained via Eq. 17, Tables I-II, Eq. 19 |
 | `cfd/numerics/` (new module) | CFWENO stencil formula (Eq. 30) |
 | `cfd/numerics/riemann.py` | Add `cfweno_scalar_flux()` |
 | `cfd/numerics/update.py` | Add dispatch for scalar CFWENO |
@@ -119,7 +127,7 @@ u_i^{n+1} = u_i^n - (tau/h)*(f_hat_{i+1/2} - f_hat_{i-1/2})
 - New functions:
   - `cfd.numerics.riemann.cfweno_scalar_flux(u, a, tau, h) -> Fnum`
   - `cfd.numerics.hermite.hermite_interp_1d(phi, u, h) -> phi_half, u_half`
-  - `cfd.numerics.weno.weno3_weights(u, ...) -> w` — BLOCKED by [6,7]
+  - `cfd.numerics.weno.weno3_weights(u, ...) -> w` — self-contained via Eq. 17, Tables I-II, Eq. 19
 - No breaking changes; fully backward-compatible.
 
 ## Tests required
@@ -149,8 +157,8 @@ u_i^{n+1} = u_i^n - (tau/h)*(f_hat_{i+1/2} - f_hat_{i-1/2})
 
 ## Known limitations
 
-1. **WENO weights unresolved** — Paper references [6,7] for weight formulas; without these the reconstruction step cannot be completed
-2. **CFL limit unproven** — Stated as CFL <= 1 sufficient but not rigorously proven
+1. **WENO weights** — Previously classified as unresolved; Phase 2.5 audit confirmed paper self-contains Eq. (17), Tables I-II, Eq. (19)
+2. **CFL limit unproven** — Stated as CFL <= 1 sufficient but not rigorously proven; will verify empirically
 3. **Scalar only** — This subset does not cover Euler equations or multi-dimensional problems
 4. **No characteristic decomposition** — Not needed for scalar equations
 5. **No Algorithm 1** — The pressure-based wave selection is Euler-specific
@@ -159,7 +167,7 @@ u_i^{n+1} = u_i^n - (tau/h)*(f_hat_{i+1/2} - f_hat_{i-1/2})
 - [ ] Hermite interpolation (Eq. 28-29) verified against paper Sec. II.A
 - [ ] CFWENO stencil (Eq. 30) verified against paper Sec. II.B
 - [ ] Numerical flux (Eq. 32) formula fully transcribed
-- [ ] WENO weight source references [6,7] identified and accessible
+- [ ] WENO weight source references [6,7] identified and accessible (context only, not blocking)
 - [ ] CFL <= 1 stability claim verified for linear advection and Burgers
 - [ ] 3rd-order convergence target accepted
-- [ ] Approved for implementation changed to yes (after WENO weights resolved)
+- [ ] Approved for implementation changed to yes

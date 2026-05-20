@@ -85,7 +85,40 @@ This task produced **no modifications** to `cfd/`, `solver/`, `tests/`, or any e
 
 | Item | Action needed | Priority |
 |------|--------------|----------|
-| WENO weight formulas | Obtain and extract refs [6,7] | Critical |
+| WENO weight formulas | ~~Obtain and extract refs [6,7]~~ SELF-CONTAINED in paper (Eq. 17, Tables I-II, Eq. 19) | ~~Critical~~ Resolved |
 | Bibliography extraction | Re-attempt PDF reference pages | Medium |
 | Eq. 23 verification | Human read against paper | Medium |
 | Eigenvalue iteration | Check refs [6,7] for convergence criteria | Medium |
+
+## Phase 2.5 Update (2026-05-19): Scalar Readiness Audit
+
+Phase 2.5 audited the dependency classification and found that Phase 2 incorrectly classified refs [6,7] as CRITICAL blockers for ALL subsets.
+
+### Key correction
+
+The paper self-contains all formulas needed for scalar CFWENO3 (linear and nonlinear):
+- Eq. (17): WENO nonlinear weight formulas
+- Tables I-II: Optimal linear weights with explicit values
+- Eq. (19): Smoothness indicators
+- Eq. (27-30): Complete CFWENO3 stencil
+
+References [6,7] are NOT blockers for scalar subsets. They provide FWENO derivation context.
+
+### Updated artifacts
+
+| Artifact | Path | Change |
+|----------|------|--------|
+| Dependency register | `docs/papers/cfweno_dependency_register.md` | Per-subset classification; refs [6,7] reclassified |
+| Feasibility assessment | `docs/feasibility/cfweno_pof_2025_feasibility.md` | Section 9 readiness audit added |
+| Scalar subset spec | `docs/scheme_specs/cfweno_scalar_subset.md` | Phase 1 target = linear CFWENO3; blockers corrected |
+| Full scheme spec | `docs/scheme_specs/cfweno_pof_2025.md` | Subsets table updated |
+| Roadmap | `docs/roadmaps/v1_real_paper_demo.md` | v1.1 = scalar prototype |
+| Phase 2.5 traceability | `docs/tasks/cfweno_scalar_readiness_audit/traceability.md` | New manifest |
+| This manifest | `docs/tasks/cfweno_dependency_resolution/traceability.md` | Phase 2.5 update section |
+
+### Updated decisions
+
+| Decision | Rationale | Date |
+|----------|-----------|------|
+| Refs [6,7] NOT blocking for scalar | Paper self-contains Eq. 17, Tables I-II, Eq. 19 | 2026-05-19 |
+| v1.1 = scalar CFWENO3 prototype | ZERO external blockers; ~150-250 LOC | 2026-05-19 |
