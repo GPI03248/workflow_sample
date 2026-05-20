@@ -84,6 +84,6 @@
 ## Commit
 - **Implementation**: 2b580ef
 - **Traceability update**: b749eff
-- **Hardening**: pending
+- **Hardening**: bb18e68
 - **Branch**: master
 - **Pushed to**: origin (gitee), github
