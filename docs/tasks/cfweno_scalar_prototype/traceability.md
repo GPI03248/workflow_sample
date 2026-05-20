@@ -81,6 +81,16 @@
 3. Higher-order CFWENO5/7 not implemented
 4. Euler CFWENO requires eigenvalue iteration resolution
 
+## v1.2 Readiness (2026-05-20)
+
+v1.2 readiness documentation has been created for the Burgers nonlinear extension:
+
+- **Burgers spec**: `docs/scheme_specs/cfweno_scalar_burgers_subset.md` (Approved: no)
+- **Readiness review**: `docs/feasibility/cfweno_scalar_burgers_readiness.md` (Conditionally ready)
+- **Readiness traceability**: `docs/tasks/cfweno_burgers_readiness/traceability.md`
+- **Implementation**: not started; awaits human review and approval
+- v1.1 implementation remains separate and unchanged
+
 ## Commit
 - **Implementation**: 2b580ef
 - **Traceability update**: b749eff

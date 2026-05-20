@@ -32,7 +32,8 @@ The CFWENO scheme decomposes into three subsets with independent blockers:
 
 | Subset | Scope | Blocking dependencies | Target phase |
 |--------|-------|----------------------|--------------|
-| **Scalar 1D** | Linear advection, Burgers, CFWENO3 stencil, HJ flux, WENO weights | **NONE** — all formulas self-contained in paper | v1.1 |
+| **Scalar Linear** | Linear advection, constant a, CFWENO3 stencil | **NONE** | v1.1 (COMPLETE) |
+| **Scalar Nonlinear** | Burgers, variable a, flux linearization | **NONE** | v1.2 (spec created) |
 | **Euler 1D** | Characteristic decomposition, Algorithm 1, compact flux, p_m prediction | Eigenvalue iteration, p_m verification | v1.3 |
 | **2D Euler** | Consistent cell-interface distribution, dimensional composition | None additional | v1.4 |
 
@@ -53,7 +54,50 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 
 **Next step for scalar nonlinear**: Separate approval needed for Burgers extension.
 
-### v1.2 — Euler Prep (Gap Resolution)
+### v1.2 — Scalar Nonlinear Burgers CFWENO3 (Spec Created, Implementation Pending)
+
+**Goal**: Extend scalar CFWENO3 from linear advection to nonlinear Burgers equation.
+
+**Status**:
+- Spec created: `docs/scheme_specs/cfweno_scalar_burgers_subset.md`
+- Readiness review: `docs/feasibility/cfweno_scalar_burgers_readiness.md`
+- Readiness decision: **Conditionally ready** (human approval required)
+- Approval: **no** (not yet approved for implementation)
+- Implementation: **not started**
+
+**What changes from v1.1**:
+
+| Component | v1.1 (linear) | v1.2 (Burgers) |
+|-----------|--------------|----------------|
+| Flux | `f(u) = a*u` | `f(u) = u^2/2` |
+| Wave speed | `a = 1.0` (constant) | `a = u` (variable) |
+| Numerical flux | `a * ubar` (cancels) | `a * ubar - f*` (non-trivial) |
+| CFL | `cfl = a*dt/dx` (fixed) | `dt = CFL*dx/max(|u|)` (adaptive) |
+
+**Phase 1 scope** (smooth pre-shock only):
+- Periodic domain, smooth IC, final_time before shock formation
+- Compare against high-resolution reference or analytic implicit solution
+- No shock-capturing claim
+
+**Phase 2 scope** (optional post-shock qualitative):
+- Run past shock formation time
+- Compare against high-resolution reference
+- Document oscillations honestly
+- Do not claim shock-capturing
+
+**Non-goals**: No Euler, no Eq. 23, no characteristic decomposition, no 2D, no CFWENO5/7
+
+**Key open decisions** (for human):
+- Predictor strategy: zero iterations (frozen `a = u_i^n`) or one iteration
+- Reference solution: fine-grid baseline or analytic implicit
+
+**Recommended modules** (if approved):
+- Extend `solver/schemes.py` or refactor scalar CFWENO helper
+- New: `examples/run_cfweno_burgers_demo.py`
+- New: `examples/run_cfweno_burgers_convergence.py`
+- New: `tests/test_cfweno_burgers.py`
+
+### v1.3 — Euler Prep (Gap Resolution)
 
 **Goal**: Resolve Euler-specific gaps and prepare for Euler 1D implementation.
 
@@ -61,25 +105,14 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 |------|--------|------------|
 | Eigenvalue iteration | Identify iteration start guess, count, and convergence from FWENO literature | Access to refs [6,7] |
 | p_m formula (Eq. 23) | Re-read paper page containing Eq. 23 at higher resolution or transcribe manually | Paper access |
-| CFL stability | Verify CFL <= 1 claim against test cases; document empirical limit | Code from v1.1 |
+| CFL stability | Verify CFL <= 1 claim against test cases; document empirical limit | Code from v1.1/v1.2 |
 | FWENO refs [6,7] | Obtain for derivation context (not blocking for scalar) | Access to referenced papers |
 
 **Deliverables**:
 - Updated extraction report with Euler-specific items resolved
 - Updated full scheme spec with complete algorithmic detail
 
-**Files**:
-- New: `cfd/numerics/weno.py` (3rd-order weights only)
-- New: `cfd/numerics/hermite.py`
-- New: `examples/run_scalar_cfweno.py`
-- New: `tests/test_cfd_cfweno.py`
-
-**Validation criteria**:
-- 3rd-order convergence on linear advection
-- Non-oscillatory shock capturing on Burgers
-- Comparison with existing upwind/LW schemes
-
-### v1.3 — CFWENO3 Euler 1D
+### v1.4 — CFWENO3 Euler 1D
 
 **Goal**: Extend to 1D Euler equations with characteristic decomposition and Algorithm 1.
 
@@ -100,7 +133,7 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 - Shu-Osher: density profile matches published results qualitatively
 - Uniform flow: preserved to machine precision
 
-### v1.4 — Higher Orders and 2D
+### v1.5 — Higher Orders and 2D
 
 **Goal**: Add CFWENO5/7 and multi-dimensional extension.
 
@@ -125,14 +158,15 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 | Scope | Single Riemann solver | Full scheme (reconstruction + flux + time integration) |
 | New LOC | ~150 | ~150-250 (v1.1 scalar) + ~820-1230 (total across v1.1-v1.4) |
 | Phases | Single implementation | 4 phased implementations |
-| External refs needed | None | 0 for scalar (v1.1); refs [6,7] useful for Euler context (v1.2+) |
+| External refs needed | None | 0 for scalar (v1.1-v1.2); refs [6,7] useful for Euler context (v1.3+) |
 | Demo value | First paper-to-code workflow | Second method, higher complexity |
 
 ---
 
 ## Success Metrics
 
-1. **v1.1**: Scalar CFWENO3 prototype (linear advection + Burgers) with 3rd-order convergence verified — NO external blockers
-2. **v1.2**: Euler-specific gaps resolved (eigenvalue iteration, p_m)
-3. **v1.3**: Algorithm 1 produces correct wave selection; Shu-Osher matches published results
-4. **v1.4**: 2D extension maintains formal order; CFWENO5/7 converge at expected rates
+1. **v1.1**: Scalar CFWENO3 linear advection prototype with 3rd-order convergence verified — COMPLETE
+2. **v1.2**: Scalar CFWENO3 nonlinear Burgers (smooth pre-shock) with convergence trend — spec created, pending approval
+3. **v1.3**: Euler-specific gaps resolved (eigenvalue iteration, p_m)
+4. **v1.4**: Algorithm 1 produces correct wave selection; Shu-Osher matches published results
+5. **v1.5**: 2D extension maintains formal order; CFWENO5/7 converge at expected rates
