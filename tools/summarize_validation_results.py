@@ -34,6 +34,8 @@ KNOWN_DIRS = [
     "cfweno_burgers_predictor_sweep",
     "cfweno_burgers_cfl_sweep",
     "cfweno_burgers_reference_sensitivity",
+    # Post-v1.0 diagnostic
+    "cfweno_burgers_order_recovery",
     # 1D advection
     "",
 ]
@@ -53,6 +55,7 @@ _DIR_CSV_INFO = {
     "cfweno_burgers_predictor_sweep": ("error_summary.csv", ["predictor_iterations", "l2_error"]),
     "cfweno_burgers_cfl_sweep": ("error_summary.csv", ["cfl", "l2_error"]),
     "cfweno_burgers_reference_sensitivity": ("error_summary.csv", ["reference_nx", "l2_error"]),
+    "cfweno_burgers_order_recovery": ("error_summary.csv", ["variant", "nx", "l2_error"]),
 }
 
 
@@ -254,6 +257,15 @@ def build_markdown(scan: dict) -> str:
             lines.append(f"- {w}")
         lines.append("")
 
+    # Post-v1.0 diagnostics
+    diag = [r for r in scan["results"] if "order_recovery" in r["directory"]]
+    if diag:
+        lines.append("## Post-v1.0 Diagnostics\n")
+        lines.append("> **Note**: These are diagnostic studies, not part of the v1.0 release validation.\n")
+        for d in diag:
+            lines.append(f"- `{d['directory']}` — {d['rows']} rows, status: {d['status']}")
+        lines.append("")
+
     # Regeneration commands
     lines.append("## Regeneration Commands\n")
     lines.append("```bash")
@@ -272,6 +284,10 @@ def build_markdown(scan: dict) -> str:
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_predictor_sweep.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_cfl_sweep.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_reference_sensitivity.py")
+    lines.append("```\n")
+    lines.append("### Post-v1.0 Diagnostics\n")
+    lines.append("```bash")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_order_recovery.py")
     lines.append("```\n")
 
     return "\n".join(lines)

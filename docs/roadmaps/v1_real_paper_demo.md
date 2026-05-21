@@ -171,6 +171,31 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 
 ---
 
+---
+
+## Post-v1.0 Diagnostic Work
+
+### Burgers Nonlinear Order Recovery (v1.1-pre)
+
+**Status**: Diagnostic study complete.
+
+Investigates whether 3rd-order convergence can be recovered for scalar Burgers CFWENO3
+by testing alternative nu treatments (constant, interface-based, predictor-updated).
+
+| Item | Status |
+|------|--------|
+| Diagnostic plan | `docs/tasks/cfweno_burgers_order_recovery/diagnostic_plan.md` |
+| Experiment script | `examples/run_cfweno_burgers_order_recovery.py` |
+| Results | `results/cfweno_burgers_order_recovery/` |
+| Traceability | `docs/tasks/cfweno_burgers_order_recovery/traceability.md` |
+
+**Follow-up actions**:
+- If successful: prepare approved spec for improved Burgers CFWENO3
+- If unsuccessful: keep Burgers as ~2nd-order prototype; consider CFWENO5 scalar or Euler readiness
+- Euler readiness (v1.3) remains future work regardless of diagnostic outcome
+
+---
+
 ## Next Step Candidates
 
 1. **Accept v1.2 as demo milestone**: The ~2nd-order Burgers result is documented and audited; accept it as a valid prototype outcome
