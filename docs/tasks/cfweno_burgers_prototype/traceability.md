@@ -4,7 +4,7 @@
 - **Task ID**: cfweno_burgers_prototype
 - **Task type**: paper-to-code implementation (v1.2 scalar nonlinear Burgers CFWENO3 prototype)
 - **Date**: 2026-05-20
-- **Status**: hardened (accuracy audit complete)
+- **Status**: hardened (accuracy audit + flux form audit complete)
 
 ## Source Paper
 - **Paper**: .local/papers/cfweno_pof_2025.pdf (NOT in git)
@@ -52,6 +52,7 @@
 | Makefile | Added sweep targets; updated demo-real-paper-burgers |
 | tools/summarize_validation_results.py | Added all Burgers sweep directories to KNOWN_DIRS |
 | docs/tasks/cfweno_burgers_prototype/audit.md | NEW — formula consistency audit |
+| docs/tasks/cfweno_burgers_prototype/flux_form_audit.md | NEW — nonlinear flux form audit |
 | docs/tasks/cfweno_burgers_prototype/traceability.md | This manifest |
 
 ## Tests Run
@@ -125,6 +126,15 @@ baselines.
 - results/cfweno_burgers_reference_sensitivity/error_summary.csv
 - results/cfweno_burgers_reference_sensitivity/analysis.md
 - docs/tasks/cfweno_burgers_prototype/audit.md
+- docs/tasks/cfweno_burgers_prototype/flux_form_audit.md
+
+## Flux Form Audit (v1.2.1)
+
+The numerical flux `f_hat = f(ubar) = ubar^2/2` is an **exact algebraic identity**
+of the spec's two-step SFM form `f_hat = a*ubar - f*` for scalar Burgers.
+No approximation error is introduced by the simplification. The two-step SFM
+form is only needed for the Euler system extension (v1.4). See
+`docs/tasks/cfweno_burgers_prototype/flux_form_audit.md` for full analysis.
 
 ## Remaining Risks
 1. CFL stability not rigorously proven — empirically verified at CFL=0.5

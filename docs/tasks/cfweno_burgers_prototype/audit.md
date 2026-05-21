@@ -107,6 +107,17 @@ The 2nd-order convergence is **most likely a natural consequence of per-cell nu 
 
 ---
 
+## 5. Flux Form Clarification (v1.2.1 audit, 2026-05-21)
+
+A follow-up audit (`docs/tasks/cfweno_burgers_prototype/flux_form_audit.md`)
+confirmed that the current flux form `f_hat = f(ubar) = ubar^2/2` is an **exact
+algebraic identity** of the spec's two-step SFM form `f_hat = a*ubar - f*` for
+scalar Burgers. The simplification introduces no approximation error and cannot
+explain the observed second-order convergence. The two-step form is only needed
+for the Euler system extension (v1.4).
+
+---
+
 ## 4. Audit Conclusion
 
 **PASS with observation** — The implementation correctly and faithfully implements the scalar nonlinear Burgers CFWENO3 prototype as specified in `docs/scheme_specs/cfweno_scalar_burgers_subset.md`.

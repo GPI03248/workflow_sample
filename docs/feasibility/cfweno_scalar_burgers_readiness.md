@@ -45,8 +45,8 @@ Phase 1 is restricted to smooth pre-shock Burgers with no shock-capturing claims
 |-----------|-------------|------------|--------|
 | Nonlinear flux handling | `f(u) = u^2/2` instead of `f(u) = a*u` | Low | Trivial |
 | Local wave speed | `a_i = u_i` varies spatially | Low | Paper Eq. 30 definition: `nu = tau*a/h` |
-| Residual flux f* | `f* = a*u - f(u)` at interface | Low | SFM decomposition |
-| Numerical flux with correction | `f_hat = a * ubar - f*` | Medium | Requires per-interface computation |
+| Residual flux f* | `f* = a*u - f(u)` at interface | Low | SFM decomposition (exact simplification for scalar Burgers: `f_hat = f(ubar)`) |
+| Numerical flux with correction | `f_hat = a * ubar - f*` | Low | Simplifies exactly to `f(ubar)` for scalar Burgers; two-step form needed for Euler only |
 | Predictor strategy for a | Whether to iterate on `a` or freeze | Medium | Paper mentions iteration improves accuracy |
 | Burgers time stepping | `dt = CFL * dx / max(|u|)` — adaptive CFL | Low | Standard Burgers CFL |
 | Burgers run function | New `run_burgers()` or generalize `run_advection()` | Medium | Cannot reuse linear-specific logic |

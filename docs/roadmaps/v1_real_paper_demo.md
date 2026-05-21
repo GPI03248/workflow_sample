@@ -71,6 +71,8 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 
 **Convergence note**: CFWENO3 Burgers achieves ~2nd-order convergence on smooth pre-shock data, not the 3rd order observed for linear advection. This is attributed to per-cell nu variation introducing truncation error in the CFWENO3 stencil.
 
+**Flux form note**: The Burgers prototype uses `f_hat = f(ubar) = ubar^2/2`, an exact algebraic identity of the SFM two-step form `f_hat = a*ubar - f*` for scalar Burgers. This is not an approximation — it does not contribute to the observed order reduction. The explicit two-step SFM form is only needed for the Euler system extension (v1.4).
+
 **Implemented files**:
 - `solver/schemes.py` — added `cfweno_burgers()`, `burgers_upwind()`, helper functions
 - `examples/run_cfweno_burgers_demo.py`

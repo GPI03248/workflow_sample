@@ -73,7 +73,11 @@ make demo-real-paper-scalar
 
 ### CFWENO3 Burgers Prototype (Paper-to-Code)
 
-The CFWENO3 Burgers prototype extends the scalar CFWENO3 to nonlinear Burgers:
+The CFWENO3 Burgers prototype extends the scalar CFWENO3 to nonlinear Burgers.
+The nonlinear flux uses the simplified form `f_hat = f(ubar) = ubar^2/2`, which
+is an exact algebraic identity of the SFM two-step form for scalar Burgers
+(not an approximation). The two-step SFM form `f_hat = a*ubar - f*` is only
+needed for the Euler system extension.
 
 ```bash
 # Single run with baseline comparison
