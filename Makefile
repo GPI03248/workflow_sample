@@ -15,6 +15,7 @@ ENV = tools/run_in_project_env.sh
         cfweno-burgers-demo cfweno-burgers-convergence \
         cfweno-burgers-predictor-sweep cfweno-burgers-cfl-sweep \
         cfweno-burgers-reference-sensitivity demo-real-paper-burgers \
+        demo-real-paper-cfweno demo-v1-real-paper \
         paper-extract paper-context \
         check-spec trace-task discover-env \
         demo-hll-workflow validation-index health \
@@ -106,6 +107,13 @@ demo-real-paper-burgers: cfweno-burgers-demo cfweno-burgers-convergence \
                          cfweno-burgers-predictor-sweep cfweno-burgers-cfl-sweep \
                          cfweno-burgers-reference-sensitivity validation-index
 	@echo "=== CFWENO Burgers demo complete ==="
+
+# --- CFWENO Real-Paper Unified Demo (v1.0) ---
+
+demo-real-paper-cfweno: demo-real-paper-scalar demo-real-paper-burgers validation-index health
+	@echo "=== CFWENO real-paper demo complete (v1.0) ==="
+
+demo-v1-real-paper: demo-real-paper-cfweno
 
 cfd-validation: cfd-entropy cfd-entropy-convergence cfd-vortex cfd-vortex-convergence
 	@echo "=== Full CFD validation complete ==="

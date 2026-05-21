@@ -1,6 +1,21 @@
 # Roadmap: v1.x Real-Paper Demo (CFWENO)
 
-## Current State (v1.1 Scalar CFWENO3 Prototype — Complete)
+## Current State — v1.0 Demo Packaging Complete
+
+The CFWENO real-paper demo is packaged as a **v1.0 milestone**:
+- **v1.1**: Scalar linear CFWENO3 — **complete** (3rd-order convergence)
+- **v1.2**: Scalar Burgers CFWENO3 — **complete** (~2nd-order, documented)
+- **v1.2.1**: Burgers flux-form audit — **complete** (f_hat = f(ubar) is exact identity)
+- **v1.2.2**: SFM state-consistency audit — **complete** (state variables match spec)
+- **v1.0 packaging**: Case study, unified demo target — **complete**
+
+Run: `make demo-real-paper-cfweno`
+
+Case study: `docs/case_studies/cfweno_real_paper_demo.md`
+
+---
+
+## Detailed History
 
 v1.1 is **complete**. The scalar linear CFWENO3 prototype has been implemented, hardened, and validated:
 
@@ -149,7 +164,17 @@ Key insight: **Scalar subset can proceed immediately** — Phase 2.5 audit confi
 ## Success Metrics
 
 1. **v1.1**: Scalar CFWENO3 linear advection prototype with 3rd-order convergence verified — COMPLETE
-2. **v1.2**: Scalar CFWENO3 nonlinear Burgers (smooth pre-shock) with convergence trend — spec created, pending approval
+2. **v1.2**: Scalar CFWENO3 nonlinear Burgers (smooth pre-shock) with convergence trend — COMPLETE
 3. **v1.3**: Euler-specific gaps resolved (eigenvalue iteration, p_m)
 4. **v1.4**: Algorithm 1 produces correct wave selection; Shu-Osher matches published results
 5. **v1.5**: 2D extension maintains formal order; CFWENO5/7 converge at expected rates
+
+---
+
+## Next Step Candidates
+
+1. **Accept v1.2 as demo milestone**: The ~2nd-order Burgers result is documented and audited; accept it as a valid prototype outcome
+2. **Investigate nonlinear order recovery**: Explore whether modified predictor strategies or stencil corrections can restore 3rd order for nonlinear problems
+3. **CFWENO5 scalar**: Implement 5th-order scalar CFWENO from paper Eq. (30) variant
+4. **Euler readiness**: Resolve eigenvalue iteration and p_m (Eq. 23) gaps for v1.3
+5. **Post-shock Burgers**: Only after nonlinear WENO policy (Eq. 17) is defined and approved

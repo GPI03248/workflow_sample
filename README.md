@@ -47,6 +47,27 @@ paper-to-code workflow with deterministic approval gating:
 
 Run the demo: `make demo-hll-workflow`
 
+### Real-Paper CFWENO Demo (v1.0)
+
+A full paper-to-code demo derived from Zhou-Dong-Pan (2025), Phys. Fluids 37, 106131.
+Implements scalar linear CFWENO3 (3rd-order) and scalar Burgers CFWENO3 (pre-shock,
+~2nd-order). Run the unified demo:
+
+```bash
+make demo-real-paper-cfweno
+```
+
+| Artifact | Path |
+|----------|------|
+| Case study | `docs/case_studies/cfweno_real_paper_demo.md` |
+| Roadmap | `docs/roadmaps/v1_real_paper_demo.md` |
+| Scalar spec (approved) | `docs/scheme_specs/cfweno_scalar_subset.md` |
+| Burgers spec (approved) | `docs/scheme_specs/cfweno_scalar_burgers_subset.md` |
+
+Key results: CFWENO3 linear advection achieves ~3rd-order convergence;
+Burgers achieves ~2nd-order (documented limitation from per-cell nu variation).
+See the [case study](docs/case_studies/cfweno_real_paper_demo.md) for full details.
+
 ### CFWENO3 Scalar Prototype (Paper-to-Code)
 
 The CFWENO3 scalar prototype is the second method implemented through the
