@@ -127,6 +127,7 @@ baselines.
 - results/cfweno_burgers_reference_sensitivity/analysis.md
 - docs/tasks/cfweno_burgers_prototype/audit.md
 - docs/tasks/cfweno_burgers_prototype/flux_form_audit.md
+- docs/tasks/cfweno_burgers_prototype/sfm_state_consistency_audit.md
 
 ## Flux Form Audit (v1.2.1)
 
@@ -135,6 +136,14 @@ of the spec's two-step SFM form `f_hat = a*ubar - f*` for scalar Burgers.
 No approximation error is introduced by the simplification. The two-step SFM
 form is only needed for the Euler system extension (v1.4). See
 `docs/tasks/cfweno_burgers_prototype/flux_form_audit.md` for full analysis.
+
+## SFM State Consistency Audit (v1.2.2)
+
+The spec defines `f* = a * u^{n+1}_{i+1/2} - f(u^{n+1}_{i+1/2})` where
+`u^{n+1}_{i+1/2}` = `ubar_{i+1/2}` (spec section 6 heading). The code uses the
+same `ubar` from `_cfweno3_stencil`. The v1.2.1 equivalence proof correctly uses
+the same state variable. **State consistency audit passed — no follow-up needed.**
+See `docs/tasks/cfweno_burgers_prototype/sfm_state_consistency_audit.md`.
 
 ## Remaining Risks
 1. CFL stability not rigorously proven — empirically verified at CFL=0.5
