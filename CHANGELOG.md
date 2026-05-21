@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0] - 2026-05-21
+
+### Added
+
+- CFWENO3 scalar linear advection prototype — 3rd-order convergence (order 3.02)
+- CFWENO3 scalar Burgers prototype — ~2nd-order convergence (order 2.01), pre-shock
+- Full CFWENO paper-to-code workflow (13 gated stages) from Zhou-Dong-Pan (2025)
+- CFWENO scalar linear demo, convergence, and CFL sweep scripts
+- CFWENO Burgers demo, convergence, predictor sweep, CFL sweep, reference sensitivity scripts
+- Burgers flux-form audit: confirmed f_hat = f(ubar) is exact algebraic identity
+- SFM state-consistency audit: confirmed state variables match spec
+- CFWENO real-paper case study (`docs/case_studies/cfweno_real_paper_demo.md`)
+- Unified demo target `make demo-real-paper-cfweno`
+- 27 CFWENO-specific tests (19 scalar + 8 Burgers)
+- Release notes for v1.0
+
+### Changed
+
+- Updated validation index with 8 CFWENO result directories (15 total)
+- Updated roadmap with phased v1.1-v1.5 implementation plan
+
+### Validation Results
+
+- CFWENO3 linear: 380x more accurate than Lax-Wendroff, 11,937x more accurate than upwind
+- CFWENO3 Burgers: 173x more accurate than Rusanov at nx=100
+- CFL sweep: stable at CFL 0.1–0.9 (linear), 0.1–0.5 (Burgers)
+
 ## [0.1] - 2026-05-18
 
 ### Added

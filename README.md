@@ -398,6 +398,8 @@ tools/run_in_project_env.sh pytest -q
 
 | Document | Description |
 |----------|-------------|
+| `CHANGELOG.md` | Release history |
+| `docs/releases/` | Release notes (v0.1, v1.0) |
 | `CLAUDE.md` | Project rules |
 | `docs/cfd_architecture.md` | CFD solver architecture overview |
 | `docs/cfd_module_interfaces.md` | Public interface reference |
