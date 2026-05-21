@@ -31,6 +31,9 @@ KNOWN_DIRS = [
     # CFWENO Burgers prototype
     "cfweno_burgers_demo",
     "cfweno_burgers_convergence",
+    "cfweno_burgers_predictor_sweep",
+    "cfweno_burgers_cfl_sweep",
+    "cfweno_burgers_reference_sensitivity",
     # 1D advection
     "",
 ]
@@ -47,6 +50,9 @@ _DIR_CSV_INFO = {
     "cfweno_scalar_cfl_sweep": ("error_summary.csv", ["method", "cfl", "l2_error"]),
     "cfweno_burgers_demo": ("error_summary.csv", ["method", "l2_error"]),
     "cfweno_burgers_convergence": ("error_summary.csv", ["method", "l2_error"]),
+    "cfweno_burgers_predictor_sweep": ("error_summary.csv", ["predictor_iterations", "l2_error"]),
+    "cfweno_burgers_cfl_sweep": ("error_summary.csv", ["cfl", "l2_error"]),
+    "cfweno_burgers_reference_sensitivity": ("error_summary.csv", ["reference_nx", "l2_error"]),
 }
 
 
@@ -263,6 +269,9 @@ def build_markdown(scan: dict) -> str:
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_scalar_cfl_sweep.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_demo.py")
     lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_convergence.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_predictor_sweep.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_cfl_sweep.py")
+    lines.append("tools/run_in_project_env.sh python examples/run_cfweno_burgers_reference_sensitivity.py")
     lines.append("```\n")
 
     return "\n".join(lines)

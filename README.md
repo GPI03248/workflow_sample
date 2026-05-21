@@ -534,6 +534,9 @@ domain [0,2π]×[0,2π]，periodic BC，参考 Yee et al. 1985。
 | `make demo-real-paper-scalar` | Full CFWENO scalar demo |
 | `make cfweno-burgers-demo` | CFWENO3 Burgers prototype demo |
 | `make cfweno-burgers-convergence` | CFWENO3 Burgers convergence study |
+| `make cfweno-burgers-predictor-sweep` | CFWENO3 Burgers predictor sensitivity |
+| `make cfweno-burgers-cfl-sweep` | CFWENO3 Burgers CFL sensitivity |
+| `make cfweno-burgers-reference-sensitivity` | CFWENO3 Burgers reference grid sensitivity |
 | `make demo-real-paper-burgers` | Full CFWENO Burgers demo |
 | `make demo-hll-workflow` | Run HLL paper-to-code demo end-to-end |
 | `make validation-index` | Generate `docs/validation_index.md` |

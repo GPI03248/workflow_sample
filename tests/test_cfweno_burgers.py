@@ -1,7 +1,8 @@
 """Tests for the CFWENO3 scalar nonlinear Burgers prototype.
 
 Covers: import, shape, constant state, mass conservation, finite values,
-CFL rejection, predictor iterations, CSV parseability, approval checker.
+CFL rejection, predictor iterations, CSV parseability, approval checker,
+sweep output parseability, audit document existence.
 """
 
 import csv
@@ -224,3 +225,87 @@ def test_full_cfweno_spec_not_approved():
     result = checker.check_spec_approval(
         Path("docs/scheme_specs/cfweno_pof_2025.md"))
     assert result["approved"] is False
+
+
+# ---- predictor sweep CSV parseability ----------------------------------------
+
+def test_predictor_sweep_csv_parseable():
+    """Predictor sweep error_summary.csv is parseable."""
+    csv_path = os.path.join(
+        os.path.dirname(__file__), "..", "results",
+        "cfweno_burgers_predictor_sweep", "error_summary.csv"
+    )
+    if not os.path.exists(csv_path):
+        pytest.skip("Run predictor sweep first")
+    with open(csv_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) >= 3  # at least one row per predictor
+    assert "predictor_iterations" in rows[0]
+    assert "l2_error" in rows[0]
+
+
+# ---- CFL sweep CSV parseability ----------------------------------------------
+
+def test_cfl_sweep_csv_parseable():
+    """CFL sweep error_summary.csv is parseable."""
+    csv_path = os.path.join(
+        os.path.dirname(__file__), "..", "results",
+        "cfweno_burgers_cfl_sweep", "error_summary.csv"
+    )
+    if not os.path.exists(csv_path):
+        pytest.skip("Run CFL sweep first")
+    with open(csv_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) >= 3
+    assert "cfl" in rows[0]
+    assert "l2_error" in rows[0]
+
+
+# ---- reference sensitivity CSV parseability -----------------------------------
+
+def test_reference_sensitivity_csv_parseable():
+    """Reference sensitivity error_summary.csv is parseable."""
+    csv_path = os.path.join(
+        os.path.dirname(__file__), "..", "results",
+        "cfweno_burgers_reference_sensitivity", "error_summary.csv"
+    )
+    if not os.path.exists(csv_path):
+        pytest.skip("Run reference sensitivity first")
+    with open(csv_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) >= 3
+    assert "reference_nx" in rows[0]
+    assert "l2_error" in rows[0]
+
+
+# ---- audit document exists ---------------------------------------------------
+
+def test_audit_document_exists():
+    """Formula consistency audit document exists."""
+    audit_path = os.path.join(
+        os.path.dirname(__file__), "..", "docs", "tasks",
+        "cfweno_burgers_prototype", "audit.md"
+    )
+    assert os.path.exists(audit_path), "Audit document missing"
+
+
+# ---- predictor convergence order ~2.0 ----------------------------------------
+
+def test_predictor_convergence_order_approx_2():
+    """All predictors achieve ~2nd-order convergence (not 3rd)."""
+    csv_path = os.path.join(
+        os.path.dirname(__file__), "..", "results",
+        "cfweno_burgers_predictor_sweep", "error_summary.csv"
+    )
+    if not os.path.exists(csv_path):
+        pytest.skip("Run predictor sweep first")
+    with open(csv_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+    for p in [0, 1, 2]:
+        l2_vals = [float(r["l2_error"]) for r in rows
+                    if int(r["predictor_iterations"]) == p]
+        if len(l2_vals) >= 2:
+            order = np.log(l2_vals[-2] / l2_vals[-1]) / np.log(2.0)
+            assert 1.5 < order < 2.5, (
+                f"Predictor {p}: unexpected order {order:.2f}"
+            )

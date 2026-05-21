@@ -12,7 +12,9 @@ ENV = tools/run_in_project_env.sh
         cfd-vortex cfd-vortex-convergence \
         cfd-validation \
         cfweno-scalar-demo cfweno-scalar-convergence cfweno-scalar-cfl-sweep demo-real-paper-scalar \
-        cfweno-burgers-demo cfweno-burgers-convergence demo-real-paper-burgers \
+        cfweno-burgers-demo cfweno-burgers-convergence \
+        cfweno-burgers-predictor-sweep cfweno-burgers-cfl-sweep \
+        cfweno-burgers-reference-sensitivity demo-real-paper-burgers \
         paper-extract paper-context \
         check-spec trace-task discover-env \
         demo-hll-workflow validation-index health \
@@ -91,7 +93,18 @@ cfweno-burgers-demo:
 cfweno-burgers-convergence:
 	$(ENV) python examples/run_cfweno_burgers_convergence.py
 
-demo-real-paper-burgers: cfweno-burgers-demo cfweno-burgers-convergence validation-index
+cfweno-burgers-predictor-sweep:
+	$(ENV) python examples/run_cfweno_burgers_predictor_sweep.py
+
+cfweno-burgers-cfl-sweep:
+	$(ENV) python examples/run_cfweno_burgers_cfl_sweep.py
+
+cfweno-burgers-reference-sensitivity:
+	$(ENV) python examples/run_cfweno_burgers_reference_sensitivity.py
+
+demo-real-paper-burgers: cfweno-burgers-demo cfweno-burgers-convergence \
+                         cfweno-burgers-predictor-sweep cfweno-burgers-cfl-sweep \
+                         cfweno-burgers-reference-sensitivity validation-index
 	@echo "=== CFWENO Burgers demo complete ==="
 
 cfd-validation: cfd-entropy cfd-entropy-convergence cfd-vortex cfd-vortex-convergence
