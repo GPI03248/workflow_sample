@@ -68,22 +68,35 @@ Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extractio
 | docs/roadmaps/v1_real_paper_demo.md | Updated CFWENO5 readiness status |
 
 ## Code Changes
-None — this is a documentation-only readiness review.
+None — this is a tooling/documentation-only task. solver/schemes.py NOT modified.
+
+## Formula Confidence Workflow Update (this commit)
+- Formula inventory created: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
+- Confidence checker created: `tools/check_formula_confidence.py`
+- Confidence report generated: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md`
+- 8 high / 4 medium / 0 low formulas
+- 4 blocking formulas (all medium-confidence required)
+- Tests added: `tests/test_formula_confidence.py`
+- Makefile targets added: formula-confidence-cfweno5, formula-confidence-cfweno5-strict, formula-confidence-report-cfweno5
 
 ## Tests Run
-- `make compile` — pass (no code changed)
-- `make test` — 254 passed (no new tests, no regressions)
-- `make health` — 5 OK
+- `make compile` — pass
+- `make test` — TBC
+- `make health` — TBC
+- `make formula-confidence-cfweno5` — expected pass
+- `make formula-confidence-cfweno5-strict` — expected fail (4 blocking formulas)
+- `make formula-confidence-report-cfweno5` — expected generate report
 
 ## Approval Status
 - `docs/scheme_specs/cfweno5_scalar_subset.md`: **Approved for implementation: no**
-- This spec will remain unapproved until Appendix A transcription is verified.
+- This spec will remain unapproved until formula-confidence-cfweno5-strict passes.
 
 ## Recommended Next Action
 1. Character-level transcription of Appendix A Eqs. (A1)-(A2) from rendered PDF
-2. If transcription matches existing extraction: change approval to yes
-3. If transcription differs: update extraction report and spec, then re-evaluate
-4. Alternatively: approve spec with implementation-time verification as first step
+2. Verify Eq. (19) smoothness indicators against PDF
+3. Update formula inventory confidence to high for verified formulas
+4. Run `make formula-confidence-cfweno5-strict` to confirm pass
+5. Change approval to yes
 
 ## Whether Production Solver Changed
 No — solver/schemes.py was NOT modified.
@@ -93,6 +106,6 @@ No — v1.0 still points to 42d97ee.
 
 ## Commit
 - **Hash**: pending (this task)
-- **Previous hash**: cb6b64a (formula extraction)
+- **Previous hash**: 326f7b2 (human verification integration)
 - **Branch**: master
 - **Push**: pending

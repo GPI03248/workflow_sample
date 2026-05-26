@@ -270,3 +270,46 @@ remain at "conditionally ready" rather than "ready for human approval."
    rendered PDF, OR
 2. The implementer does this check as the first implementation step, with a
    convergence test as immediate verification
+
+---
+
+## Formula Confidence Workflow Update (2026-05-26)
+
+### New tooling
+
+| Item | Path |
+|------|------|
+| Formula inventory (YAML) | `docs/formula_inventories/cfweno5_scalar_formulas.yml` |
+| Formula inventory README | `docs/formula_inventories/README.md` |
+| Confidence checker | `tools/check_formula_confidence.py` |
+| Confidence report | `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md` |
+
+### Current formula confidence summary
+
+| Confidence | Count | Notes |
+|-----------|-------|-------|
+| High | 8 | Table I (3), Table II (3), interface reconstruction (1), conservative update (1) |
+| Medium | 4 | Appendix A A1, A2, Eq.19 smoothness, stencil assembly |
+| Low | 0 | — |
+| **Blocking** | **4** | All medium-confidence required formulas |
+
+### Strict confidence check
+
+```
+make formula-confidence-cfweno5-strict
+```
+
+**Expected result**: FAIL — 4 required formulas have medium confidence.
+
+### Non-strict confidence check
+
+```
+make formula-confidence-cfweno5
+```
+
+**Expected result**: PASS (reports blocking items but does not fail).
+
+### Readiness decision after workflow integration
+
+Remains **conditionally ready / blocked for approval**. The formula confidence
+gate now enforces that `Approved=yes` cannot be set until the strict check passes.

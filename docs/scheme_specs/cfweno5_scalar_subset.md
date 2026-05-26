@@ -206,6 +206,39 @@ When implemented, validation must include:
 
 ---
 
+## Formula Confidence Gate
+
+**Formula inventory**: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
+**Confidence report**: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md`
+**Checker tool**: `tools/check_formula_confidence.py`
+
+All `implementation_relevance: required` formulas must be `confidence: high`
+and `verification_status: verified` before `Approved for implementation` can
+be changed to `yes`.
+
+### Current blocking formulas
+
+| Formula ID | Confidence | Verification | Reason |
+|------------|-----------|-------------|--------|
+| appendix_A_eq_A1 | medium | visually_confirmed | Transcription not independently verified |
+| appendix_A_eq_A2 | medium | visually_confirmed | Transcription not independently verified |
+| eq19_smoothness_r3 | medium | uncertain | Not independently verified |
+| cfweno5_stencil_expression | medium | partial | Depends on Appendix A verification |
+
+### Strict confidence check
+
+```
+make formula-confidence-cfweno5-strict
+```
+
+This check is **expected to fail** until Appendix A and Eq. (19) formulas are
+independently verified at high confidence.
+
+**Do not change `Approved for implementation` to `yes` until
+`make formula-confidence-cfweno5-strict` passes.**
+
+---
+
 ## Remaining Items Before Approval
 
 1. **Appendix A transcription verification**: The pdftotext transcription of Eqs. (A1)-(A2)

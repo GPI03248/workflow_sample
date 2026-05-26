@@ -88,6 +88,23 @@
    - Tests run
    - Remaining risks
 
+## Formula Confidence Rules (MANDATORY)
+
+1. **Before implementing any paper-derived numerical method**, check the formula
+   inventory in `docs/formula_inventories/`.
+2. **If any required formula has confidence < high**, the spec must not be set
+   to `Approved for implementation: yes`.
+3. **Do not implement high-order formulas based solely on pdftotext extraction.**
+   pdftotext mangles multi-column tables and multi-line piecewise expressions.
+4. **Low-confidence formulas must enter the human verification queue** surfaced
+   by `tools/check_formula_confidence.py`.
+5. **Original PDFs must not be committed** to the repository.
+6. Run the strict confidence gate before changing approval:
+   ```
+   make formula-confidence-cfweno5-strict
+   ```
+   If this fails, approval is blocked.
+
 See `docs/paper_to_code_workflow.md` for the full workflow description.
 
 ## CFD Task Workflow (MANDATORY)

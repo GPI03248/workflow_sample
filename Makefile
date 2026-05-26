@@ -20,6 +20,7 @@ ENV = tools/run_in_project_env.sh
         paper-extract paper-context \
         check-spec trace-task discover-env \
         demo-hll-workflow validation-index health \
+        formula-confidence-cfweno5 formula-confidence-cfweno5-strict formula-confidence-report-cfweno5 \
         release-check
 
 # --- Compilation ---
@@ -125,6 +126,17 @@ demo-v1.1-pre-order-recovery: cfweno-burgers-order-recovery
 
 cfd-validation: cfd-entropy cfd-entropy-convergence cfd-vortex cfd-vortex-convergence
 	@echo "=== Full CFD validation complete ==="
+
+# --- Formula Confidence ---
+
+formula-confidence-cfweno5:
+	$(ENV) python tools/check_formula_confidence.py docs/formula_inventories/cfweno5_scalar_formulas.yml
+
+formula-confidence-cfweno5-strict:
+	$(ENV) python tools/check_formula_confidence.py docs/formula_inventories/cfweno5_scalar_formulas.yml --require-high-for-implementation --spec docs/scheme_specs/cfweno5_scalar_subset.md
+
+formula-confidence-report-cfweno5:
+	$(ENV) python tools/check_formula_confidence.py docs/formula_inventories/cfweno5_scalar_formulas.yml --markdown-report docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md
 
 # --- Paper-to-Code Tools ---
 

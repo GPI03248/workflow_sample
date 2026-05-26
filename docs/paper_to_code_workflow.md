@@ -281,3 +281,46 @@ this workflow. See `docs/case_studies/hll_flux_paper_to_code.md` for the
 full walkthrough.
 
 Quick reproduction: `make demo-hll-workflow`
+
+---
+
+## Formula Confidence Workflow
+
+PDF extraction via `pdftotext` is not trusted blindly. Formulas extracted from
+papers are tracked as structured inventory items with confidence levels and
+verification status. This workflow surfaces low-confidence formulas for human
+verification before implementation approval.
+
+### Process
+
+1. **Extract formulas**: After PDF extraction, create a formula inventory YAML
+   file in `docs/formula_inventories/` with one entry per formula needed.
+2. **Assign confidence**: Each formula gets `confidence: high|medium|low` and
+   `verification_status: verified|visually_confirmed|partial|uncertain|missing`.
+3. **Run checker**: `tools/check_formula_confidence.py <inventory.yml>` reports
+   confidence levels and blocking items.
+4. **Strict gate**: `--require-high-for-implementation` mode enforces that all
+   `implementation_relevance: required` formulas must be `high` confidence and
+   `verified` before the spec can be approved.
+5. **Human verification queue**: Medium/low confidence required formulas are
+   surfaced as a prioritized queue for human verification.
+6. **Approval**: Do not set `Approved for implementation: yes` until the strict
+   confidence check passes.
+
+### Key Rules
+
+- Do not implement formulas based solely on `pdftotext` extraction
+- Low-confidence formulas must enter the human verification queue
+- Required formulas with medium/low confidence block implementation approval
+- Original PDFs must not be committed to the repository
+
+### Example: CFWENO5
+
+```
+make formula-confidence-cfweno5              # Non-strict check
+make formula-confidence-cfweno5-strict       # Strict gate (fails until all required = high)
+make formula-confidence-report-cfweno5       # Generate Markdown report
+```
+
+Inventory: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
+Report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md`

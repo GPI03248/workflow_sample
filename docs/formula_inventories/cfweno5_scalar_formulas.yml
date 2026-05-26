@@ -1,0 +1,232 @@
+# CFWENO5 Scalar Formula Inventory
+# Paper: Zhou-Dong-Pan (2025), Phys. Fluids 37, 106131
+# Paper ID: cfweno_pof_2025
+# Date created: 2026-05-26
+# Last updated: 2026-05-26
+
+metadata:
+  paper_id: cfweno_pof_2025
+  paper_title: "High-order compact fully discrete schemes for inviscid compressible flows simulations"
+  authors: "Zhou, Dong, Pan"
+  journal: "Physics of Fluids 37, 106131 (2025)"
+  doi: "10.1063/5.0291087"
+  target_scheme: CFWENO5 scalar linear advection
+  extraction_report: docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md
+  subset_spec: docs/scheme_specs/cfweno5_scalar_subset.md
+
+formulas:
+  - formula_id: table_I_r3_k0
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Table I"
+      page: 5
+      table: "Table I"
+      equation: null
+    formula_type: optimal_weight
+    expression: "nu*(1+nu) / 6"
+    extraction_method: "pdftotext + human verification"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "Optimal linear weight for ubar_{i+1/2}, substencil k=0. Human verified from rendered PDF page image."
+
+  - formula_id: table_I_r3_k1
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Table I"
+      page: 5
+      table: "Table I"
+      equation: null
+    formula_type: optimal_weight
+    expression: "(1+nu)*(2-nu) / 6"
+    extraction_method: "pdftotext + human verification"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "Optimal linear weight for ubar_{i+1/2}, substencil k=1. Human verified from rendered PDF page image."
+
+  - formula_id: table_I_r3_k2
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Table I"
+      page: 5
+      table: "Table I"
+      equation: null
+    formula_type: optimal_weight
+    expression: "(1-nu)*(2-nu) / 6"
+    extraction_method: "pdftotext + human verification (corrected)"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "Corrected from (1-nu)(2+nu)/6 to (1-nu)(2-nu)/6 by human verification. k=3 is not applicable (ellipsis)."
+
+  - formula_id: table_II_r3_k0
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Table II"
+      page: 6
+      table: "Table II"
+      equation: null
+    formula_type: next_time_level_weight
+    expression: "nu*(5*nu**2 + nu - 2) / (6*(3*nu - 1))"
+    extraction_method: "pdftotext + human verification"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "Next-time-level weight for u^{n+1}_{i+1/2}, substencil k=0. Denominator has singularity at nu=1/3."
+
+  - formula_id: table_II_r3_k1
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Table II"
+      page: 6
+      table: "Table II"
+      equation: null
+    formula_type: next_time_level_weight
+    expression: "-(30*nu**4 - 60*nu**3 - nu**2 + 31*nu - 8) / (6*(3*nu - 1)*(3*nu - 2))"
+    extraction_method: "pdftotext + human verification"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "Next-time-level weight for substencil k=1. Denominator singularities at nu=1/3 and nu=2/3."
+
+  - formula_id: table_II_r3_k2
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Table II"
+      page: 6
+      table: "Table II"
+      equation: null
+    formula_type: next_time_level_weight
+    expression: "(nu - 1)*(5*nu**2 - 11*nu + 4) / (6*(3*nu - 2))"
+    extraction_method: "pdftotext + human verification"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "Next-time-level weight for substencil k=2. Denominator singularity at nu=2/3. k=3 is not applicable (ellipsis)."
+
+  - formula_id: eq19_smoothness_r3
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Eq. (19)"
+      page: 5
+      table: null
+      equation: "Eq. (19)"
+    formula_type: smoothness_indicator
+    expression: null
+    extraction_method: "pdftotext only"
+    confidence: medium
+    verification_status: uncertain
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: true
+    notes: "Smoothness indicators b_30, b_31, b_32, b_33 for r=3 substencils. pdftotext extraction has complex multi-term expressions. Not independently verified. See extraction report for full expressions."
+
+  - formula_id: appendix_A_eq_A1
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Appendix A"
+      page: 23
+      table: null
+      equation: "Eq. (A1)"
+    formula_type: substencil_expression
+    expression: null
+    extraction_method: "pdftotext, visually confirmed present"
+    confidence: medium
+    verification_status: visually_confirmed
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: true
+    notes: "Initial-value reconstruction ubar^{3}_{i+1/2,k} for k=0,1,2,3. Visually confirmed present in rendered PDF. pdftotext transcription not independently verified character-by-character. Multi-line piecewise formatting was mangled. See extraction report Section 1 for best-effort transcription."
+
+  - formula_id: appendix_A_eq_A2
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Appendix A"
+      page: 23
+      table: null
+      equation: "Eq. (A2)"
+    formula_type: substencil_expression
+    expression: null
+    extraction_method: "pdftotext, visually confirmed present"
+    confidence: medium
+    verification_status: visually_confirmed
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: true
+    notes: "Next-time-level reconstruction u^{n+1,3}_{i+1/2,k} for k=0,1,2,3. Visually confirmed present. Same transcription concerns as A1. See extraction report Section 1."
+
+  - formula_id: cfweno5_stencil_expression
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Eq. (30) generalization"
+      page: 11
+      table: null
+      equation: "Eq. (30)"
+    formula_type: stencil_assembly
+    expression: null
+    extraction_method: "structural understanding from CFWENO3"
+    confidence: medium
+    verification_status: partial
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: true
+    notes: "The stencil assembly combines Appendix A substencils with WENO nonlinear weights (Eq. 17). Structure is understood: ubar = sum_k(w_bar_k * ubar_k). Depends on appendix_A_eq_A1 and appendix_A_eq_A2 being fully verified. Cannot be high confidence until substencils are verified."
+
+  - formula_id: cfweno5_interface_reconstruction
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Eqs. (11) and (13)"
+      page: 4
+      table: null
+      equation: "Eqs. (11), (13)"
+    formula_type: interface_reconstruction
+    expression: "(-u_{i-1} + 7*u_i + 7*u_{i+1} - u_{i+2}) / 12"
+    extraction_method: "pdftotext + structural confirmation"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "4th-order centered interface reconstruction. Same as CFWENO3. Confirmed consistent with Eq. (13) for quartic polynomial."
+
+  - formula_id: cfweno5_conservative_update
+    paper_id: cfweno_pof_2025
+    source:
+      section: "Eq. (25)"
+      page: null
+      table: null
+      equation: "Eq. (25)"
+    formula_type: conservative_update
+    expression: "u_i^{n+1} = u_i - cfl * (ubar_{i+1/2} - ubar_{i-1/2})"
+    extraction_method: "pdftotext + structural confirmation from CFWENO3"
+    confidence: high
+    verification_status: verified
+    used_by:
+      - docs/scheme_specs/cfweno5_scalar_subset.md
+    implementation_relevance: required
+    blocks_implementation: false
+    notes: "Conservative update formula. Same structure as CFWENO3. Verified through successful CFWENO3 implementation."

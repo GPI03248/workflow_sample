@@ -233,6 +233,15 @@ higher-order smooth-problem benchmark.
 
 **Decision**: Conditionally ready. Implementation pending Appendix A verification + approval.
 
+**Formula confidence workflow** (this commit):
+- Formula inventory: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
+- Confidence checker: `tools/check_formula_confidence.py`
+- Confidence report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md`
+- 8 high / 4 medium / 0 low formulas
+- 4 blocking formulas: Appendix A A1, A2; Eq.19 smoothness; stencil assembly
+- Strict check (`make formula-confidence-cfweno5-strict`) expected to fail
+- Implementation still pending strict formula confidence pass
+
 ---
 
 ## Next Step Candidates
