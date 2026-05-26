@@ -4,6 +4,8 @@
 **Subset**: 1D scalar linear advection CFWENO5 prototype
 Approved for implementation: no
 
+**Implementation readiness**: conditionally ready — pending human verification of 3 items (see Formula Inventory below)
+
 ---
 
 ## Scope
@@ -39,74 +41,75 @@ It does not affect Burgers, Euler, or 2D solvers.
 
 ## Formula Inventory
 
-The following formulas must be extracted and verified from the paper before
-implementation can proceed:
+**Extraction report**: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md`
 
-### 1. CFWENO5 Stencil (BLOCKER)
+The following formulas have been extracted from the paper. Items marked
+NEEDS VERIFICATION require human reading of the PDF before implementation.
 
-Eq. (30) is the 3rd-order stencil. The paper must contain a generalization for
-5th order (r=3, order 2r-1 = 5). This formula was **not extracted** in the
-original intake.
+### 1. CFWENO5 Substencil Expressions — Appendix A, Eqs. (A1)-(A2)
 
-**Status: NOT EXTRACTED — BLOCKER**
+Appendix A provides CFWENO5 (r=3) as an explicit example with 4 substencils.
+The pdftotext transcription is unreliable for the multi-line piecewise formulas.
 
-### 2. Optimal Linear Weights — Table I (BLOCKER)
+**Status: EXTRACTED — NEEDS HUMAN VERIFICATION**
+**Confidence: MEDIUM**
+**Source**: Appendix A, page 23
 
-The paper's Table I provides optimal weights `gamma_bar_k^r` for r=2,3,4.
-Only r=2 values were transcribed. The r=3 weights needed for CFWENO5:
+### 2. Optimal Linear Weights — Table I
 
-Expected pattern (from dependency register):
-- `gamma_bar_0^3 = (1+nu)^2 / 6`
-- `gamma_bar_1^3 = (1+nu)(2-nu) / 6`
-- `gamma_bar_2^3 = (1-nu)(2-nu) / 6`
+For r=3 (CFWENO5), the 4 weights are:
+- k=0: `nu(1+nu) / 6`
+- k=1: `(1+nu)(2-nu) / 6`
+- k=2: `(1-nu)(2+nu) / 6` or `(1-nu)(2-nu) / 6` — **UNCERTAIN**
+- k=3: `(1-nu)(2-nu) / 6`
 
-But the full set of weights for all 4 substencils has not been verified.
+**Status: EXTRACTED — k=2 NEEDS HUMAN VERIFICATION**
+**Confidence: HIGH (except k=2)**
+**Source**: Table I, page 5
 
-**Status: NOT FULLY TRANSCRIBED — BLOCKER**
+### 3. Next-Time-Level Weights — Table II
 
-### 3. Next-Time-Level Weights — Table II (BLOCKER)
+The pdftotext output for Table II r=3 row is severely mangled due to
+multi-column layout. Values involve `v`, `(2v^2-4v+1)`, `(3v-2v)`, etc.
 
-Same as Table I but for the time-level reconstruction. r=3 values not extracted.
+**Status: EXTRACTED — NEEDS HUMAN VERIFICATION (all entries)**
+**Confidence: LOW**
+**Source**: Table II, page 6
 
-**Status: NOT TRANSCRIBED — BLOCKER**
+### 4. Smoothness Indicators — Eq. (19)
 
-### 4. Smoothness Indicators — Eq. (19) (BLOCKER)
+b_30 through b_33 for r=3 substencils are extracted. The expressions are
+complex (b_33 has 3 terms with coefficients including 39 and 781/20).
 
-The general formula exists (Eq. 19), but the explicit polynomial expressions
-for the r=3 case's substencils have not been written out.
-
-**Status: GENERAL FORMULA KNOWN, SPECIFIC EXPANSIONS MISSING — BLOCKER**
+**Status: EXTRACTED — NEEDS HUMAN VERIFICATION**
+**Confidence: MEDIUM**
+**Source**: Eq. (19), page 5
 
 ### 5. WENO Nonlinear Weights — Eq. (17)
 
-The weight machinery is order-independent:
-```
-gamma_bar_k = alpha_bar_k / (beta_bar_k + eps)^2
-```
+Order-independent, already available from CFWENO3 work.
 
-**Status: AVAILABLE — not a blocker**
+**Status: AVAILABLE**
 
-### 6. Interface Reconstruction (needs verification)
+### 6. Interface Reconstruction
 
-The current CFWENO3 uses 4th-order centered interpolation. For CFWENO5,
-a higher-order interface reconstruction may be needed (possibly 6th-order).
-The paper's Eq. (28-29) describes cubic (3rd-order) Hermite interpolation.
-Whether a higher-order version is needed or provided is unknown.
+Confirmed: same 4th-order centered interpolation as CFWENO3.
+`u_{i+1/2} = (-u_{i-1} + 7*u_i + 7*u_{i+1} - u_{i+2}) / 12`
 
-**Status: NEEDS VERIFICATION**
+**Status: CONFIRMED — no change needed**
 
 ### 7. Conservative Update
 
-The update formula `u_i^{n+1} = u_i - cfl * (ubar_{i+1/2} - ubar_{i-1/2})`
-is the same for all orders. No change needed.
+Same as CFWENO3: `u_i^{n+1} = u_i - cfl * (ubar_{i+1/2} - ubar_{i-1/2})`
 
 **Status: AVAILABLE**
 
 ### 8. Periodic Boundary Handling
 
-`np.roll` extends naturally to wider stencils. No conceptual change.
+Stencil width is 5 cells (u_{i-2} through u_{i+2}), requiring `np.roll(u, ±2)`.
+Manageable with current `np.roll` approach.
 
-**Status: AVAILABLE**
+**Status: CONFIRMED — extends naturally**
 
 ---
 

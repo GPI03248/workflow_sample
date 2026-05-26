@@ -217,9 +217,18 @@ higher-order smooth-problem benchmark.
 3. Eq. (19) smoothness indicators not expanded for r=3 substencils
 4. Appendix A content never extracted
 
-**Recommended path**: Re-read paper → extract CFWENO5 formulas → update spec → approve → refactor solver → implement.
+**Formula extraction update** (commit pending):
+- All formulas now extracted from paper via pdftotext
+- Appendix A (Eqs. A1-A2): CFWENO5 substencil expressions — extracted, medium confidence
+- Table I r=3 weights: extracted, k=2 uncertain
+- Table II r=3 weights: extracted, low confidence (mangled layout)
+- Eq. (19) smoothness indicators: extracted, medium confidence
+- Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md`
+- **Decision updated: CONDITIONALLY READY — pending human verification of 3 PDF items**
 
-**Decision**: Blocked until paper formulas are extracted. Implementation pending approval.
+**Recommended path**: Human verify PDF pages 5, 6, 23 → approve spec → refactor solver → implement.
+
+**Decision**: Conditionally ready after formula extraction. Implementation pending human verification + approval.
 
 ---
 

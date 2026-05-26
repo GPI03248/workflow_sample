@@ -2,17 +2,20 @@
 
 **Date**: 2026-05-26
 **Based on**: v1.0 tag `42d97ee`, Burgers order recovery commit `4d671c0`
-**Decision**: **Blocked**
+**Decision**: **Conditionally ready** (updated after formula extraction)
 
 ---
 
 ## Is Scalar CFWENO5 Ready?
 
-**Decision: BLOCKED — formula extraction required before implementation**
+**Decision: CONDITIONALLY READY — human verification of 3 items required**
 
-The CFWENO5 scalar linear advection prototype cannot proceed until the paper's
-5th-order stencil formula, weight tables, and smoothness indicator polynomials
-are extracted and verified. The project's paper-to-code workflow requires all
+All CFWENO5 formulas have been located and extracted from the paper. The primary
+blocker (formulas not extracted) is resolved. However, pdftotext mangled critical
+multi-column table entries and multi-line piecewise formulas, so human reading
+of specific PDF pages is required before implementation.
+
+See `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md` for full details.
 formulas to be transcribed and approved before implementation begins.
 
 ---
@@ -156,3 +159,66 @@ It should be a separate pre-implementation task after approval.
 
 The highest-risk step is formula extraction — a single transcription error in
 a stencil coefficient can cause convergence failure that is hard to diagnose.
+
+---
+
+## Formula Extraction Update (2026-05-26)
+
+**Extraction report**: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md`
+
+### What was extracted
+
+1. **Appendix A, Eqs. (A1)-(A2)**: CFWENO5 substencil expressions for r=3
+   with 4 substencils (k=0,1,2,3). Both initial-value and next-time-level
+   reconstructions are provided. **Confidence: MEDIUM** — pdftotext mangled
+   multi-line piecewise formatting.
+
+2. **Table I optimal weights for r=3**: All 4 weights extracted. k=0,1,3 are
+   clear; k=2 is ambiguous between `(1-nu)(2+nu)` and `(1-nu)(2-nu)`.
+   **Confidence: HIGH** (except k=2).
+
+3. **Table II weights for r=3**: The multi-column layout was severely mangled.
+   Partial expressions visible but denominators unclear.
+   **Confidence: LOW** — hard requirement for human verification.
+
+4. **Eq. (19) smoothness indicators b_30-b_33**: All 4 extracted with coefficients.
+   b_33 has complex multi-term expression with coefficient 781/20.
+   **Confidence: MEDIUM**.
+
+5. **Interface reconstruction**: Confirmed same 4th-order centered as CFWENO3.
+   **Confidence: HIGH**.
+
+6. **Boundary handling**: Stencil width 5 cells, `np.roll(±2)` sufficient.
+   **Confidence: HIGH**.
+
+### What remains uncertain
+
+1. Table I, r=3, k=2 weight value
+2. Table II, r=3, all 4 weight values
+3. Appendix A, Eqs. (A1)-(A2) substencil coefficients
+
+### Whether blockers remain
+
+**Partially** — all formulas are now located in the paper and have been
+extracted at medium-to-low confidence. The remaining blocker is **verification
+accuracy**, not formula absence.
+
+### Whether implementation can proceed after human review
+
+**Yes, conditionally** — after a human verifies the 3 uncertain items by
+reading pages 5, 6, and 23 of the PDF, implementation can proceed.
+
+### Whether helper refactor is recommended before implementation
+
+**Yes** — recommend refactoring to `solver/cfweno_scalar.py` as a separate
+preparatory task before CFWENO5 implementation. This keeps CFWENO5 stencil
+coefficients separate from the existing upwind/Lax-Wendroff/step infrastructure.
+
+### Updated Readiness Decision
+
+**CONDITIONALLY READY** — human must verify 3 items in the PDF:
+1. Page 5: Table I row r=3, column k=2
+2. Page 6: Table II row r=3, all columns
+3. Page 23: Appendix A, Eqs. (A1) and (A2)
+
+After verification, the spec can be approved and implementation can begin.

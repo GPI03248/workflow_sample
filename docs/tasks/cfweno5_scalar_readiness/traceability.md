@@ -23,11 +23,22 @@ target after the Burgers order recovery diagnostic concluded that CFWENO3 Burger
 | docs/roadmaps/v1_real_paper_demo.md | Updated with CFWENO5 readiness section |
 
 ## Readiness Decision
-**BLOCKED** — CFWENO5 scalar implementation cannot proceed until:
-1. CFWENO5 stencil formula is extracted from the paper
-2. Table I/II optimal weights for r=3 are transcribed
-3. Eq. (19) smoothness indicators are expanded for r=3
-4. Appendix A content is extracted (likely contains the above)
+**CONDITIONALLY READY** — formulas extracted, pending human verification of 3 items.
+
+Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md`
+
+### What changed
+- All CFWENO5 formulas located and extracted from the paper
+- Appendix A (Eqs. A1-A2): substencil expressions extracted (medium confidence)
+- Table I r=3 weights: extracted (high confidence, k=2 uncertain)
+- Table II r=3 weights: extracted (low confidence, needs full verification)
+- Eq. (19) smoothness indicators b_30-b_33: extracted (medium confidence)
+- Interface reconstruction: confirmed same as CFWENO3
+
+### Remaining human verification items
+1. Table I, r=3, k=2 weight value (page 5)
+2. Table II, r=3, all 4 weight values (page 6)
+3. Appendix A, Eqs. (A1)-(A2) substencil coefficients (page 23)
 
 ## Code Changes
 None — this is a documentation-only readiness review.
