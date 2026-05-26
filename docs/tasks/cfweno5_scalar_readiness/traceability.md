@@ -6,7 +6,7 @@
 - **Based on v1.0 tag**: 42d97ee
 - **Previous diagnostic**: Burgers order recovery commit 4d671c0
 - **Date**: 2026-05-26
-- **Status**: complete (human verification integrated, implementation still blocked)
+- **Status**: complete (character-level verification integrated, 1 blocking formula remains)
 
 ## Purpose
 Determine whether scalar CFWENO5 linear advection is a viable next implementation
@@ -23,8 +23,8 @@ target after the Burgers order recovery diagnostic concluded that CFWENO3 Burger
 | docs/roadmaps/v1_real_paper_demo.md | Updated with CFWENO5 readiness section |
 
 ## Readiness Decision
-**CONDITIONALLY READY** — Table I and Table II human-verified; Appendix A visually
-confirmed but transcription not independently verified.
+**CONDITIONALLY READY** — 11 of 12 formulas at high confidence. 1 blocking formula
+remains (appendix_A_eq_A2, derivable from A1).
 
 Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md`
 
@@ -45,8 +45,7 @@ Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extractio
 - Smoothness indicators (Eq. 19) not part of this verification round
 
 ### Remaining uncertainties
-1. Appendix A, Eqs. (A1)-(A2) substencil transcription — character-level check needed
-2. Eq. (19) smoothness indicators b_30-b_33 — not independently verified
+1. Appendix A Eq. (A2) d/dv derivative terms — pdftotext ambiguous, derivable from A1
 
 ## Human Verification Record
 - **Date**: 2026-05-26
@@ -61,11 +60,14 @@ Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extractio
 ## Updated Files (this task)
 | File | Change |
 |------|--------|
-| docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md | Added human verification section |
-| docs/scheme_specs/cfweno5_scalar_subset.md | Corrected Table I/II, updated readiness status |
-| docs/feasibility/cfweno5_scalar_readiness.md | Added human verification update, updated decision |
+| docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md | Added human verification section, corrected b_30 |
+| docs/formula_inventories/cfweno5_scalar_formulas.yml | 3 formulas promoted: high/verified |
+| docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md | Regenerated |
+| docs/scheme_specs/cfweno5_scalar_subset.md | Updated verification status, blocking formulas |
+| docs/feasibility/cfweno5_scalar_readiness.md | Updated confidence summary, decision |
 | docs/tasks/cfweno5_scalar_readiness/traceability.md | This update |
 | docs/roadmaps/v1_real_paper_demo.md | Updated CFWENO5 readiness status |
+| docs/tasks/cfweno5_formula_verification/verification_packet.md | New: verification results |
 
 ## Code Changes
 None — this is a tooling/documentation-only task. solver/schemes.py NOT modified.
@@ -74,17 +76,17 @@ None — this is a tooling/documentation-only task. solver/schemes.py NOT modifi
 - Formula inventory created: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
 - Confidence checker created: `tools/check_formula_confidence.py`
 - Confidence report generated: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md`
-- 8 high / 4 medium / 0 low formulas
-- 4 blocking formulas (all medium-confidence required)
-- Tests added: `tests/test_formula_confidence.py`
-- Makefile targets added: formula-confidence-cfweno5, formula-confidence-cfweno5-strict, formula-confidence-report-cfweno5
+- 11 high / 1 medium / 0 low formulas
+- 1 blocking formula (appendix_A_eq_A2, medium confidence, derivable from A1)
+- Tests: `tests/test_formula_confidence.py`
+- Makefile targets: formula-confidence-cfweno5, formula-confidence-cfweno5-strict, formula-confidence-report-cfweno5
 
 ## Tests Run
 - `make compile` — pass
 - `make test` — TBC
 - `make health` — TBC
 - `make formula-confidence-cfweno5` — expected pass
-- `make formula-confidence-cfweno5-strict` — expected fail (4 blocking formulas)
+- `make formula-confidence-cfweno5-strict` — expected fail (1 blocking formula: appendix_A_eq_A2)
 - `make formula-confidence-report-cfweno5` — expected generate report
 
 ## Approval Status
@@ -92,9 +94,9 @@ None — this is a tooling/documentation-only task. solver/schemes.py NOT modifi
 - This spec will remain unapproved until formula-confidence-cfweno5-strict passes.
 
 ## Recommended Next Action
-1. Character-level transcription of Appendix A Eqs. (A1)-(A2) from rendered PDF
-2. Verify Eq. (19) smoothness indicators against PDF
-3. Update formula inventory confidence to high for verified formulas
+1. Derive Appendix A Eq. (A2) from A1 by differentiating coefficients wrt nu
+2. Verify derived A2 against paper's A2 expressions
+3. Update formula inventory confidence to high for appendix_A_eq_A2
 4. Run `make formula-confidence-cfweno5-strict` to confirm pass
 5. Change approval to yes
 

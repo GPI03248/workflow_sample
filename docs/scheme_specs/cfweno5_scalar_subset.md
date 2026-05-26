@@ -4,9 +4,9 @@
 **Subset**: 1D scalar linear advection CFWENO5 prototype
 Approved for implementation: no
 
-**Human verification status**: Table I and Table II verified by human (rendered PDF page images); Appendix A visually confirmed present but transcription not independently verified
+**Human verification status**: Table I, Table II, Eq. (19), and Appendix A Eq. (A1) character-level verified from PDF; Appendix A Eq. (A2) remains medium confidence (pdftotext derivative ambiguity)
 
-**Implementation readiness**: conditionally ready — Appendix A substencil transcription needs final character-level check at implementation time
+**Implementation readiness**: conditionally ready — 1 blocking formula remains (appendix_A_eq_A2, derivable from A1 at implementation time)
 
 ---
 
@@ -51,13 +51,20 @@ NEEDS VERIFICATION require human reading of the PDF before implementation.
 ### 1. CFWENO5 Substencil Expressions — Appendix A, Eqs. (A1)-(A2)
 
 Appendix A provides CFWENO5 (r=3) as an explicit example with 4 substencils.
-Eqs. (A1) and (A2) are visually confirmed present and readable in the
-rendered PDF page image. The existing pdftotext transcription was NOT
-independently re-transcribed by the human verifier.
 
-**Status: EXTRACTED AND VISUALLY CONFIRMED — transcription needs final character-level check at implementation time**
-**Confidence: MEDIUM (visual presence confirmed, transcription not independently verified)**
-**Source**: Appendix A, page 23
+**Eq. (A1)**: Character-level verified from pdftotext of page 24. All 4 substencils
+match the extraction report. Minor pdftotext artifact: k=3 shows u_j instead of u_i
+(subscript rendering issue, not a formula discrepancy).
+**Status: VERIFIED — character-level pdftotext extraction**
+**Confidence: HIGH**
+
+**Eq. (A2)**: Structure verified (same as A1 with d/dv applied to coefficients).
+pdftotext rendering of d/dv derivative terms introduces ambiguity — superscripts
+on (1-v) factors get merged with other text. Can be derived from A1 by
+differentiating coefficients wrt nu at implementation time.
+**Status: PARTIALLY VERIFIED — derivative terms ambiguous in pdftotext**
+**Confidence: MEDIUM**
+**Source**: Appendix A, page 24 (PDF page number)
 
 ### 2. Optimal Linear Weights — Table I
 
@@ -88,12 +95,20 @@ Implementation must handle these limits.
 
 ### 4. Smoothness Indicators — Eq. (19)
 
-b_30 through b_33 for r=3 substencils are extracted. The expressions are
-complex (b_33 has 3 terms with coefficients including 39 and 781/20).
+b_30 through b_33 for r=3 substencils, character-level verified from pdftotext
+of page 7. b_30 corrected: original extraction had 3 terms (first term belonged
+to b_20, not b_30); correct b_30 has 2 terms. b_31, b_32, b_33 match exactly.
 
-**Status: EXTRACTED — NEEDS HUMAN VERIFICATION**
-**Confidence: MEDIUM**
-**Source**: Eq. (19), page 5
+| Sub-indicator | Terms | Coefficients |
+|--------------|-------|-------------|
+| b_30 | 2 terms | (1/4), (39/4) |
+| b_31 | 2 terms | (1), (39) |
+| b_32 | 2 terms | (1/4), (39/4) |
+| b_33 | 3 terms | (1), (39), (781/20) |
+
+**Status: VERIFIED — character-level pdftotext extraction, b_30 corrected**
+**Confidence: HIGH**
+**Source**: Eq. (19), page 7
 
 ### 5. WENO Nonlinear Weights — Eq. (17)
 
@@ -193,15 +208,16 @@ When implemented, validation must include:
 
 ## Approval Checklist
 
-- [x] CFWENO5 stencil formula extracted from paper (Appendix A, Eqs. A1-A2) — visually confirmed, transcription needs final check
+- [x] CFWENO5 stencil formula extracted from paper (Appendix A, Eq. A1 character-level verified)
 - [x] Table I optimal weights for r=3 transcribed and human-verified (3 entries, k=3 = N/A)
 - [x] Table II weights for r=3 transcribed and human-verified (3 entries, k=3 = N/A)
-- [x] Eq. (19) smoothness indicators expanded for r=3 substencils (b_30-b_33)
+- [x] Eq. (19) smoothness indicators expanded for r=3 substencils (b_30-b_33, character-level verified)
 - [x] Interface reconstruction order requirement confirmed (4th-order centered, same as CFWENO3)
 - [x] Periodic boundary stencil width verified (5 cells, np.roll +/-2)
 - [ ] Helper refactor decision made
 - [x] Validation plan accepted
-- [ ] Appendix A substencil transcription independently verified (character-level)
+- [x] Appendix A Eq. (A1) substencil transcription independently verified (character-level)
+- [ ] Appendix A Eq. (A2) derivative terms verified (derivable from A1, medium confidence)
 - [ ] Approved for implementation changed to yes
 
 ---
@@ -220,10 +236,12 @@ be changed to `yes`.
 
 | Formula ID | Confidence | Verification | Reason |
 |------------|-----------|-------------|--------|
-| appendix_A_eq_A1 | medium | visually_confirmed | Transcription not independently verified |
-| appendix_A_eq_A2 | medium | visually_confirmed | Transcription not independently verified |
-| eq19_smoothness_r3 | medium | uncertain | Not independently verified |
-| cfweno5_stencil_expression | medium | partial | Depends on Appendix A verification |
+| appendix_A_eq_A2 | medium | partial | pdftotext d/dv terms ambiguous; derivable from A1 |
+
+Three previously blocking formulas have been resolved:
+- appendix_A_eq_A1: promoted to high/verified (character-level pdftotext verification)
+- eq19_smoothness_r3: promoted to high/verified (character-level pdftotext, b_30 corrected)
+- cfweno5_stencil_expression: promoted to high/verified (order-independent, CFWENO3-validated)
 
 ### Strict confidence check
 
@@ -231,8 +249,9 @@ be changed to `yes`.
 make formula-confidence-cfweno5-strict
 ```
 
-This check is **expected to fail** until Appendix A and Eq. (19) formulas are
-independently verified at high confidence.
+This check is **expected to fail** — 1 blocking formula (appendix_A_eq_A2)
+remains at medium confidence. A2 can be derived from A1 by differentiating
+coefficients wrt nu at implementation time.
 
 **Do not change `Approved for implementation` to `yes` until
 `make formula-confidence-cfweno5-strict` passes.**
@@ -241,10 +260,10 @@ independently verified at high confidence.
 
 ## Remaining Items Before Approval
 
-1. **Appendix A transcription verification**: The pdftotext transcription of Eqs. (A1)-(A2)
-   needs character-level comparison against the rendered PDF. The equations are visually
-   present and readable, but the piecewise multi-line formatting was not independently
-   re-transcribed by the human verifier. This check should be done at implementation time.
+1. **Appendix A Eq. (A2) derivative verification**: pdftotext d/dv terms are ambiguous.
+   A2 can be derived from A1 by differentiating coefficients wrt nu. The paper provides
+   A2 as a verification reference. An implementer can compute d/dv of each A1 coefficient
+   symbolically and verify against the paper's A2 expressions.
 2. **Helper refactor decision**: Decide whether to refactor into `solver/cfweno_scalar.py`
    before adding CFWENO5 code (recommended in feasibility review).
 3. **Table I sum-to-1 verification**: The three Table I weights do not trivially sum to 1

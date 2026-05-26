@@ -193,8 +193,7 @@ the r=3 row area, possibly as denominators, but this is speculative.
 The smoothness indicators for r=3 (b_30, b_31, b_32, b_33) are:
 
 ```
-b_30 = 4*(u_j - u_{j-1/2})^2
-     + (1/4)(u_{j-1} - 6*u_{j-1/2} + 5*u_j)^2
+b_30 = (1/4)(u_{j-1} - 6*u_{j-1/2} + 5*u_j)^2
      + (39/4)(u_{j-1} - 2*u_{j-1/2} + u_j)^2
 
 b_31 = (u_{j-1/2} - u_{j+1/2})^2
@@ -223,6 +222,10 @@ For CFWENO5 (r=3): b_30, b_31, b_32, b_33.
 
 The transcriptions above for b_30-b_33 appear reasonable from the PDF text,
 but the long expressions (especially b_33) need human verification.
+
+**Correction (2026-05-26)**: b_30 was previously listed with 3 terms.
+The first term `4*(u_j - u_{j-1/2})^2` belongs to b_20 (r=2), not b_30.
+Corrected b_30 has 2 terms only. Verified by pdftotext of Eq. (19) page 7.
 
 ---
 

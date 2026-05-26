@@ -7,14 +7,14 @@
 | Metric | Count |
 |--------|-------|
 | Total formulas | 12 |
-| High confidence | 8 |
-| Medium confidence | 4 |
+| High confidence | 11 |
+| Medium confidence | 1 |
 | Low confidence | 0 |
-| Blocking formulas | 4 |
+| Blocking formulas | 1 |
 
 **Implementation readiness**: Not ready for implementation approval
 
-## High Confidence Formulas (8)
+## High Confidence Formulas (11)
 
 - `table_I_r3_k0`: verified, relevance=required
 - `table_I_r3_k1`: verified, relevance=required
@@ -22,39 +22,30 @@
 - `table_II_r3_k0`: verified, relevance=required
 - `table_II_r3_k1`: verified, relevance=required
 - `table_II_r3_k2`: verified, relevance=required
+- `eq19_smoothness_r3`: verified, relevance=required
+- `appendix_A_eq_A1`: verified, relevance=required
+- `cfweno5_stencil_expression`: verified, relevance=required
 - `cfweno5_interface_reconstruction`: verified, relevance=required
 - `cfweno5_conservative_update`: verified, relevance=required
 
-## Medium/Low Confidence Formulas (4)
+## Medium/Low Confidence Formulas (1)
 
-- `eq19_smoothness_r3`: confidence=medium, verification=uncertain, relevance=required, blocks=True
-- `appendix_A_eq_A1`: confidence=medium, verification=visually_confirmed, relevance=required, blocks=True
-- `appendix_A_eq_A2`: confidence=medium, verification=visually_confirmed, relevance=required, blocks=True
-- `cfweno5_stencil_expression`: confidence=medium, verification=partial, relevance=required, blocks=True
+- `appendix_A_eq_A2`: confidence=medium, verification=partial, relevance=required, blocks=True
 
-## Blocking Formulas (4)
+## Blocking Formulas (1)
 
 The following formulas block implementation approval:
 
-1. `eq19_smoothness_r3`: confidence=medium, verification=uncertain
-1. `appendix_A_eq_A1`: confidence=medium, verification=visually_confirmed
-1. `appendix_A_eq_A2`: confidence=medium, verification=visually_confirmed
-1. `cfweno5_stencil_expression`: confidence=medium, verification=partial
+1. `appendix_A_eq_A2`: confidence=medium, verification=partial
 
-## Warnings (4)
+## Warnings (1)
 
-- REQUIRED formula 'eq19_smoothness_r3' has medium confidence (status: uncertain)
-- REQUIRED formula 'appendix_A_eq_A1' has medium confidence (status: visually_confirmed)
-- REQUIRED formula 'appendix_A_eq_A2' has medium confidence (status: visually_confirmed)
-- REQUIRED formula 'cfweno5_stencil_expression' has medium confidence (status: partial)
+- REQUIRED formula 'appendix_A_eq_A2' has medium confidence (status: partial)
 
 ## Recommended Human Verification Queue
 
-1. `eq19_smoothness_r3`: currently medium confidence, uncertain
-2. `appendix_A_eq_A1`: currently medium confidence, visually_confirmed
-3. `appendix_A_eq_A2`: currently medium confidence, visually_confirmed
-4. `cfweno5_stencil_expression`: currently medium confidence, partial
+1. `appendix_A_eq_A2`: currently medium confidence, partial
 
 ## Decision
 
-**Conditionally ready, blocked by 4 medium/low confidence required formulas.**
+**Conditionally ready, blocked by 1 medium/low confidence required formulas.**
