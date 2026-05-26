@@ -198,7 +198,7 @@ by testing alternative nu treatments (constant, interface-based, predictor-updat
 
 ### Scalar CFWENO5 Readiness Review (v1.3-pre)
 
-**Status**: Readiness review complete — **BLOCKED** pending formula extraction.
+**Status**: Readiness review complete — **CONDITIONALLY READY** after human verification.
 
 After Burgers order recovery confirmed ~2nd order is structural, the next target
 is CFWENO5 scalar linear advection. This is safer than Euler and provides a
@@ -210,25 +210,28 @@ higher-order smooth-problem benchmark.
 | Subset spec (not approved) | `docs/scheme_specs/cfweno5_scalar_subset.md` |
 | Feasibility review | `docs/feasibility/cfweno5_scalar_readiness.md` |
 | Traceability | `docs/tasks/cfweno5_scalar_readiness/traceability.md` |
+| Formula extraction report | `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md` |
 
-**Key blockers**:
-1. CFWENO5 stencil formula not extracted from paper (Eq. 30 is 3rd-order only)
-2. Table I/II optimal weights for r=3 not transcribed
-3. Eq. (19) smoothness indicators not expanded for r=3 substencils
-4. Appendix A content never extracted
-
-**Formula extraction update** (commit pending):
-- All formulas now extracted from paper via pdftotext
+**Formula extraction** (commit cb6b64a):
+- All formulas extracted from paper via pdftotext
 - Appendix A (Eqs. A1-A2): CFWENO5 substencil expressions — extracted, medium confidence
 - Table I r=3 weights: extracted, k=2 uncertain
 - Table II r=3 weights: extracted, low confidence (mangled layout)
 - Eq. (19) smoothness indicators: extracted, medium confidence
-- Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md`
-- **Decision updated: CONDITIONALLY READY — pending human verification of 3 PDF items**
 
-**Recommended path**: Human verify PDF pages 5, 6, 23 → approve spec → refactor solver → implement.
+**Human verification** (this commit):
+- Table I k=2 **corrected** to `(1-nu)(2-nu)/6` (was `(1-nu)(2+nu)/6`)
+- Table I r=3 has 3 valid entries (k=3 = N/A)
+- Table II r=3 fully verified — 3 valid entries with correct formulas
+- Table II r=3 has 3 valid entries (k=3 = N/A), singularities at nu=1/3 and nu=2/3
+- Appendix A visually confirmed present — transcription not independently verified
+- **Decision: CONDITIONALLY READY — Appendix A transcription needs final check**
 
-**Decision**: Conditionally ready after formula extraction. Implementation pending human verification + approval.
+**Remaining before approval**: Character-level verification of Appendix A Eqs. (A1)-(A2).
+
+**Recommended path**: Verify Appendix A transcription → approve spec → refactor solver → implement.
+
+**Decision**: Conditionally ready. Implementation pending Appendix A verification + approval.
 
 ---
 

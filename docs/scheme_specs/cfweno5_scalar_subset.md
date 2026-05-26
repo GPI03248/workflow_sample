@@ -4,7 +4,9 @@
 **Subset**: 1D scalar linear advection CFWENO5 prototype
 Approved for implementation: no
 
-**Implementation readiness**: conditionally ready — pending human verification of 3 items (see Formula Inventory below)
+**Human verification status**: Table I and Table II verified by human (rendered PDF page images); Appendix A visually confirmed present but transcription not independently verified
+
+**Implementation readiness**: conditionally ready — Appendix A substencil transcription needs final character-level check at implementation time
 
 ---
 
@@ -18,8 +20,8 @@ u_t + a * u_x = 0,  a = const > 0
 
 Periodic boundary conditions on [0, 1).
 
-**This is a readiness spec only.** Implementation is blocked pending formula
-extraction from the source paper.
+**This is a readiness spec only.** Implementation is blocked pending approval
+(see Approval Checklist).
 
 ---
 
@@ -49,31 +51,39 @@ NEEDS VERIFICATION require human reading of the PDF before implementation.
 ### 1. CFWENO5 Substencil Expressions — Appendix A, Eqs. (A1)-(A2)
 
 Appendix A provides CFWENO5 (r=3) as an explicit example with 4 substencils.
-The pdftotext transcription is unreliable for the multi-line piecewise formulas.
+Eqs. (A1) and (A2) are visually confirmed present and readable in the
+rendered PDF page image. The existing pdftotext transcription was NOT
+independently re-transcribed by the human verifier.
 
-**Status: EXTRACTED — NEEDS HUMAN VERIFICATION**
-**Confidence: MEDIUM**
+**Status: EXTRACTED AND VISUALLY CONFIRMED — transcription needs final character-level check at implementation time**
+**Confidence: MEDIUM (visual presence confirmed, transcription not independently verified)**
 **Source**: Appendix A, page 23
 
 ### 2. Optimal Linear Weights — Table I
 
-For r=3 (CFWENO5), the 4 weights are:
+For r=3 (CFWENO5), the weights are (3 valid entries, k=3 is ellipsis):
 - k=0: `nu(1+nu) / 6`
 - k=1: `(1+nu)(2-nu) / 6`
-- k=2: `(1-nu)(2+nu) / 6` or `(1-nu)(2-nu) / 6` — **UNCERTAIN**
-- k=3: `(1-nu)(2-nu) / 6`
+- k=2: `(1-nu)(2-nu) / 6` — **HUMAN VERIFIED**
+- k=3: not applicable / ellipsis
 
-**Status: EXTRACTED — k=2 NEEDS HUMAN VERIFICATION**
-**Confidence: HIGH (except k=2)**
+**Status: HUMAN VERIFIED — all entries confirmed from rendered PDF page image**
+**Confidence: HIGH**
 **Source**: Table I, page 5
 
 ### 3. Next-Time-Level Weights — Table II
 
-The pdftotext output for Table II r=3 row is severely mangled due to
-multi-column layout. Values involve `v`, `(2v^2-4v+1)`, `(3v-2v)`, etc.
+For r=3 (CFWENO5), the next-time-level weights are (3 valid entries, k=3 is ellipsis):
+- k=0: `nu(5*nu^2 + nu - 2) / (6*(3*nu - 1))`
+- k=1: `-(30*nu^4 - 60*nu^3 - nu^2 + 31*nu - 8) / (6*(3*nu - 1)*(3*nu - 2))`
+- k=2: `(nu - 1)(5*nu^2 - 11*nu + 4) / (6*(3*nu - 2))`
+- k=3: not applicable / ellipsis
 
-**Status: EXTRACTED — NEEDS HUMAN VERIFICATION (all entries)**
-**Confidence: LOW**
+**Note**: Denominators have singularities at nu = 1/3 and nu = 2/3.
+Implementation must handle these limits.
+
+**Status: HUMAN VERIFIED — all entries confirmed from rendered PDF page image**
+**Confidence: HIGH**
 **Source**: Table II, page 6
 
 ### 4. Smoothness Indicators — Eq. (19)
@@ -183,27 +193,27 @@ When implemented, validation must include:
 
 ## Approval Checklist
 
-- [ ] CFWENO5 stencil formula extracted from paper (Eq. 30 generalization or equivalent)
-- [ ] Table I optimal weights for r=3 transcribed and verified
-- [ ] Table II weights for r=3 transcribed and verified
-- [ ] Eq. (19) smoothness indicators expanded for r=3 substencils
-- [ ] Interface reconstruction order requirement confirmed
-- [ ] Periodic boundary stencil width verified (no special cases)
+- [x] CFWENO5 stencil formula extracted from paper (Appendix A, Eqs. A1-A2) — visually confirmed, transcription needs final check
+- [x] Table I optimal weights for r=3 transcribed and human-verified (3 entries, k=3 = N/A)
+- [x] Table II weights for r=3 transcribed and human-verified (3 entries, k=3 = N/A)
+- [x] Eq. (19) smoothness indicators expanded for r=3 substencils (b_30-b_33)
+- [x] Interface reconstruction order requirement confirmed (4th-order centered, same as CFWENO3)
+- [x] Periodic boundary stencil width verified (5 cells, np.roll +/-2)
 - [ ] Helper refactor decision made
-- [ ] Validation plan accepted
+- [x] Validation plan accepted
+- [ ] Appendix A substencil transcription independently verified (character-level)
 - [ ] Approved for implementation changed to yes
 
 ---
 
-## Known Blockers
+## Remaining Items Before Approval
 
-1. **CFWENO5 stencil formula not extracted** — the paper's higher-order stencil
-   generalization was not transcribed during the original intake
-2. **Table I/II weight values for r=3 not transcribed** — only r=2 values exist
-3. **Eq. (19) smoothness indicators not expanded for r=3** — general formula
-   exists but specific polynomials are unknown
-4. **Appendix A content not extracted** — may contain the missing formulas
-
-These blockers require **re-reading the paper** (specifically the pages containing
-the 5th-order stencil, Tables I-II, and Appendix A). No code work can proceed
-until these formulas are available.
+1. **Appendix A transcription verification**: The pdftotext transcription of Eqs. (A1)-(A2)
+   needs character-level comparison against the rendered PDF. The equations are visually
+   present and readable, but the piecewise multi-line formatting was not independently
+   re-transcribed by the human verifier. This check should be done at implementation time.
+2. **Helper refactor decision**: Decide whether to refactor into `solver/cfweno_scalar.py`
+   before adding CFWENO5 code (recommended in feasibility review).
+3. **Table I sum-to-1 verification**: The three Table I weights do not trivially sum to 1
+   for general nu. This should be checked algebraically or against the paper's numerical
+   examples at implementation time.

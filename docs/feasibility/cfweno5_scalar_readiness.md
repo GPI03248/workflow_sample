@@ -2,21 +2,20 @@
 
 **Date**: 2026-05-26
 **Based on**: v1.0 tag `42d97ee`, Burgers order recovery commit `4d671c0`
-**Decision**: **Conditionally ready** (updated after formula extraction)
+**Decision**: **Conditionally ready** (updated after human verification)
 
 ---
 
 ## Is Scalar CFWENO5 Ready?
 
-**Decision: CONDITIONALLY READY — human verification of 3 items required**
+**Decision: CONDITIONALLY READY — Appendix A transcription needs final character-level check**
 
-All CFWENO5 formulas have been located and extracted from the paper. The primary
-blocker (formulas not extracted) is resolved. However, pdftotext mangled critical
-multi-column table entries and multi-line piecewise formulas, so human reading
-of specific PDF pages is required before implementation.
+Table I and Table II have been human-verified from rendered PDF page images.
+Appendix A (Eqs. A1-A2) is visually confirmed present and readable, but the
+pdftotext transcription was not independently re-transcribed by the human.
+The remaining uncertainty is limited to the Appendix A substencil expressions.
 
 See `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md` for full details.
-formulas to be transcribed and approved before implementation begins.
 
 ---
 
@@ -39,26 +38,26 @@ formulas to be transcribed and approved before implementation begins.
 
 ## Missing or Risky Parts
 
-### Critical Blockers
+### Critical Blockers (updated after human verification)
 
-1. **CFWENO5 stencil formula not extracted.** The extraction report only covers
-   Eq. (30), the 3rd-order stencil. The paper must contain a 5th-order stencil
-   generalization, but it was never transcribed. Without this formula, no
-   implementation is possible.
+1. ~~**CFWENO5 stencil formula not extracted.**~~ **RESOLVED**: Extracted from
+   Appendix A, Eqs. (A1)-(A2). Visually confirmed present in rendered PDF.
+   Transcription needs final character-level check at implementation time.
 
-2. **Table I optimal weights for r=3 not transcribed.** The dependency register
-   confirms Tables I-II provide weights for r=2,3,4, but only r=2 values are in
-   the repo. The CFWENO5 implementation needs the exact r=3 coefficient values.
+2. ~~**Table I optimal weights for r=3 not transcribed.**~~ **RESOLVED**: Human
+   verified. k=2 corrected to `(1-nu)(2-nu)/6` (was `(1-nu)(2+nu)/6`). k=3 is
+   not applicable (ellipsis). 3 valid entries confirmed.
 
-3. **Table II next-time-level weights for r=3 not transcribed.** Same situation.
+3. ~~**Table II next-time-level weights for r=3 not transcribed.**~~ **RESOLVED**:
+   Human verified. 3 valid entries with full formulas. k=3 is not applicable.
+   Denominators have singularities at nu=1/3 and nu=2/3 (implementation note).
 
-4. **Eq. (19) smoothness indicators not expanded for r=3.** The general formula
-   is known, but the specific polynomial expressions for the 5th-order substencil
-   case have not been written out.
+4. **Eq. (19) smoothness indicators not independently verified.** The pdftotext
+   extraction has medium confidence. Not part of this human verification round.
+   Should be verified at implementation time.
 
-5. **Appendix A content not extracted.** No Appendix A content exists anywhere
-   in the repo. The appendix likely contains the expanded stencil formulas and
-   complete coefficient tables. This is a significant extraction gap.
+5. ~~**Appendix A content not extracted.**~~ **RESOLVED**: Eqs. (A1)-(A2) extracted
+   and visually confirmed. Transcription accuracy still medium confidence.
 
 ### Risky (Not Blockers)
 
@@ -170,20 +169,24 @@ a stencil coefficient can cause convergence failure that is hard to diagnose.
 
 1. **Appendix A, Eqs. (A1)-(A2)**: CFWENO5 substencil expressions for r=3
    with 4 substencils (k=0,1,2,3). Both initial-value and next-time-level
-   reconstructions are provided. **Confidence: MEDIUM** — pdftotext mangled
-   multi-line piecewise formatting.
+   reconstructions are provided. **Confidence: MEDIUM** — visually confirmed
+   present, transcription not independently verified.
 
-2. **Table I optimal weights for r=3**: All 4 weights extracted. k=0,1,3 are
-   clear; k=2 is ambiguous between `(1-nu)(2+nu)` and `(1-nu)(2-nu)`.
-   **Confidence: HIGH** (except k=2).
+2. **Table I optimal weights for r=3**: **Human verified**. 3 valid entries:
+   k=0: `nu(1+nu)/6`, k=1: `(1+nu)(2-nu)/6`, k=2: `(1-nu)(2-nu)/6`
+   (corrected from `(1-nu)(2+nu)/6`). k=3 is not applicable.
+   **Confidence: HIGH**.
 
-3. **Table II weights for r=3**: The multi-column layout was severely mangled.
-   Partial expressions visible but denominators unclear.
-   **Confidence: LOW** — hard requirement for human verification.
+3. **Table II weights for r=3**: **Human verified**. 3 valid entries:
+   k=0: `nu(5*nu^2+nu-2)/(6*(3*nu-1))`,
+   k=1: `-(30*nu^4-60*nu^3-nu^2+31*nu-8)/(6*(3*nu-1)*(3*nu-2))`,
+   k=2: `(nu-1)(5*nu^2-11*nu+4)/(6*(3*nu-2))`.
+   k=3 is not applicable.
+   **Confidence: HIGH**.
 
 4. **Eq. (19) smoothness indicators b_30-b_33**: All 4 extracted with coefficients.
    b_33 has complex multi-term expression with coefficient 781/20.
-   **Confidence: MEDIUM**.
+   **Confidence: MEDIUM** — not independently verified.
 
 5. **Interface reconstruction**: Confirmed same 4th-order centered as CFWENO3.
    **Confidence: HIGH**.
@@ -193,32 +196,77 @@ a stencil coefficient can cause convergence failure that is hard to diagnose.
 
 ### What remains uncertain
 
-1. Table I, r=3, k=2 weight value
-2. Table II, r=3, all 4 weight values
-3. Appendix A, Eqs. (A1)-(A2) substencil coefficients
+1. Appendix A, Eqs. (A1)-(A2) substencil coefficients — transcription not
+   independently character-verified against the rendered PDF
+2. Eq. (19) smoothness indicators b_30-b_33 — not part of this verification round
 
 ### Whether blockers remain
 
-**Partially** — all formulas are now located in the paper and have been
-extracted at medium-to-low confidence. The remaining blocker is **verification
-accuracy**, not formula absence.
+**Partially** — Table I and Table II are fully resolved. Appendix A is visually
+confirmed but transcription accuracy remains at medium confidence. Eq. (19) is
+medium confidence but was not flagged for this verification round.
 
-### Whether implementation can proceed after human review
+### Whether implementation can proceed after this verification
 
-**Yes, conditionally** — after a human verifies the 3 uncertain items by
-reading pages 5, 6, and 23 of the PDF, implementation can proceed.
+**Conditionally** — the two highest-risk items (Table I and Table II) are now
+human-verified at high confidence. The remaining Appendix A uncertainty is
+lower risk since the equations are visually confirmed present and the structure
+is clear. A final character-level check at implementation time is recommended.
 
 ### Whether helper refactor is recommended before implementation
 
 **Yes** — recommend refactoring to `solver/cfweno_scalar.py` as a separate
-preparatory task before CFWENO5 implementation. This keeps CFWENO5 stencil
-coefficients separate from the existing upwind/Lax-Wendroff/step infrastructure.
+preparatory task before CFWENO5 implementation.
 
-### Updated Readiness Decision
+---
 
-**CONDITIONALLY READY** — human must verify 3 items in the PDF:
-1. Page 5: Table I row r=3, column k=2
-2. Page 6: Table II row r=3, all columns
-3. Page 23: Appendix A, Eqs. (A1) and (A2)
+## Human Verification Update (2026-05-26)
 
-After verification, the spec can be approved and implementation can begin.
+**Verifier**: Human (paper PDF rendered page images)
+
+### Table I — Corrected
+
+- r=3 has **3 valid entries** (k=0,1,2), k=3 is ellipsis
+- k=2 **corrected**: `(1-nu)(2-nu)/6`, NOT `(1-nu)(2+nu)/6`
+- Confidence: HIGH
+- Source: Table I, rendered PDF page image
+
+### Table II — Verified
+
+- r=3 has **3 valid entries** (k=0,1,2), k=3 is ellipsis
+- All 3 formulas verified with correct numerators and denominators
+- Singularity at nu=1/3 and nu=2/3 noted (implementation consideration)
+- Confidence: HIGH
+- Source: Table II, rendered PDF page image
+
+### Appendix A — Visually Confirmed
+
+- Eqs. (A1) and (A2) are visually present and readable on page 23
+- Existing pdftotext transcription was NOT independently re-transcribed
+- Transcription remains at MEDIUM confidence
+- Needs character-level verification at implementation time
+
+### Remaining Blockers
+
+1. **Appendix A transcription accuracy**: Medium confidence — visually confirmed
+   but not character-verified. Lower risk than Table I/II because structure is
+   clear and numerical testing will catch coefficient errors.
+2. **Eq. (19) smoothness indicators**: Medium confidence — not verified this round.
+   Lower risk for first implementation (smooth linear advection).
+
+### Decision After Human Verification
+
+**CONDITIONALLY READY — pending Appendix A final transcription check**
+
+Table I and Table II (the highest-risk formula items) are now human-verified.
+The remaining Appendix A uncertainty does not block readiness elevation to
+"ready for human approval" — it can be resolved at implementation time with
+a character-level comparison against the PDF. However, since the transcription
+was not independently verified in this round, the conservative decision is to
+remain at "conditionally ready" rather than "ready for human approval."
+
+**The spec should be approved for implementation after:**
+1. A human performs character-level transcription of Eqs. (A1)-(A2) from the
+   rendered PDF, OR
+2. The implementer does this check as the first implementation step, with a
+   convergence test as immediate verification
