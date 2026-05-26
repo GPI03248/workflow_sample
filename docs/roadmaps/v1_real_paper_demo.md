@@ -194,6 +194,33 @@ by testing alternative nu treatments (constant, interface-based, predictor-updat
 - If unsuccessful: keep Burgers as ~2nd-order prototype; consider CFWENO5 scalar or Euler readiness
 - Euler readiness (v1.3) remains future work regardless of diagnostic outcome
 
+**Result**: Unsuccessful — no variant recovered 3rd order. Decision: proceed to CFWENO5 scalar readiness.
+
+### Scalar CFWENO5 Readiness Review (v1.3-pre)
+
+**Status**: Readiness review complete — **BLOCKED** pending formula extraction.
+
+After Burgers order recovery confirmed ~2nd order is structural, the next target
+is CFWENO5 scalar linear advection. This is safer than Euler and provides a
+higher-order smooth-problem benchmark.
+
+| Item | Status |
+|------|--------|
+| Diagnostic plan | `docs/tasks/cfweno5_scalar_readiness/diagnostic_plan.md` |
+| Subset spec (not approved) | `docs/scheme_specs/cfweno5_scalar_subset.md` |
+| Feasibility review | `docs/feasibility/cfweno5_scalar_readiness.md` |
+| Traceability | `docs/tasks/cfweno5_scalar_readiness/traceability.md` |
+
+**Key blockers**:
+1. CFWENO5 stencil formula not extracted from paper (Eq. 30 is 3rd-order only)
+2. Table I/II optimal weights for r=3 not transcribed
+3. Eq. (19) smoothness indicators not expanded for r=3 substencils
+4. Appendix A content never extracted
+
+**Recommended path**: Re-read paper → extract CFWENO5 formulas → update spec → approve → refactor solver → implement.
+
+**Decision**: Blocked until paper formulas are extracted. Implementation pending approval.
+
 ---
 
 ## Next Step Candidates
