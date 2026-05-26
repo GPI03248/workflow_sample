@@ -16,7 +16,7 @@ from pathlib import Path
 import yaml
 
 VALID_CONFIDENCES = ("high", "medium", "low")
-VALID_VERIFICATION = ("verified", "visually_confirmed", "partial", "uncertain", "missing")
+VALID_VERIFICATION = ("verified", "visually_confirmed", "partial", "uncertain", "missing", "derived")
 VALID_RELEVANCE = ("required", "optional", "not_needed")
 
 

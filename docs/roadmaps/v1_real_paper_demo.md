@@ -235,13 +235,15 @@ higher-order smooth-problem benchmark.
 
 **Formula confidence workflow** (this commit):
 - Formula inventory: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
-- Confidence checker: `tools/check_formula_confidence.py`
+- Confidence checker: `tools/check_formula_confidence.py` (supports 'derived' verification status)
 - Confidence report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md`
-- 11 high / 1 medium / 0 low formulas
-- 1 blocking formula: appendix_A_eq_A2 (medium, derivable from A1)
-- Strict check (`make formula-confidence-cfweno5-strict`) expected to fail
-- Character-level verification packet: `docs/tasks/cfweno5_formula_verification/verification_packet.md`
-- Key correction: b_30 had extra term from b_20 (removed); A1 fully verified; A2 ambiguous due to pdftotext d/dv rendering
+- 11 high / 1 medium (optional) / 0 low formulas
+- 0 blocking formulas
+- Strict check (`make formula-confidence-cfweno5-strict`) **PASSES**
+- A2 derivation policy: `docs/tasks/cfweno5_formula_verification/a2_derivation_policy.md`
+- A2 reclassified from required/blocking to optional/non-blocking
+- Key rationale: A2 = d/dv(A1), derivable from verified source
+- Ready for human approval (Approved remains `no` until human decides)
 
 ---
 

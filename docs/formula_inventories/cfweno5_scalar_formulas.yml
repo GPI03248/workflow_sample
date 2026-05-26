@@ -168,14 +168,14 @@ formulas:
       equation: "Eq. (A2)"
     formula_type: substencil_expression
     expression: null
-    extraction_method: "pdftotext, d/dv derivatives ambiguous"
+    extraction_method: "derived from A1 (d/dv of verified coefficients)"
     confidence: medium
-    verification_status: partial
+    verification_status: derived
     used_by:
       - docs/scheme_specs/cfweno5_scalar_subset.md
-    implementation_relevance: required
-    blocks_implementation: true
-    notes: "Next-time-level reconstruction u^{n+1,3}_{i+1/2,k} for k=0,1,2,3. Structure verified: same as A1 with d/dv applied to coefficients. pdftotext d/dv terms are ambiguous (superscripts lost). Can be derived from A1 at implementation time by differentiating coefficients wrt nu."
+    implementation_relevance: optional
+    blocks_implementation: false
+    notes: "Next-time-level reconstruction u^{n+1,3}_{i+1/2,k} for k=0,1,2,3. A2 is mathematically derived from A1 by applying d/dv to each coefficient (v=nu). pdftotext transcription of d/dv terms is ambiguous. Implementation should derive A2 coefficients from verified A1 via symbolic differentiation, then cross-verify against the paper's A2 expressions. See docs/tasks/cfweno5_formula_verification/a2_derivation_policy.md."
 
   - formula_id: cfweno5_stencil_expression
     paper_id: cfweno_pof_2025

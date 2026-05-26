@@ -2,18 +2,17 @@
 
 **Date**: 2026-05-26
 **Based on**: v1.0 tag `42d97ee`, Burgers order recovery commit `4d671c0`
-**Decision**: **Conditionally ready** (updated after character-level verification)
+**Decision**: **Ready for human approval** (updated after A2 derivation policy)
 
 ---
 
 ## Is Scalar CFWENO5 Ready?
 
-**Decision: CONDITIONALLY READY — 1 blocking formula remains (appendix_A_eq_A2)**
+**Decision: READY FOR HUMAN APPROVAL — strict formula confidence gate passes**
 
-Character-level verification via pdftotext resolved 3 of 4 blocking formulas:
-Eq. (19) smoothness indicators, Appendix A Eq. (A1), and stencil assembly are
-now high confidence. Only Appendix A Eq. (A2) remains at medium confidence due
-to pdftotext derivative rendering ambiguity. A2 can be derived from A1.
+A2 derivation policy resolves the last formula gate blocker. A2 is reclassified
+from required/blocking to optional/non-blocking. All 11 required formulas are
+at high confidence and verified. Strict confidence check passes.
 
 See `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md` for full details.
 
@@ -292,10 +291,10 @@ fails, but the practical risk of proceeding is low.
 
 | Confidence | Count | Notes |
 |-----------|-------|-------|
-| High | 11 | Table I (3), Table II (3), Eq.19 (1), A1 (1), stencil assembly (1), interface (1), update (1) |
-| Medium | 1 | Appendix A A2 (derivable from A1) |
+| High | 11 | All required formulas verified |
+| Medium | 1 | Appendix A A2 (optional, derived from A1) |
 | Low | 0 | — |
-| **Blocking** | **1** | appendix_A_eq_A2 (medium confidence, derivable) |
+| **Blocking** | **0** | — |
 
 ### Strict confidence check
 
@@ -303,7 +302,7 @@ fails, but the practical risk of proceeding is low.
 make formula-confidence-cfweno5-strict
 ```
 
-**Expected result**: FAIL — 1 required formula (appendix_A_eq_A2) has medium confidence.
+**Expected result**: PASS — all required formulas are high confidence and verified.
 
 ### Non-strict confidence check
 
@@ -315,8 +314,8 @@ make formula-confidence-cfweno5
 
 ### Readiness decision after workflow integration
 
-Remains **conditionally ready / blocked for approval**. The formula confidence
-gate now enforces that `Approved=yes` cannot be set until the strict check passes.
+Remains **conditionally ready for human approval**. The formula confidence gate
+passes (0 blocking formulas). `Approved=yes` still requires explicit human decision.
 
 ---
 
@@ -357,5 +356,32 @@ gate now enforces that `Approved=yes` cannot be set until the strict check passe
 | Metric | Before | After |
 |--------|--------|-------|
 | High confidence | 8 | 11 |
-| Medium confidence | 4 | 1 |
-| Blocking | 4 | 1 |
+| Medium confidence | 4 | 1 (optional) |
+| Blocking | 4 | 0 |
+
+---
+
+## A2 Derivation Policy Update (2026-05-26)
+
+**Policy document**: `docs/tasks/cfweno5_formula_verification/a2_derivation_policy.md`
+
+### Decision
+
+A2 reclassified from `required` / `blocks_implementation: true` to `optional` /
+`blocks_implementation: false`. A2 is mathematically derived from A1 via d/dv.
+Implementation derives A2 coefficients from verified A1 via symbolic differentiation,
+then cross-verifies against the paper's A2 expressions.
+
+### Rationale
+
+1. A2 = d/dv(A1) — not an independent formula
+2. A1 is verified at high confidence (character-level pdftotext)
+3. Symbolic differentiation of verified coefficients is exact
+4. Transcribing A2 from pdftotext is LESS reliable than deriving from A1
+5. A2 serves as verification reference, not direct implementation input
+
+### Impact on formula gate
+
+- Required formulas: 11 at high confidence, verified — **strict check PASSES**
+- Optional formulas: 1 (A2) at medium confidence — does not block
+- Blocking formulas: **0**

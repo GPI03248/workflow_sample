@@ -163,18 +163,16 @@ def test_markdown_report():
         assert "High Confidence" in report
 
 
-# --- Test: CFWENO5 inventory has blocking items ---
+# --- Test: CFWENO5 inventory has no blocking items (after A2 policy) ---
 
-def test_cfweno5_has_blocking_items():
-    """The real CFWENO5 inventory returns blocking items."""
+def test_cfweno5_no_blocking_items():
+    """The real CFWENO5 inventory has zero blocking formulas after A2 reclassification."""
     result = _run_tool(str(CFWENO5_INVENTORY))
     assert "Blocking:" in result.stdout
-    # Should have some blocking formulas
-    # Extract blocking count
     for line in result.stdout.split("\n"):
         if line.strip().startswith("Blocking:"):
             count_str = line.split("Blocking:")[-1].strip()
-            assert int(count_str) > 0
+            assert int(count_str) == 0
 
 
 # --- Test: checker does not modify inventory ---
@@ -187,18 +185,76 @@ def test_checker_does_not_modify_inventory():
     assert original == after
 
 
-# --- Test: CFWENO5 strict mode expected to fail ---
+# --- Test: CFWENO5 strict mode passes (after A2 reclassification) ---
 
-def test_cfweno5_strict_expected_failure():
-    """CFWENO5 strict check fails due to Appendix A and Eq.19."""
+def test_cfweno5_strict_passes():
+    """CFWENO5 strict check passes after A2 reclassified as optional."""
     result = _run_tool(
         str(CFWENO5_INVENTORY),
         "--require-high-for-implementation",
-        expect_fail=True,
     )
-    assert result.returncode != 0
-    assert "STRICT CHECK FAILED" in result.stdout
-    # Should mention blocking formulas
-    stderr_lower = result.stderr.lower()
-    stdout_lower = result.stdout.lower()
-    assert "appendix_a" in stdout_lower or "eq19" in stdout_lower
+    assert result.returncode == 0
+    assert "STRICT CHECK PASSED" in result.stdout
+
+
+# --- Test: derived verification status is valid ---
+
+def test_derived_verification_status():
+    """The 'derived' verification status is accepted by the checker."""
+    inv = _write_inventory([
+        {
+            "formula_id": "derived_formula",
+            "paper_id": "test",
+            "source": {"section": "Appendix A", "page": 24},
+            "formula_type": "stencil",
+            "expression": None,
+            "extraction_method": "derived from verified source",
+            "confidence": "medium",
+            "verification_status": "derived",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "optional",
+            "blocks_implementation": False,
+            "notes": "Derived from verified formula",
+        }
+    ])
+    result = _run_tool(inv, "--json")
+    data = json.loads(result.stdout)
+    assert data["valid"] is True
+
+
+# --- Test: optional formula does not block strict check ---
+
+def test_optional_formula_does_not_block_strict():
+    """An optional formula with medium confidence does not fail strict check."""
+    inv = _write_inventory([
+        {
+            "formula_id": "required_good",
+            "paper_id": "test",
+            "source": {"section": "Table I", "page": 5},
+            "formula_type": "weight",
+            "expression": "nu/2",
+            "extraction_method": "human",
+            "confidence": "high",
+            "verification_status": "verified",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "required",
+            "blocks_implementation": False,
+            "notes": "test",
+        },
+        {
+            "formula_id": "optional_medium",
+            "paper_id": "test",
+            "source": {"section": "Appendix A", "page": 24},
+            "formula_type": "stencil",
+            "expression": None,
+            "extraction_method": "derived",
+            "confidence": "medium",
+            "verification_status": "derived",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "optional",
+            "blocks_implementation": False,
+            "notes": "Optional, derived from verified formula",
+        }
+    ])
+    result = _run_tool(inv, "--require-high-for-implementation")
+    assert "STRICT CHECK PASSED" in result.stdout

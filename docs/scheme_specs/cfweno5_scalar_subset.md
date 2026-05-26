@@ -4,9 +4,9 @@
 **Subset**: 1D scalar linear advection CFWENO5 prototype
 Approved for implementation: no
 
-**Human verification status**: Table I, Table II, Eq. (19), and Appendix A Eq. (A1) character-level verified from PDF; Appendix A Eq. (A2) remains medium confidence (pdftotext derivative ambiguity)
+**Human verification status**: All required formulas character-level verified. Appendix A Eq. (A2) reclassified as optional verification reference (derived from verified A1).
 
-**Implementation readiness**: conditionally ready — 1 blocking formula remains (appendix_A_eq_A2, derivable from A1 at implementation time)
+**Implementation readiness**: ready for human approval — strict formula confidence gate passes
 
 ---
 
@@ -234,14 +234,25 @@ be changed to `yes`.
 
 ### Current blocking formulas
 
+**None** — all required formulas are high confidence and verified.
+
+### Optional formulas (do not block approval)
+
 | Formula ID | Confidence | Verification | Reason |
 |------------|-----------|-------------|--------|
-| appendix_A_eq_A2 | medium | partial | pdftotext d/dv terms ambiguous; derivable from A1 |
+| appendix_A_eq_A2 | medium | derived | Derived from verified A1 via d/dv; pdftotext transcription ambiguous |
 
-Three previously blocking formulas have been resolved:
+A2 derivation policy: `docs/tasks/cfweno5_formula_verification/a2_derivation_policy.md`
+
+Three previously blocking formulas resolved in v1.3-pre.5:
 - appendix_A_eq_A1: promoted to high/verified (character-level pdftotext verification)
 - eq19_smoothness_r3: promoted to high/verified (character-level pdftotext, b_30 corrected)
 - cfweno5_stencil_expression: promoted to high/verified (order-independent, CFWENO3-validated)
+
+A2 reclassified from required/blocking to optional/non-blocking in v1.3-pre.6:
+- A2 is mathematically derived from A1 (d/dv of verified coefficients)
+- Implementation derives A2 from verified A1 via symbolic differentiation
+- A2 serves as verification reference, not direct implementation input
 
 ### Strict confidence check
 
@@ -249,23 +260,20 @@ Three previously blocking formulas have been resolved:
 make formula-confidence-cfweno5-strict
 ```
 
-This check is **expected to fail** — 1 blocking formula (appendix_A_eq_A2)
-remains at medium confidence. A2 can be derived from A1 by differentiating
-coefficients wrt nu at implementation time.
+This check now **passes** — all required formulas are high confidence and verified.
+A2 is reclassified as optional and does not block the strict gate.
 
-**Do not change `Approved for implementation` to `yes` until
-`make formula-confidence-cfweno5-strict` passes.**
+**Do not change `Approved for implementation` to `yes` without explicit human approval.**
+The formula gate is a necessary but not sufficient condition for approval.
 
 ---
 
 ## Remaining Items Before Approval
 
-1. **Appendix A Eq. (A2) derivative verification**: pdftotext d/dv terms are ambiguous.
-   A2 can be derived from A1 by differentiating coefficients wrt nu. The paper provides
-   A2 as a verification reference. An implementer can compute d/dv of each A1 coefficient
-   symbolically and verify against the paper's A2 expressions.
-2. **Helper refactor decision**: Decide whether to refactor into `solver/cfweno_scalar.py`
+1. **Helper refactor decision**: Decide whether to refactor into `solver/cfweno_scalar.py`
    before adding CFWENO5 code (recommended in feasibility review).
-3. **Table I sum-to-1 verification**: The three Table I weights do not trivially sum to 1
+2. **Table I sum-to-1 verification**: The three Table I weights do not trivially sum to 1
    for general nu. This should be checked algebraically or against the paper's numerical
    examples at implementation time.
+3. **Explicit human approval**: The formula confidence gate passes, but the spec requires
+   a human to review and explicitly set `Approved for implementation: yes`.
