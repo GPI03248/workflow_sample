@@ -165,7 +165,7 @@ formulas:
     implementation_relevance: required
     blocks_implementation: true
     consistency_status: failed
-    notes: "DEMOTED 2026-05-27: CFWENO5 implementation using these substencil formulas achieved only ~1st-order convergence (expected ~5th). CORRECTION 2026-05-27 (v1.3-pre.8): s2 (k=2) 1/2 factor moved from first to second correction term based on pdftotext -layout column-position analysis. Corrected s2 now achieves ~4.0 individual order (was ~2.0). Combined 3-substencil scheme still fails (~1st order) — additional formula errors remain, likely in Table I weight sum-to-1 constraint. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md and docs/tasks/cfweno5_formula_verification/s2_retranscription.md. Original (pre-demotion): confidence high, verified via character-level pdftotext of page 24."
+    notes: "DEMOTED 2026-05-27: CFWENO5 implementation using these substencil formulas achieved only ~1st-order convergence (expected ~5th). CORRECTION 2026-05-27 (v1.3-pre.8): s2 (k=2) 1/2 factor moved from first to second correction term. All 4 individual substencils now pass (s0~3, s1~4, s2~4, s3~4). v1.3-pre.9 weight diagnosis: normalization fixes ~1st→~3rd but ALL weight variants (Table I normalized, Table II, equal weights) cap at ~3.0 — NOT ~5th. This confirms substencil formula coefficient errors beyond s2 and normalization. The error-term cancellation in Eq. (15)'s polynomial decomposition is broken. See docs/tasks/cfweno5_formula_verification/weight_role_audit.md for full analysis."
 
   - formula_id: appendix_A_eq_A2
     paper_id: cfweno_pof_2025
@@ -203,7 +203,7 @@ formulas:
     implementation_relevance: required
     blocks_implementation: true
     consistency_status: failed
-    notes: "DEMOTED 2026-05-27: The combined stencil (3-substencil WENO combination with Table I weights) produced only ~1st-order convergence when implemented. While the WENO assembly machinery is order-independent and validated through CFWENO3, the specific CFWENO5 combination with current Appendix A substencils does not achieve 5th order. The substencil expressions or weight assignments are incorrect. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md."
+    notes: "DEMOTED 2026-05-27: The combined stencil (3-substencil WENO combination with Table I weights) produced only ~1st-order convergence when implemented. v1.3-pre.9 weight diagnosis: ALL weight variants (Table I normalized, Table II, equal weights) cap at ~3.0, not ~5th. Normalization fixes the raw-weight issue but the ~3.0 ceiling is weight-independent — the substencil polynomials from Appendix A Eq. (A1) have coefficient errors beyond what normalization can fix. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md and docs/tasks/cfweno5_formula_verification/weight_role_audit.md."
 
   - formula_id: cfweno5_interface_reconstruction
     paper_id: cfweno_pof_2025

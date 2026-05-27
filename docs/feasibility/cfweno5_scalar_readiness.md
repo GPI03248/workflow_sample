@@ -18,7 +18,24 @@ Appendix A produced only 2nd-order individually (expected 4th). The combined
 **v1.3-pre.8 s2 correction (2026-05-27)**: s2 1/2 factor moved from first to second
 correction term based on pdftotext -layout analysis. Corrected s2 achieves ~4.0
 individual order (was ~2.0). All 4 substencils now pass individually. Combined scheme
-still fails (~1st order) — additional formula errors remain, likely in Table I weights.
+still fails (~1st order) — additional formula errors remain, initially suspected in
+Table I weights.
+
+**v1.3-pre.9 weight role audit (2026-05-27)**: Comprehensive diagnosis of Table I/Table II
+weight role and Eq. (17) normalization. Five weight variants tested:
+
+| Variant | Order | Weight Sum | Finding |
+|---------|-------|-----------|---------|
+| Table I raw (current) | 1.00 | 0.625 | Broken — no normalization |
+| Table I normalized | 3.00 | 1.0 | Normalization fixes 1st→3rd but NOT 5th |
+| Table II raw | 3.02 | 1.0 | Wrong target, caps at 3rd |
+| Table II normalized | 3.02 | 1.0 | Same as raw |
+| Equal 1/3 weights | 3.00 | 1.0 | Same ceiling as "optimal" weights |
+
+**Conclusion: Normalization is necessary but insufficient.** The ~3.0 ceiling is
+weight-independent — all variants cap at ~3rd order. The substencil polynomials from
+Appendix A Eq. (A1) have additional coefficient errors beyond normalization. The
+polynomial decomposition error cancellation (Eq. 15) is broken.
 
 The implementation was fully reverted. A diagnostic report was committed as `dc78864`.
 The formula confidence gate was subsequently hardened:
@@ -28,10 +45,12 @@ The formula confidence gate was subsequently hardened:
 - Strict formula confidence gate now blocks on `consistency_status=failed`
 
 **Implementation must NOT proceed until ALL formula errors are resolved and the combined scheme achieves ~5th-order convergence.**
+**The error is in the Appendix A substencil polynomials, not the Table I/Table II weights.**
 
 See:
 - `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md` — detailed diagnostic
 - `docs/tasks/cfweno5_formula_verification/appendix_a_reverification_plan.md` — what to re-verify
+- `docs/tasks/cfweno5_formula_verification/weight_role_audit.md` — weight role audit + diagnosis
 
 ---
 

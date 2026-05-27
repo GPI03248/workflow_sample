@@ -8,6 +8,8 @@ Approved for implementation: no
 
 **v1.3-pre.8 s2 correction (2026-05-27)**: The s2 substencil 1/2 factor was on the wrong correction term. Moved from first term `(1/2)(1-nu)(u_{i+1/2} - u_i)` to second term `(1/2)(1-nu)(-nu)(u_i - 2*u_{i+1/2} + u_{i+1})`. Corrected s2 now achieves ~4.0 individual order (was ~2.0). Combined 3-substencil scheme still fails (~1st order). See `docs/tasks/cfweno5_formula_verification/s2_retranscription.md`.
 
+**v1.3-pre.9 weight role audit (2026-05-27)**: Comprehensive audit of Table I/Table II weight role and Eq. (17) normalization. Key findings: (1) Eq. (17) normalization IS missing from current checker — Table I provides `c_bar_rk` (alpha numerators), not final weights. (2) Normalization fixes ~1st→~3rd order but ALL weight variants (Table I normalized, Table II raw/normalized, equal weights) cap at ~3.0 — NOT 5th. (3) The ~3.0 ceiling is weight-independent: equal 1/3 weights give the same result as optimal weights. (4) This confirms Appendix A Eq. (A1) substencil polynomials have coefficient errors beyond normalization. See `docs/tasks/cfweno5_formula_verification/weight_role_audit.md`.
+
 **Implementation readiness**: BLOCKED — strict formula confidence gate fails (2 blocking formulas with consistency_status=failed). See `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md`.
 
 ---

@@ -5,8 +5,8 @@
 - **Task type**: post-v1.0 readiness review
 - **Based on v1.0 tag**: 42d97ee
 - **Previous diagnostic**: Burgers order recovery commit 4d671c0
-- **Date**: 2026-05-27 (updated after v1.3-pre.7 gate hardening)
-- **Status**: formula gate hardened after failed implementation. 2 blocking formulas. Strict check FAILS.
+- **Date**: 2026-05-27 (updated after v1.3-pre.9 weight role audit)
+- **Status**: formula gate hardened after failed implementation. 2 blocking formulas. Strict check FAILS. v1.3-pre.9 weight diagnosis: normalization fixes 1st→3rd but all weight variants cap at ~3.0 — substencil polynomials have additional errors.
 
 ### v1.3-pre.8 s2 correction (2026-05-27)
 
@@ -16,6 +16,19 @@
 - Combined 3-substencil scheme still fails (~1st order) — remains blocked
 - Re-transcription document: `docs/tasks/cfweno5_formula_verification/s2_retranscription.md`
 - Method: pdftotext -layout column-position analysis (image rendering unavailable for visual PDF reading)
+
+### v1.3-pre.9 weight role audit (2026-05-27)
+
+- Comprehensive audit of Table I/Table II weight role and Eq. (17) normalization
+- Five weight variants tested via `--diagnose-weights` in consistency checker
+- Normalization fixes ~1st→~3rd but ALL variants cap at ~3.0 (not ~5th)
+- Table II weights already sum to 1.0 (normalization is no-op for them)
+- Equal 1/3 weights achieve same ~3.0 as "optimal" Table I/Table II weights
+- **Conclusion C**: Error is in Appendix A Eq. (A1) substencil polynomials, not weights
+- Audit document: `docs/tasks/cfweno5_formula_verification/weight_role_audit.md`
+- New tool flag: `--diagnose-weights` in `tools/check_cfweno5_formula_consistency.py`
+- New Makefile targets: `cfweno5-diagnose-weights`, `cfweno5-diagnose-weights-quick`
+- New tests: 7 weight diagnosis tests in `tests/test_cfweno5_formula_consistency.py`
 
 ## Purpose
 Determine whether scalar CFWENO5 linear advection is a viable next implementation
@@ -82,9 +95,20 @@ Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extractio
 | docs/tasks/cfweno5_formula_verification/a2_derivation_policy.md | A2 derivation policy decision |
 | tools/check_formula_confidence.py | Added 'derived' verification status |
 | tests/test_formula_confidence.py | Updated for A2 policy, added 2 new tests |
+| tools/check_cfweno5_formula_consistency.py | Added --diagnose-weights mode with 5 variants |
+| tests/test_cfweno5_formula_consistency.py | Added 7 weight diagnosis tests |
+| Makefile | Added cfweno5-diagnose-weights targets |
+| docs/tasks/cfweno5_formula_verification/weight_role_audit.md | Created — comprehensive weight role audit |
+| docs/formula_inventories/cfweno5_scalar_formulas.yml | Updated notes for appendix_A_eq_A1 and cfweno5_stencil_expression |
+| docs/scheme_specs/cfweno5_scalar_subset.md | Added v1.3-pre.9 weight audit section |
+| docs/feasibility/cfweno5_scalar_readiness.md | Added weight diagnosis findings |
+| docs/roadmaps/v1_real_paper_demo.md | Added v1.3-pre.9 section |
 
 ## Code Changes
-None — this is a tooling/documentation-only task. solver/schemes.py NOT modified.
+- `tools/check_cfweno5_formula_consistency.py` — added `--diagnose-weights` mode (diagnostic only, not solver code)
+- `tests/test_cfweno5_formula_consistency.py` — added 7 weight diagnosis tests
+- `Makefile` — added `cfweno5-diagnose-weights` and `cfweno5-diagnose-weights-quick` targets
+solver/schemes.py NOT modified. cfd/ NOT modified. examples/ NOT modified. results/ NOT modified.
 
 ## Formula Confidence Workflow Update (this commit)
 - Formula inventory: `docs/formula_inventories/cfweno5_scalar_formulas.yml`

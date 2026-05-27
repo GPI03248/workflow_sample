@@ -111,6 +111,160 @@ def _cfweno5_combined(u: np.ndarray, nu: float,
     return w0 * s0 + w1 * s1 + w2 * s2
 
 
+# --- Variant scheme functions for weight diagnosis ---
+
+def _make_weight_variant(name, s0_fn, s1_fn, s2_fn, weight_fn, target):
+    """Create a named variant scheme function.
+
+    Parameters
+    ----------
+    name : str
+        Variant name for reporting.
+    s0_fn, s1_fn, s2_fn : callable
+        Sub-stencil functions (may be None to use defaults).
+    weight_fn : callable
+        Function (nu) -> (w0, w1, w2, weight_sum).
+    target : str
+        Reconstruction target description.
+    """
+    _s0 = s0_fn or _substencil_s0
+    _s1 = s1_fn or _substencil_s1
+    _s2 = s2_fn or _substencil_s2
+
+    def scheme_fn(u, nu, u_half_right, u_half_left):
+        s0 = _s0(u, nu, u_half_right, u_half_left)
+        s1 = _s1(u, nu, u_half_right, u_half_left)
+        s2 = _s2(u, nu, u_half_right, u_half_left)
+        w0, w1, w2, _ws = weight_fn(nu)
+        return w0 * s0 + w1 * s1 + w2 * s2
+
+    scheme_fn._variant_name = name
+    scheme_fn._target = target
+    scheme_fn._weight_fn = weight_fn
+    return scheme_fn
+
+
+def _weights_table_I_raw(nu):
+    """Table I optimal weights without normalization."""
+    w0 = nu * (1.0 + nu) / 6.0
+    w1 = (1.0 + nu) * (2.0 - nu) / 6.0
+    w2 = (1.0 - nu) * (2.0 - nu) / 6.0
+    weight_sum = w0 + w1 + w2
+    return w0, w1, w2, weight_sum
+
+
+def _weights_table_I_normalized(nu):
+    """Table I optimal weights with Eq. (17) normalization."""
+    w0, w1, w2, raw_sum = _weights_table_I_raw(nu)
+    if abs(raw_sum) > 1e-15:
+        return w0 / raw_sum, w1 / raw_sum, w2 / raw_sum, 1.0
+    return 1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0, 1.0
+
+
+def _weights_table_II_raw(nu):
+    """Table II optimal weights without normalization."""
+    w0 = nu * (5.0 * nu ** 2 + nu - 2.0) / (6.0 * (3.0 * nu - 1.0))
+    w1 = -(30.0 * nu ** 4 - 60.0 * nu ** 3 - nu ** 2 + 31.0 * nu - 8.0) / (
+        6.0 * (3.0 * nu - 1.0) * (3.0 * nu - 2.0))
+    w2 = (nu - 1.0) * (5.0 * nu ** 2 - 11.0 * nu + 4.0) / (6.0 * (3.0 * nu - 2.0))
+    weight_sum = w0 + w1 + w2
+    return w0, w1, w2, weight_sum
+
+
+def _weights_table_II_normalized(nu):
+    """Table II optimal weights with Eq. (17) normalization."""
+    w0, w1, w2, raw_sum = _weights_table_II_raw(nu)
+    if abs(raw_sum) > 1e-15:
+        return w0 / raw_sum, w1 / raw_sum, w2 / raw_sum, 1.0
+    return 1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0, 1.0
+
+
+def _weights_equal(nu):
+    """Equal 1/3 weights — debug baseline."""
+    return 1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0, 1.0
+
+
+# CFWENO3 baseline: uses r=2 substencils (k=0,1) with standard WENO-JS weights
+def _cfweno3_baseline_scheme(u, nu, u_half_right, u_half_left):
+    """CFWENO3 (r=2) — known-good baseline using 2-substencil WENO combination.
+
+    CFWENO3 uses 2 substencils (k=0,1) + Table I r=2 weights: k=0: nu, k=1: 1-nu.
+    The interface reconstruction uses 4-point stencil as in the CFWENO5 checker.
+    """
+    u_im1 = np.roll(u, 1)
+    u_ip1 = np.roll(u, -1)
+    omnu = 1.0 - nu
+    # CFWENO3 substencil s0 (left-biased): Eq. (A1) r=2 analogue
+    s0 = u + omnu * (u - u_half_left)
+    # CFWENO3 substencil s1 (right-biased): Eq. (A1) r=2 analogue
+    s1 = u + omnu * (u_half_right - u)
+    # Table I r=2 weights: k=0=nu, k=1=1-nu (these sum to 1)
+    return nu * s0 + (1.0 - nu) * s1
+
+
+VARIANTS = [
+    ("current_table_I_raw",
+     _make_weight_variant("current_table_I_raw", None, None, None,
+                          _weights_table_I_raw, "ubar_{i+1/2}"),
+     "Table I raw c_bar_rk, no normalization — current (broken)"),
+    ("table_I_normalized",
+     _make_weight_variant("table_I_normalized", None, None, None,
+                          _weights_table_I_normalized, "ubar_{i+1/2}"),
+     "Table I c_bar_rk normalized per Eq. (17)"),
+    ("table_II_raw",
+     _make_weight_variant("table_II_raw", None, None, None,
+                          _weights_table_II_raw, "u^{n+1}_{i+1/2} (wrong target)"),
+     "Table II raw c_rk, no normalization — wrong target for checker"),
+    ("table_II_normalized",
+     _make_weight_variant("table_II_normalized", None, None, None,
+                          _weights_table_II_normalized, "u^{n+1}_{i+1/2} (wrong target)"),
+     "Table II c_rk normalized per Eq. (17) — wrong target for checker"),
+    ("equal_weights_debug",
+     _make_weight_variant("equal_weights_debug", None, None, None,
+                          _weights_equal, "ubar_{i+1/2}"),
+     "Equal 1/3 weights — diagnostic baseline only"),
+]
+
+
+def run_weight_diagnosis(cfl: float = 0.5, quick: bool = False) -> dict:
+    """Test weight-role variants for combined reconstruction.
+
+    Parameters
+    ----------
+    cfl : float
+        CFL number.
+    quick : bool
+        If True, use fewer resolutions.
+
+    Returns
+    -------
+    dict with variants list, cfweno3_baseline, and summary.
+    """
+    resolutions = (40, 80, 160) if quick else (40, 80, 160, 320)
+
+    # Run CFWENO3 baseline
+    cfweno3_result = _check_scheme("cfweno3_baseline", _cfweno3_baseline_scheme,
+                                    3.0, cfl, resolutions)
+
+    # Run each weight variant
+    variant_results = []
+    for vname, vfn, vdesc in VARIANTS:
+        result = _check_scheme(vname, vfn, 5.0, cfl, resolutions)
+        # Compute weight sum at this CFL
+        _, _, _, wsum = vfn._weight_fn(cfl)
+        result["weight_source"] = vfn._target
+        result["weight_sum"] = round(wsum, 6)
+        result["description"] = vdesc
+        variant_results.append(result)
+
+    return {
+        "cfweno3_baseline": cfweno3_result,
+        "variants": variant_results,
+        "cfl": cfl,
+        "resolutions": list(resolutions),
+    }
+
+
 SUBSTENCILS = {
     "s0": (_substencil_s0, 3.0),     # expected individual order ~3
     "s1": (_substencil_s1, 4.0),     # expected individual order ~4
@@ -263,6 +417,47 @@ def run_consistency_checks(cfl: float = 0.5, quick: bool = False) -> dict:
     }
 
 
+def _print_weight_diagnosis(results: dict, quick: bool = False) -> None:
+    """Print weight diagnosis results in readable format."""
+    print("CFWENO5 Weight Role Diagnosis")
+    print(f"  CFL: {results['cfl']}")
+    print(f"  Resolutions: {results['resolutions']}")
+    print()
+
+    # CFWENO3 baseline
+    cfweno3 = results["cfweno3_baseline"]
+    bfs = "PASS" if cfweno3["passed"] else "FAIL"
+    bfo = f"{cfweno3['observed_order']:.2f}" if cfweno3["observed_order"] is not None else "N/A"
+    print(f"  {'cfweno3':30s}  {bfs}  observed_order={bfo}  (expected ~3.0)  [infrastructure sanity]")
+
+    print()
+    print("  Variants:")
+    for v in results["variants"]:
+        name = v["name"]
+        v_status = "PASS" if v["passed"] else "FAIL"
+        v_obs = f"{v['observed_order']:.2f}" if v["observed_order"] is not None else "N/A"
+        v_exp = v["expected_order"]
+        wsum = v["weight_sum"]
+        target = v["weight_source"]
+        desc = v["description"]
+        print(f"  {name:30s}  {v_status}  observed_order={v_obs}  "
+              f"(expected ~{v_exp})  weight_sum={wsum}  target={target}")
+        if not quick:
+            for nx_str, err in v["errors"].items():
+                print(f"          nx={nx_str:>4s}  L2={err}")
+        print(f"          {desc}")
+    print()
+
+    # Identify best variant
+    variants = results["variants"]
+    if variants:
+        best = max(variants, key=lambda v: v["observed_order"] if v["observed_order"] is not None else -1)
+        print(f"  Best variant: {best['name']} (order={best['observed_order']:.2f})")
+
+    print()
+    print("  Diagnostic complete. Exit code 0 (diagnosis never fails).")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Check CFWENO5 substencil numerical consistency"
@@ -273,10 +468,16 @@ def main(argv: list[str] | None = None) -> int:
                         help="Output JSON")
     parser.add_argument("--cfl", type=float, default=0.5,
                         help="CFL number (default: 0.5)")
+    parser.add_argument("--diagnose-weights", action="store_true",
+                        help="Run weight-variant diagnosis mode "
+                             "(tests Table I/II raw vs normalized vs equal weights)")
     args = parser.parse_args(argv)
 
     try:
-        results = run_consistency_checks(cfl=args.cfl, quick=args.quick)
+        if args.diagnose_weights:
+            results = run_weight_diagnosis(cfl=args.cfl, quick=args.quick)
+        else:
+            results = run_consistency_checks(cfl=args.cfl, quick=args.quick)
     except Exception as e:
         if args.json:
             json.dump({"error": str(e)}, sys.stdout, indent=2)
@@ -288,6 +489,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         json.dump(results, sys.stdout, indent=2)
         print()
+    elif args.diagnose_weights:
+        _print_weight_diagnosis(results, quick=args.quick)
     else:
         print("CFWENO5 Substencil Consistency Check")
         print(f"  CFL: {args.cfl}")
@@ -313,6 +516,9 @@ def main(argv: list[str] | None = None) -> int:
         print()
         print(f"  Result: {results['summary']}")
 
+    # Weight diagnosis always exits 0 (it's diagnostic, not pass/fail)
+    if args.diagnose_weights:
+        return 0
     return 0 if results["all_passed"] else 1
 
 

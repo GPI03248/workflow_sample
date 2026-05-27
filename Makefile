@@ -22,6 +22,7 @@ ENV = tools/run_in_project_env.sh
         demo-hll-workflow validation-index health \
         formula-confidence-cfweno5 formula-confidence-cfweno5-strict formula-confidence-report-cfweno5 \
         cfweno5-formula-consistency cfweno5-formula-consistency-quick \
+        cfweno5-diagnose-weights cfweno5-diagnose-weights-quick \
         release-check
 
 # --- Compilation ---
@@ -146,6 +147,12 @@ cfweno5-formula-consistency:
 
 cfweno5-formula-consistency-quick:
 	$(ENV) python tools/check_cfweno5_formula_consistency.py --quick
+
+cfweno5-diagnose-weights:
+	$(ENV) python tools/check_cfweno5_formula_consistency.py --diagnose-weights
+
+cfweno5-diagnose-weights-quick:
+	$(ENV) python tools/check_cfweno5_formula_consistency.py --diagnose-weights --quick
 
 # --- Paper-to-Code Tools ---
 

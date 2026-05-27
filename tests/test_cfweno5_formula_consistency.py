@@ -167,3 +167,91 @@ def test_observed_orders_are_finite():
         )
     assert data["combined"]["observed_order"] is not None
     assert isinstance(data["combined"]["observed_order"], (int, float))
+
+
+# --- Weight diagnosis mode ---
+
+def test_diagnose_weights_json_output():
+    """Weight diagnosis JSON is parseable and contains expected keys."""
+    result = _run_tool("--diagnose-weights", "--quick", "--json")
+    data = json.loads(result.stdout)
+    assert "cfweno3_baseline" in data
+    assert "variants" in data
+    assert "cfl" in data
+    assert "resolutions" in data
+    assert len(data["variants"]) == 5
+
+
+def test_diagnose_weights_all_variants_reported():
+    """All 5 weight variants appear in diagnosis output."""
+    result = _run_tool("--diagnose-weights", "--quick", "--json")
+    data = json.loads(result.stdout)
+    variant_names = {v["name"] for v in data["variants"]}
+    expected = {
+        "current_table_I_raw",
+        "table_I_normalized",
+        "table_II_raw",
+        "table_II_normalized",
+        "equal_weights_debug",
+    }
+    assert variant_names == expected, f"Missing variants: {expected - variant_names}"
+
+
+def test_diagnose_weights_cfweno3_baseline_passes():
+    """CFWENO3 baseline passes in diagnosis mode (infrastructure sanity)."""
+    result = _run_tool("--diagnose-weights", "--quick", "--json")
+    data = json.loads(result.stdout)
+    assert data["cfweno3_baseline"]["passed"] is True, (
+        f"CFWENO3 baseline should PASS. "
+        f"observed_order={data['cfweno3_baseline']['observed_order']}"
+    )
+
+
+def test_diagnose_weights_exit_zero():
+    """Weight diagnosis always exits 0 (diagnostic mode, not pass/fail)."""
+    result = _run_tool("--diagnose-weights", "--quick")  # no expect_fail
+    assert result.returncode == 0, (
+        f"Diagnosis mode should always exit 0, got {result.returncode}"
+    )
+
+
+def test_diagnose_weights_variants_have_required_fields():
+    """Each variant has weight_source, weight_sum, and description fields."""
+    result = _run_tool("--diagnose-weights", "--quick", "--json")
+    data = json.loads(result.stdout)
+    for v in data["variants"]:
+        assert "weight_source" in v, f"{v['name']}: missing weight_source"
+        assert "weight_sum" in v, f"{v['name']}: missing weight_sum"
+        assert "description" in v, f"{v['name']}: missing description"
+        assert isinstance(v["observed_order"], (int, float)), (
+            f"{v['name']}: observed_order is not numeric"
+        )
+
+
+def test_diagnose_weights_table_I_raw_weight_sum():
+    """Table I raw weights sum to (4-nu+nu^2)/6 at nu=0.5 = 0.625."""
+    result = _run_tool("--diagnose-weights", "--cfl", "0.5", "--quick", "--json")
+    data = json.loads(result.stdout)
+    raw = [v for v in data["variants"] if v["name"] == "current_table_I_raw"][0]
+    # (4 - 0.5 + 0.25)/6 = 3.75/6 = 0.625
+    assert raw["weight_sum"] == 0.625, (
+        f"Table I raw weight sum should be 0.625 at nu=0.5, got {raw['weight_sum']}"
+    )
+
+
+def test_diagnose_weights_table_I_normalized_weight_sum():
+    """Table I normalized weights sum to 1.0."""
+    result = _run_tool("--diagnose-weights", "--cfl", "0.5", "--quick", "--json")
+    data = json.loads(result.stdout)
+    norm = [v for v in data["variants"] if v["name"] == "table_I_normalized"][0]
+    assert norm["weight_sum"] == 1.0, (
+        f"Table I normalized weight sum should be 1.0, got {norm['weight_sum']}"
+    )
+
+
+def test_diagnose_weights_equal_baseline():
+    """Equal weights (1/3 each) is present as baseline."""
+    result = _run_tool("--diagnose-weights", "--quick", "--json")
+    data = json.loads(result.stdout)
+    eq = [v for v in data["variants"] if v["name"] == "equal_weights_debug"][0]
+    assert eq["weight_sum"] == 1.0

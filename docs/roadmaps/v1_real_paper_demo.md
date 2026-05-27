@@ -265,9 +265,34 @@ moved from `(1/2)(1-nu)(u_{i+1/2} - u_i)` (first term) to
 | Combined scheme | ~1.0 | ~1.0 (unchanged) |
 
 The combined scheme failure persists, indicating additional errors beyond s2.
-Likely candidates: Table I weight sum ≠ 1, or s3/N/A weight assignment issue.
+Initially suspected: Table I weight sum ≠ 1, or s3/N/A weight assignment issue.
 
 Re-transcription doc: `docs/tasks/cfweno5_formula_verification/s2_retranscription.md`
+
+### Scalar CFWENO5 Weight Role Audit (v1.3-pre.9)
+
+**Status**: Complete — normalization is necessary but insufficient.
+
+Comprehensive audit of Table I/Table II weight role and Eq. (17) normalization:
+
+| Variant | Order | Weight Sum | Finding |
+|---------|-------|-----------|---------|
+| Table I raw (current) | 1.00 | 0.625 | Broken — no normalization |
+| Table I normalized (Eq. 17) | 3.00 | 1.0 | Fixes 1st→3rd but NOT 5th |
+| Table II raw | 3.02 | 1.0 | Wrong target, caps at 3rd |
+| Table II normalized | 3.02 | 1.0 | Same as raw |
+| Equal 1/3 weights | 3.00 | 1.0 | Same ceiling as optimal weights |
+
+**Conclusion C**: Normalization fixes the ~1st-order problem but ALL weight variants
+cap at ~3rd order. The ~3.0 ceiling is weight-independent. The substencil polynomials
+from Appendix A Eq. (A1) have additional coefficient errors beyond normalization.
+The polynomial decomposition error cancellation (Eq. 15) is broken.
+
+**Next step**: Re-verify ALL Appendix A Eq. (A1) substencil polynomials (s0, s1, s2, s3)
+from the rendered PDF at high resolution.
+
+Audit doc: `docs/tasks/cfweno5_formula_verification/weight_role_audit.md`
+New tool flag: `--diagnose-weights` in `tools/check_cfweno5_formula_consistency.py`
 
 ---
 
