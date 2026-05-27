@@ -2,7 +2,7 @@
 
 **Source**: Zhou-Dong-Pan (2025), Phys. Fluids 37, 106131
 **Subset**: 1D scalar linear advection CFWENO5 prototype
-Approved for implementation: no
+Approved for implementation: yes
 
 **Human verification status**: All required formulas character-level verified. Appendix A Eq. (A2) reclassified as optional verification reference (derived from verified A1).
 
