@@ -1,20 +1,32 @@
 # Feasibility Review: Scalar CFWENO5 Readiness
 
-**Date**: 2026-05-26
-**Based on**: v1.0 tag `42d97ee`, Burgers order recovery commit `4d671c0`
-**Decision**: **Ready for human approval** (updated after A2 derivation policy)
+**Date**: 2026-05-27 (updated after failed implementation attempt)
+**Based on**: v1.0 tag `42d97ee`, failed implementation diagnostic `dc78864`
+**Decision**: **BLOCKED — formula confidence gate hardened after failed implementation**
 
 ---
 
 ## Is Scalar CFWENO5 Ready?
 
-**Decision: READY FOR HUMAN APPROVAL — strict formula confidence gate passes**
+**Decision: BLOCKED — strict formula confidence gate fails after implementation attempt**
 
-A2 derivation policy resolves the last formula gate blocker. A2 is reclassified
-from required/blocking to optional/non-blocking. All 11 required formulas are
-at high confidence and verified. Strict confidence check passes.
+The CFWENO5 implementation (v1.3, 2026-05-26) was attempted with the approved spec
+but achieved only ~1st-order convergence (expected ~5th). The s2 substencil from
+Appendix A produced only 2nd-order individually (expected 4th). The combined
+3-substencil scheme degraded to 1st-order globally.
 
-See `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md` for full details.
+The implementation was fully reverted. A diagnostic report was committed as `dc78864`.
+The formula confidence gate was subsequently hardened:
+- `appendix_A_eq_A1` and `cfweno5_stencil_expression` demoted to medium/failed_validation
+- New `consistency_status` field added to formula inventory
+- New `tools/check_cfweno5_formula_consistency.py` checks substencil-level convergence
+- Strict formula confidence gate now blocks on `consistency_status=failed`
+
+**Implementation must NOT proceed until Appendix A formulas are re-verified against the paper PDF and pass numerical consistency checks.**
+
+See:
+- `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md` — detailed diagnostic
+- `docs/tasks/cfweno5_formula_verification/appendix_a_reverification_plan.md` — what to re-verify
 
 ---
 

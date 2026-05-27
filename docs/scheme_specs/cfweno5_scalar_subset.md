@@ -2,11 +2,11 @@
 
 **Source**: Zhou-Dong-Pan (2025), Phys. Fluids 37, 106131
 **Subset**: 1D scalar linear advection CFWENO5 prototype
-Approved for implementation: yes
+Approved for implementation: no
 
-**Human verification status**: All required formulas character-level verified. Appendix A Eq. (A2) reclassified as optional verification reference (derived from verified A1).
+**Human verification status**: Reverted 2026-05-27. After failed CFWENO5 implementation (observed ~1st order convergence, expected ~5th), Appendix A Eq. (A1) substencils and stencil assembly formulas demoted to medium/failed_validation.
 
-**Implementation readiness**: ready for human approval — strict formula confidence gate passes
+**Implementation readiness**: BLOCKED — strict formula confidence gate fails (2 blocking formulas with consistency_status=failed). See `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md`.
 
 ---
 
@@ -234,7 +234,15 @@ be changed to `yes`.
 
 ### Current blocking formulas
 
-**None** — all required formulas are high confidence and verified.
+**2 formulas** block implementation:
+
+| Formula ID | Confidence | Verification | Consistency | Reason |
+|------------|-----------|-------------|-------------|--------|
+| appendix_A_eq_A1 | medium | failed_validation | failed | s2 substencil only 2nd order (should be 4th); combined scheme ~1st order |
+| cfweno5_stencil_expression | medium | failed_validation | failed | Combined substencil WENO assembly does not achieve 5th order with current A1 formulas |
+
+See `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md` and
+`docs/tasks/cfweno5_formula_verification/appendix_a_reverification_plan.md`.
 
 ### Optional formulas (do not block approval)
 
@@ -260,11 +268,11 @@ A2 reclassified from required/blocking to optional/non-blocking in v1.3-pre.6:
 make formula-confidence-cfweno5-strict
 ```
 
-This check now **passes** — all required formulas are high confidence and verified.
-A2 is reclassified as optional and does not block the strict gate.
+This check now **fails** with 4 blocking items (2 confidence + 2 consistency_status).
+Both `appendix_A_eq_A1` and `cfweno5_stencil_expression` block implementation
+due to medium confidence/failed_validation and consistency_status=failed.
 
-**Do not change `Approved for implementation` to `yes` without explicit human approval.**
-The formula gate is a necessary but not sufficient condition for approval.
+**Do not change `Approved for implementation` to `yes` until all blocking formulas are resolved.**
 
 ---
 

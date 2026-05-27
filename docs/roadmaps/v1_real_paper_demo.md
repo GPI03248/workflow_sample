@@ -233,6 +233,21 @@ higher-order smooth-problem benchmark.
 
 **Decision**: Conditionally ready. Implementation pending Appendix A verification + approval.
 
+**CFWENO5 Implementation Attempt — FAILED** (v1.3, commit dc78864):
+- CFWENO5 scalar linear advection implemented per approved spec
+- Observed ~1st-order convergence (expected ~5th)
+- s2 substencil only 2nd-order individually (expected 4th)
+- All CFWENO5 code reverted; diagnostic committed
+- See `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md`
+
+**Formula Gate Hardening** (v1.3-pre.7, this commit):
+- Appendix A formulas demoted to medium/failed_validation
+- New `consistency_status` field — required formulas with status=failed block strict check
+- New tool: `tools/check_cfweno5_formula_consistency.py` — substencil convergence checker
+- New re-verification plan: `docs/tasks/cfweno5_formula_verification/appendix_a_reverification_plan.md`
+- Strict formula confidence gate now correctly BLOCKS implementation
+- `Approved for implementation` reverted to `no`
+
 **Formula confidence workflow** (this commit):
 - Formula inventory: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
 - Confidence checker: `tools/check_formula_confidence.py` (supports 'derived' verification status)

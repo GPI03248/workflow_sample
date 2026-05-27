@@ -5,8 +5,8 @@
 - **Task type**: post-v1.0 readiness review
 - **Based on v1.0 tag**: 42d97ee
 - **Previous diagnostic**: Burgers order recovery commit 4d671c0
-- **Date**: 2026-05-26
-- **Status**: complete (strict formula confidence gate passes, ready for human approval)
+- **Date**: 2026-05-27 (updated after v1.3-pre.7 gate hardening)
+- **Status**: formula gate hardened after failed implementation. 2 blocking formulas. Strict check FAILS.
 
 ## Purpose
 Determine whether scalar CFWENO5 linear advection is a viable next implementation
@@ -23,8 +23,10 @@ target after the Burgers order recovery diagnostic concluded that CFWENO3 Burger
 | docs/roadmaps/v1_real_paper_demo.md | Updated with CFWENO5 readiness section |
 
 ## Readiness Decision
-**READY FOR HUMAN APPROVAL** — All 11 required formulas at high confidence.
-A2 reclassified as optional derivation reference. Strict confidence gate passes.
+**BLOCKED** — After failed CFWENO5 implementation (v1.3, 2026-05-26) and gate hardening
+(v1.3-pre.7, 2026-05-27), 2 required formulas block implementation:
+`appendix_A_eq_A1` and `cfweno5_stencil_expression` — both medium/failed_validation
+with consistency_status=failed. See failed_attempt_diagnostic.md.
 
 Extraction report: `docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_extraction.md`
 
@@ -109,8 +111,22 @@ No — solver/schemes.py was NOT modified.
 ## Whether v1.0 Tag Changed
 No — v1.0 still points to 42d97ee.
 
+## v1.3-pre.7 — Formula Gate Hardening (2026-05-27)
+
+After the failed CFWENO5 implementation (commit dc78864), the formula confidence gate was hardened:
+
+- **Formula inventory**: `appendix_A_eq_A1` and `cfweno5_stencil_expression` demoted from high/verified to medium/failed_validation with consistency_status=failed
+- **New field**: `consistency_status` added to all formula entries (passed/failed/not_run/not_required)
+- **Confidence checker**: `check_strict()` now blocks on `consistency_status=failed`; `failed_validation` added as valid verification status
+- **New tool**: `tools/check_cfweno5_formula_consistency.py` — substencil-level numerical convergence checker
+- **New tests**: `tests/test_cfweno5_formula_consistency.py` (12 tests)
+- **New doc**: `docs/tasks/cfweno5_formula_verification/appendix_a_reverification_plan.md`
+- **Updated tests**: `tests/test_formula_confidence.py` (15 tests, updated for new blocking state)
+- **Strict gate**: Now FAILS with 4 blocking items (2 confidence + 2 consistency_status)
+- **Spec**: `Approved for implementation` reverted to `no`
+
 ## Commit
 - **Hash**: pending (this task)
-- **Previous hash**: 326f7b2 (human verification integration)
+- **Previous hash**: dc78864 (failed attempt diagnostic)
 - **Branch**: master
 - **Push**: pending

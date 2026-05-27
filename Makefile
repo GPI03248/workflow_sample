@@ -21,6 +21,7 @@ ENV = tools/run_in_project_env.sh
         check-spec trace-task discover-env \
         demo-hll-workflow validation-index health \
         formula-confidence-cfweno5 formula-confidence-cfweno5-strict formula-confidence-report-cfweno5 \
+        cfweno5-formula-consistency cfweno5-formula-consistency-quick \
         release-check
 
 # --- Compilation ---
@@ -137,6 +138,14 @@ formula-confidence-cfweno5-strict:
 
 formula-confidence-report-cfweno5:
 	$(ENV) python tools/check_formula_confidence.py docs/formula_inventories/cfweno5_scalar_formulas.yml --markdown-report docs/paper_reviews/cfweno_pof_2025/cfweno5_formula_confidence_report.md
+
+# --- CFWENO5 Formula Consistency ---
+
+cfweno5-formula-consistency:
+	$(ENV) python tools/check_cfweno5_formula_consistency.py
+
+cfweno5-formula-consistency-quick:
+	$(ENV) python tools/check_cfweno5_formula_consistency.py --quick
 
 # --- Paper-to-Code Tools ---
 

@@ -2,7 +2,7 @@
 # Paper: Zhou-Dong-Pan (2025), Phys. Fluids 37, 106131
 # Paper ID: cfweno_pof_2025
 # Date created: 2026-05-26
-# Last updated: 2026-05-26
+# Last updated: 2026-05-27
 
 metadata:
   paper_id: cfweno_pof_2025
@@ -31,6 +31,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Optimal linear weight for ubar_{i+1/2}, substencil k=0. Human verified from rendered PDF page image."
 
   - formula_id: table_I_r3_k1
@@ -49,6 +50,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Optimal linear weight for ubar_{i+1/2}, substencil k=1. Human verified from rendered PDF page image."
 
   - formula_id: table_I_r3_k2
@@ -67,6 +69,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Corrected from (1-nu)(2+nu)/6 to (1-nu)(2-nu)/6 by human verification. k=3 is not applicable (ellipsis)."
 
   - formula_id: table_II_r3_k0
@@ -85,6 +88,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Next-time-level weight for u^{n+1}_{i+1/2}, substencil k=0. Denominator has singularity at nu=1/3."
 
   - formula_id: table_II_r3_k1
@@ -103,6 +107,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Next-time-level weight for substencil k=1. Denominator singularities at nu=1/3 and nu=2/3."
 
   - formula_id: table_II_r3_k2
@@ -121,6 +126,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Next-time-level weight for substencil k=2. Denominator singularity at nu=2/3. k=3 is not applicable (ellipsis)."
 
   - formula_id: eq19_smoothness_r3
@@ -139,6 +145,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Smoothness indicators b_30, b_31, b_32, b_33 for r=3 substencils. Character-level verified from pdftotext of Eq. (19) page 7. b_30 corrected: was 3 terms (error: first term belonged to b_20), now correctly 2 terms."
 
   - formula_id: appendix_A_eq_A1
@@ -151,13 +158,14 @@ formulas:
     formula_type: substencil_expression
     expression: "see extraction report Section 1: 4 substencils k=0,1,2,3 with terms (1-v), (1/2)(1-v), (1-v)(-v), (1/4)(1-v)(-v)(1+v), (1/12)(1-v)^2(-v)(1+v)"
     extraction_method: "pdftotext character-level verification"
-    confidence: high
-    verification_status: verified
+    confidence: medium
+    verification_status: failed_validation
     used_by:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
-    blocks_implementation: false
-    notes: "Initial-value reconstruction ubar^{3}_{i+1/2,k} for k=0,1,2,3. Character-level verified from pdftotext of page 24. All 4 substencils match extraction report. Minor pdftotext artifact: k=3 shows u_j instead of u_i (subscript rendering issue)."
+    blocks_implementation: true
+    consistency_status: failed
+    notes: "DEMOTED 2026-05-27: CFWENO5 implementation using these substencil formulas achieved only ~1st-order convergence (expected ~5th). Single-step diagnostics show s2 substencil achieves only 2nd order individually (should be 4th). Suspected s2 coefficient error: (1/2)(1-nu) on first correction term instead of second. Even with corrected s2, combined 4-substencil scheme only achieves 3rd order. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md. Original (pre-demotion): confidence high, verified via character-level pdftotext of page 24. All 4 substencils match extraction report."
 
   - formula_id: appendix_A_eq_A2
     paper_id: cfweno_pof_2025
@@ -175,6 +183,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: optional
     blocks_implementation: false
+    consistency_status: not_required
     notes: "Next-time-level reconstruction u^{n+1,3}_{i+1/2,k} for k=0,1,2,3. A2 is mathematically derived from A1 by applying d/dv to each coefficient (v=nu). pdftotext transcription of d/dv terms is ambiguous. Implementation should derive A2 coefficients from verified A1 via symbolic differentiation, then cross-verify against the paper's A2 expressions. See docs/tasks/cfweno5_formula_verification/a2_derivation_policy.md."
 
   - formula_id: cfweno5_stencil_expression
@@ -187,13 +196,14 @@ formulas:
     formula_type: stencil_assembly
     expression: "ubar = sum_k(w_bar_k * ubar_k); u^{n+1} = sum_k(w_k * u^{n+1}_k)"
     extraction_method: "structural understanding from CFWENO3 + paper Eqs. (15)-(16)"
-    confidence: high
-    verification_status: verified
+    confidence: medium
+    verification_status: failed_validation
     used_by:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
-    blocks_implementation: false
-    notes: "WENO combination of substencils. Order-independent machinery verified through CFWENO3 implementation. Assembly does not depend on specific substencil coefficients."
+    blocks_implementation: true
+    consistency_status: failed
+    notes: "DEMOTED 2026-05-27: The combined stencil (3-substencil WENO combination with Table I weights) produced only ~1st-order convergence when implemented. While the WENO assembly machinery is order-independent and validated through CFWENO3, the specific CFWENO5 combination with current Appendix A substencils does not achieve 5th order. The substencil expressions or weight assignments are incorrect. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md."
 
   - formula_id: cfweno5_interface_reconstruction
     paper_id: cfweno_pof_2025
@@ -211,6 +221,7 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "4th-order centered interface reconstruction. Same as CFWENO3. Confirmed consistent with Eq. (13) for quartic polynomial."
 
   - formula_id: cfweno5_conservative_update
@@ -229,4 +240,5 @@ formulas:
       - docs/scheme_specs/cfweno5_scalar_subset.md
     implementation_relevance: required
     blocks_implementation: false
+    consistency_status: not_run
     notes: "Conservative update formula. Same structure as CFWENO3. Verified through successful CFWENO3 implementation."

@@ -16,8 +16,9 @@ from pathlib import Path
 import yaml
 
 VALID_CONFIDENCES = ("high", "medium", "low")
-VALID_VERIFICATION = ("verified", "visually_confirmed", "partial", "uncertain", "missing", "derived")
+VALID_VERIFICATION = ("verified", "visually_confirmed", "partial", "uncertain", "missing", "derived", "failed_validation")
 VALID_RELEVANCE = ("required", "optional", "not_needed")
+VALID_CONSISTENCY = ("passed", "failed", "not_run", "not_required")
 
 
 def load_inventory(path: str) -> dict:
@@ -56,6 +57,8 @@ def validate_formula(entry: dict, idx: int) -> list[str]:
         errors.append(f"formula #{idx}: invalid verification_status '{entry['verification_status']}'")
     if "implementation_relevance" in entry and entry["implementation_relevance"] not in VALID_RELEVANCE:
         errors.append(f"formula #{idx}: invalid implementation_relevance '{entry['implementation_relevance']}'")
+    if "consistency_status" in entry and entry["consistency_status"] not in VALID_CONSISTENCY:
+        errors.append(f"formula #{idx}: invalid consistency_status '{entry['consistency_status']}'")
     return errors
 
 
@@ -92,6 +95,7 @@ def check_inventory(inventory: dict) -> dict:
             "verification_status": entry.get("verification_status", "unknown"),
             "implementation_relevance": entry.get("implementation_relevance", "unknown"),
             "blocks_implementation": entry.get("blocks_implementation", False),
+            "consistency_status": entry.get("consistency_status", "not_run"),
         }
         results["formulas"].append(formula_info)
 
@@ -110,7 +114,8 @@ def check_inventory(inventory: dict) -> dict:
 
 
 def check_strict(results: dict, spec_path: str | None = None) -> list[str]:
-    """Check strict mode: all required formulas must be high + verified."""
+    """Check strict mode: all required formulas must be high + verified,
+    and must not have consistency_status=failed."""
     failures = []
     for f in results["formulas"]:
         if f["implementation_relevance"] != "required":
@@ -127,6 +132,13 @@ def check_strict(results: dict, spec_path: str | None = None) -> list[str]:
             failures.append(
                 f"BLOCKING: '{f['formula_id']}' is high confidence but "
                 f"verification_status={f['verification_status']} (expected 'verified')"
+            )
+        # Check substencil-level numerical consistency
+        if f.get("consistency_status") == "failed":
+            failures.append(
+                f"BLOCKING: '{f['formula_id']}' has consistency_status=failed — "
+                f"substencil-level numerical validation did not achieve expected convergence order. "
+                f"See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md"
             )
     return failures
 
@@ -161,7 +173,10 @@ def format_report(results: dict, inventory_path: str, strict_failures: list[str]
         lines.append(f"## High Confidence Formulas ({len(high)})")
         lines.append(f"")
         for f in high:
-            lines.append(f"- `{f['formula_id']}`: {f['verification_status']}, relevance={f['implementation_relevance']}")
+            cs = f.get("consistency_status", "not_run")
+            lines.append(f"- `{f['formula_id']}`: {f['verification_status']}, "
+                         f"relevance={f['implementation_relevance']}, "
+                         f"consistency={cs}")
         lines.append(f"")
 
     # Medium/Low confidence
@@ -170,10 +185,12 @@ def format_report(results: dict, inventory_path: str, strict_failures: list[str]
         lines.append(f"## Medium/Low Confidence Formulas ({len(low_med)})")
         lines.append(f"")
         for f in low_med:
+            cs = f.get("consistency_status", "not_run")
             lines.append(f"- `{f['formula_id']}`: confidence={f['confidence']}, "
                          f"verification={f['verification_status']}, "
                          f"relevance={f['implementation_relevance']}, "
-                         f"blocks={f['blocks_implementation']}")
+                         f"blocks={f['blocks_implementation']}, "
+                         f"consistency={cs}")
         lines.append(f"")
 
     # Blocking
@@ -210,8 +227,25 @@ def format_report(results: dict, inventory_path: str, strict_failures: list[str]
         lines.append(f"## Recommended Human Verification Queue")
         lines.append(f"")
         for i, f in enumerate(queue, 1):
+            cs = f.get("consistency_status", "not_run")
             lines.append(f"{i}. `{f['formula_id']}`: currently {f['confidence']} confidence, "
-                         f"{f['verification_status']}")
+                         f"{f['verification_status']}, consistency={cs}")
+        lines.append(f"")
+
+    # Consistency failures
+    consistency_failures = [f for f in results["formulas"]
+                            if f.get("consistency_status") == "failed"]
+    if consistency_failures:
+        lines.append(f"## Numerical Consistency Failures ({len(consistency_failures)})")
+        lines.append(f"")
+        lines.append(f"The following formulas failed substencil-level numerical validation:")
+        lines.append(f"")
+        for f in consistency_failures:
+            lines.append(f"1. `{f['formula_id']}`: confidence={f['confidence']}, "
+                         f"verification={f['verification_status']}")
+        lines.append(f"")
+        lines.append(f"See `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md` "
+                     f"for details.")
         lines.append(f"")
 
     # Decision

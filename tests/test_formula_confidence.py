@@ -163,16 +163,16 @@ def test_markdown_report():
         assert "High Confidence" in report
 
 
-# --- Test: CFWENO5 inventory has no blocking items (after A2 policy) ---
+# --- Test: CFWENO5 inventory has 2 blocking items (after Appendix A demotion) ---
 
-def test_cfweno5_no_blocking_items():
-    """The real CFWENO5 inventory has zero blocking formulas after A2 reclassification."""
-    result = _run_tool(str(CFWENO5_INVENTORY))
+def test_cfweno5_has_blocking_items():
+    """After Appendix A demotion, the CFWENO5 inventory has 2 blocking formulas."""
+    result = _run_tool(str(CFWENO5_INVENTORY), expect_fail=True)
     assert "Blocking:" in result.stdout
     for line in result.stdout.split("\n"):
         if line.strip().startswith("Blocking:"):
             count_str = line.split("Blocking:")[-1].strip()
-            assert int(count_str) == 0
+            assert int(count_str) == 2, f"Expected 2 blocking, got {count_str}"
 
 
 # --- Test: checker does not modify inventory ---
@@ -185,16 +185,19 @@ def test_checker_does_not_modify_inventory():
     assert original == after
 
 
-# --- Test: CFWENO5 strict mode passes (after A2 reclassification) ---
+# --- Test: CFWENO5 strict mode fails (after Appendix A demotion) ---
 
-def test_cfweno5_strict_passes():
-    """CFWENO5 strict check passes after A2 reclassified as optional."""
+def test_cfweno5_strict_fails():
+    """CFWENO5 strict check FAILS after Appendix A formulas demoted."""
     result = _run_tool(
         str(CFWENO5_INVENTORY),
         "--require-high-for-implementation",
+        expect_fail=True,
     )
-    assert result.returncode == 0
-    assert "STRICT CHECK PASSED" in result.stdout
+    assert result.returncode != 0
+    assert "STRICT CHECK FAILED" in result.stdout
+    # Should mention consistency_status failures
+    assert "consistency_status=failed" in result.stdout
 
 
 # --- Test: derived verification status is valid ---
@@ -239,6 +242,7 @@ def test_optional_formula_does_not_block_strict():
             "used_by": ["spec.md"],
             "implementation_relevance": "required",
             "blocks_implementation": False,
+            "consistency_status": "not_run",
             "notes": "test",
         },
         {
@@ -253,7 +257,112 @@ def test_optional_formula_does_not_block_strict():
             "used_by": ["spec.md"],
             "implementation_relevance": "optional",
             "blocks_implementation": False,
+            "consistency_status": "not_required",
             "notes": "Optional, derived from verified formula",
+        }
+    ])
+    result = _run_tool(inv, "--require-high-for-implementation")
+    assert "STRICT CHECK PASSED" in result.stdout
+
+
+# --- Test: consistency_status=failed blocks strict check ---
+
+def test_consistency_failed_blocks_strict():
+    """A required formula with consistency_status=failed blocks strict check."""
+    inv = _write_inventory([
+        {
+            "formula_id": "high_but_failed",
+            "paper_id": "test",
+            "source": {"section": "A", "page": 1},
+            "formula_type": "stencil",
+            "expression": "inline",
+            "extraction_method": "pdftotext",
+            "confidence": "high",
+            "verification_status": "verified",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "required",
+            "blocks_implementation": True,
+            "consistency_status": "failed",
+            "notes": "High confidence but failed numerical consistency",
+        }
+    ])
+    result = _run_tool(inv, "--require-high-for-implementation", expect_fail=True)
+    assert result.returncode != 0
+    assert "STRICT CHECK FAILED" in result.stdout
+    assert "consistency_status=failed" in result.stdout
+
+
+# --- Test: failed_validation verification status is valid ---
+
+def test_failed_validation_status_accepted():
+    """The 'failed_validation' verification status is accepted by the checker."""
+    inv = _write_inventory([
+        {
+            "formula_id": "failed_formula",
+            "paper_id": "test",
+            "source": {"section": "Appendix A", "page": 24},
+            "formula_type": "stencil",
+            "expression": None,
+            "extraction_method": "pdftotext",
+            "confidence": "medium",
+            "verification_status": "failed_validation",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "required",
+            "blocks_implementation": True,
+            "consistency_status": "failed",
+            "notes": "Failed numerical validation",
+        }
+    ])
+    result = _run_tool(inv, "--json")
+    data = json.loads(result.stdout)
+    assert data["valid"] is True
+    assert data["summary"]["blocking_count"] == 1
+
+
+# --- Test: consistency_status=not_run does not block ---
+
+def test_consistency_not_run_does_not_block():
+    """consistency_status=not_run does NOT block (only 'failed' blocks)."""
+    inv = _write_inventory([
+        {
+            "formula_id": "not_run_formula",
+            "paper_id": "test",
+            "source": {"section": "Table I", "page": 5},
+            "formula_type": "weight",
+            "expression": "nu/2",
+            "extraction_method": "human",
+            "confidence": "high",
+            "verification_status": "verified",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "required",
+            "blocks_implementation": False,
+            "consistency_status": "not_run",
+            "notes": "Not yet checked",
+        }
+    ])
+    result = _run_tool(inv, "--require-high-for-implementation")
+    assert "STRICT CHECK PASSED" in result.stdout
+
+
+# --- Test: consistency_status=passed does not block ---
+
+def test_consistency_passed_does_not_block():
+    """consistency_status=passed does NOT block strict check."""
+    inv = _write_inventory([
+        {
+            "formula_id": "passed_formula",
+            "paper_id": "test",
+            "source": {"section": "A", "page": 1},
+            "formula_type": "stencil",
+            "expression": "inline",
+            "extraction_method": "human",
+            "confidence": "high",
+            "verification_status": "verified",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "required",
+            "blocks_implementation": False,
+            "consistency_status": "passed",
+            "notes": "All good",
         }
     ])
     result = _run_tool(inv, "--require-high-for-implementation")
