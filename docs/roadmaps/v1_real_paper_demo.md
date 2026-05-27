@@ -248,6 +248,29 @@ higher-order smooth-problem benchmark.
 - Strict formula confidence gate now correctly BLOCKS implementation
 - `Approved for implementation` reverted to `no`
 
+### Scalar CFWENO5 s2 Re-transcription (v1.3-pre.8)
+
+**Status**: Partial — s2 correction confirmed, combined scheme still failing.
+
+The s2 substencil 1/2 factor was re-transcribed from pdftotext -layout
+column-position analysis. The 0.5 factor was on the wrong correction term:
+moved from `(1/2)(1-nu)(u_{i+1/2} - u_i)` (first term) to
+`(1/2)(1-nu)(-nu)(u_i - 2*u_{i+1/2} + u_{i+1})` (second term).
+
+**Results after correction**:
+| Component | Before | After |
+|-----------|--------|-------|
+| s2 individual order | ~2.0 | **~4.0** |
+| All 4 substencils | 3 pass / 1 fail | **4/4 pass** |
+| Combined scheme | ~1.0 | ~1.0 (unchanged) |
+
+The combined scheme failure persists, indicating additional errors beyond s2.
+Likely candidates: Table I weight sum ≠ 1, or s3/N/A weight assignment issue.
+
+Re-transcription doc: `docs/tasks/cfweno5_formula_verification/s2_retranscription.md`
+
+---
+
 **Formula confidence workflow** (this commit):
 - Formula inventory: `docs/formula_inventories/cfweno5_scalar_formulas.yml`
 - Confidence checker: `tools/check_formula_confidence.py` (supports 'derived' verification status)

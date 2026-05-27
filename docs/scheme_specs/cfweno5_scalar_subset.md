@@ -6,6 +6,8 @@ Approved for implementation: no
 
 **Human verification status**: Reverted 2026-05-27. After failed CFWENO5 implementation (observed ~1st order convergence, expected ~5th), Appendix A Eq. (A1) substencils and stencil assembly formulas demoted to medium/failed_validation.
 
+**v1.3-pre.8 s2 correction (2026-05-27)**: The s2 substencil 1/2 factor was on the wrong correction term. Moved from first term `(1/2)(1-nu)(u_{i+1/2} - u_i)` to second term `(1/2)(1-nu)(-nu)(u_i - 2*u_{i+1/2} + u_{i+1})`. Corrected s2 now achieves ~4.0 individual order (was ~2.0). Combined 3-substencil scheme still fails (~1st order). See `docs/tasks/cfweno5_formula_verification/s2_retranscription.md`.
+
 **Implementation readiness**: BLOCKED — strict formula confidence gate fails (2 blocking formulas with consistency_status=failed). See `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md`.
 
 ---

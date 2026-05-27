@@ -39,8 +39,8 @@ ubar^3_{i+1/2,0} = u_i + (1-nu)(u_i - u_{i-1/2})
 ubar^3_{i+1/2,1} = u_i + (1-nu)(u_{i+1/2} - u_i)
                    + (1-nu)(-nu)(u_{i-1/2} - 2*u_i + u_{i+1/2})
 
-ubar^3_{i+1/2,2} = u_i + (1/2)(1-nu)(u_{i+1/2} - u_i)
-                   + (1-nu)(-nu)(u_i - 2*u_{i+1/2} + u_{i+1})
+ubar^3_{i+1/2,2} = u_i + (1-nu)(u_{i+1/2} - u_i)
+                   + (1/2)(1-nu)(-nu)(u_i - 2*u_{i+1/2} + u_{i+1})
 
 ubar^3_{i+1/2,3} = u_i + (1-nu)(u_{i+1/2} - u_i)
                    + (1/2)(1-nu)(-nu)(u_i - 2*u_{i+1/2} + u_{i+1})
@@ -48,9 +48,12 @@ ubar^3_{i+1/2,3} = u_i + (1-nu)(u_{i+1/2} - u_i)
                    + (1/12)(1-nu)^2*(-nu)(1+nu)(-u_{i-1} + 6*u_{i-1/2} - 10*u_i + 6*u_{i+1/2} - u_{i+1})
 ```
 
-NOTE: The pdftotext transcription of Eq. (A1) is unreliable due to multi-line
-piecewise formatting. The above is a best-effort interpretation. **Human
-verification against the PDF is required.**
+**Correction (2026-05-27)**: s2 (k=2) corrected. The 1/2 factor was moved from the first
+correction term to the second, based on pdftotext -layout column-position analysis.
+See `docs/tasks/cfweno5_formula_verification/s2_retranscription.md`.
+
+**Numerical verification**: Corrected s2 achieves ~4.0 individual order (was ~2.0).
+Combined 3-substencil scheme still fails (~1st order) — additional formula errors remain.
 
 **Eq. (A2) — Next-time-level reconstruction u^{n+1,3}_{i+1/2,k}:**
 

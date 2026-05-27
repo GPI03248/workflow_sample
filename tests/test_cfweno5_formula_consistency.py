@@ -1,9 +1,10 @@
 """Tests for tools/check_cfweno5_formula_consistency.py.
 
-NOTE: The tool currently returns exit code 1 because s2 and cfweno5_combined
-fail consistency (known issue from failed CFWENO5 implementation). Most tests
-use expect_fail=True to account for this. When the Appendix A formulas are
-re-verified and corrected, these tests should be updated to use expect_fail=False.
+NOTE: The tool currently returns exit code 1 because cfweno5_combined
+still fails consistency (after v1.3-pre.8 s2 correction, all 4 substencils
+now pass individually but combined ~1st order). Most tests use expect_fail=True
+to account for this. When the combined scheme is fixed, these tests should be
+updated to use expect_fail=False.
 """
 
 import json
@@ -84,18 +85,18 @@ def test_combined_scheme_reported():
     assert "comb" in result.stdout
 
 
-# --- s2 fails (known issue from failed implementation) ---
+# --- s2 passes (corrected in v1.3-pre.8 — 1/2 factor moved to second term) ---
 
-def test_s2_fails_consistency():
-    """s2 substencil FAILS consistency check (known issue)."""
+def test_s2_passes_consistency():
+    """s2 substencil PASSES consistency check after v1.3-pre.8 correction."""
     result = _run_tool("--quick", "--json", expect_fail=True)
     data = json.loads(result.stdout)
     s2 = [r for r in data["substencils"] if r["name"] == "s2"][0]
-    assert s2["passed"] is False, (
-        f"s2 should FAIL consistency check but passed. "
+    assert s2["passed"] is True, (
+        f"s2 should PASS after correction. "
         f"observed_order={s2['observed_order']}, expected ~4.0"
     )
-    assert "s2" in data["failures"]
+    assert "s2" not in data["failures"]
 
 
 # --- Combined scheme fails (known issue from failed implementation) ---

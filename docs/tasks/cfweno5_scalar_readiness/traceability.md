@@ -8,6 +8,15 @@
 - **Date**: 2026-05-27 (updated after v1.3-pre.7 gate hardening)
 - **Status**: formula gate hardened after failed implementation. 2 blocking formulas. Strict check FAILS.
 
+### v1.3-pre.8 s2 correction (2026-05-27)
+
+- s2 substencil 1/2 factor corrected: moved from first correction term to second
+- Corrected s2 achieves ~4.0 individual order (was ~2.0)
+- All 4 individual substencils now pass single-step convergence
+- Combined 3-substencil scheme still fails (~1st order) — remains blocked
+- Re-transcription document: `docs/tasks/cfweno5_formula_verification/s2_retranscription.md`
+- Method: pdftotext -layout column-position analysis (image rendering unavailable for visual PDF reading)
+
 ## Purpose
 Determine whether scalar CFWENO5 linear advection is a viable next implementation
 target after the Burgers order recovery diagnostic concluded that CFWENO3 Burgers

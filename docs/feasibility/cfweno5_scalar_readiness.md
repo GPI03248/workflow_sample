@@ -15,6 +15,11 @@ but achieved only ~1st-order convergence (expected ~5th). The s2 substencil from
 Appendix A produced only 2nd-order individually (expected 4th). The combined
 3-substencil scheme degraded to 1st-order globally.
 
+**v1.3-pre.8 s2 correction (2026-05-27)**: s2 1/2 factor moved from first to second
+correction term based on pdftotext -layout analysis. Corrected s2 achieves ~4.0
+individual order (was ~2.0). All 4 substencils now pass individually. Combined scheme
+still fails (~1st order) — additional formula errors remain, likely in Table I weights.
+
 The implementation was fully reverted. A diagnostic report was committed as `dc78864`.
 The formula confidence gate was subsequently hardened:
 - `appendix_A_eq_A1` and `cfweno5_stencil_expression` demoted to medium/failed_validation
@@ -22,7 +27,7 @@ The formula confidence gate was subsequently hardened:
 - New `tools/check_cfweno5_formula_consistency.py` checks substencil-level convergence
 - Strict formula confidence gate now blocks on `consistency_status=failed`
 
-**Implementation must NOT proceed until Appendix A formulas are re-verified against the paper PDF and pass numerical consistency checks.**
+**Implementation must NOT proceed until ALL formula errors are resolved and the combined scheme achieves ~5th-order convergence.**
 
 See:
 - `docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md` — detailed diagnostic

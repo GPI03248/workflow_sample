@@ -68,12 +68,17 @@ def _substencil_s1(u: np.ndarray, nu: float,
 def _substencil_s2(u: np.ndarray, nu: float,
                    u_half_right: np.ndarray,
                    u_half_left: np.ndarray) -> np.ndarray:
-    """Appendix A Eq. (A1), k=2: right-biased substencil (SUSPECT — see notes)."""
+    """Appendix A Eq. (A1), k=2: right-biased substencil (CORRECTED 2026-05-27).
+
+    Correction: 0.5 factor moved from first to second correction term,
+    based on pdftotext -layout column-position analysis.
+    See docs/tasks/cfweno5_formula_verification/s2_retranscription.md.
+    """
     u_ip1 = np.roll(u, -1)
     omnu = 1.0 - nu
     return (u
-            + 0.5 * omnu * (u_half_right - u)
-            + omnu * (-nu) * (u - 2.0 * u_half_right + u_ip1))
+            + omnu * (u_half_right - u)
+            + 0.5 * omnu * (-nu) * (u - 2.0 * u_half_right + u_ip1))
 
 
 def _substencil_s3(u: np.ndarray, nu: float,

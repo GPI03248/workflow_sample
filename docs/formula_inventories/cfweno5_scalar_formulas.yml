@@ -165,7 +165,7 @@ formulas:
     implementation_relevance: required
     blocks_implementation: true
     consistency_status: failed
-    notes: "DEMOTED 2026-05-27: CFWENO5 implementation using these substencil formulas achieved only ~1st-order convergence (expected ~5th). Single-step diagnostics show s2 substencil achieves only 2nd order individually (should be 4th). Suspected s2 coefficient error: (1/2)(1-nu) on first correction term instead of second. Even with corrected s2, combined 4-substencil scheme only achieves 3rd order. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md. Original (pre-demotion): confidence high, verified via character-level pdftotext of page 24. All 4 substencils match extraction report."
+    notes: "DEMOTED 2026-05-27: CFWENO5 implementation using these substencil formulas achieved only ~1st-order convergence (expected ~5th). CORRECTION 2026-05-27 (v1.3-pre.8): s2 (k=2) 1/2 factor moved from first to second correction term based on pdftotext -layout column-position analysis. Corrected s2 now achieves ~4.0 individual order (was ~2.0). Combined 3-substencil scheme still fails (~1st order) — additional formula errors remain, likely in Table I weight sum-to-1 constraint. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md and docs/tasks/cfweno5_formula_verification/s2_retranscription.md. Original (pre-demotion): confidence high, verified via character-level pdftotext of page 24."
 
   - formula_id: appendix_A_eq_A2
     paper_id: cfweno_pof_2025
