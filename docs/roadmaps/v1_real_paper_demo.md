@@ -317,3 +317,9 @@ New tool flag: `--diagnose-weights` in `tools/check_cfweno5_formula_consistency.
 3. **CFWENO5 scalar**: Implement 5th-order scalar CFWENO from paper Eq. (30) variant
 4. **Euler readiness**: Resolve eigenvalue iteration and p_m (Eq. 23) gaps for v1.3
 5. **Post-shock Burgers**: Only after nonlinear WENO policy (Eq. 17) is defined and approved
+
+### Scalar CFWENO5 Combined Target Audit (v1.3-pre.10)
+
+**Status**: Diagnostic complete - still blocked.
+
+The checker now separates Appendix A's direct full-stencil averaged target from the Eq. (16) / Table I WENO-combination diagnostic. The direct Appendix A target reaches ~6.0 one-step order, but the normalized Table I combination remains near ~3.0. The next blocker is reconciling Eq. (16), Table I, and the fourth Eq. (A1) full-target expression before any CFWENO5 implementation or approval change.

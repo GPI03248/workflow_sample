@@ -1,10 +1,9 @@
 """Tests for tools/check_cfweno5_formula_consistency.py.
 
-NOTE: The tool currently returns exit code 1 because cfweno5_combined
-still fails consistency (after v1.3-pre.8 s2 correction, all 4 substencils
-now pass individually but combined ~1st order). Most tests use expect_fail=True
-to account for this. When the combined scheme is fixed, these tests should be
-updated to use expect_fail=False.
+NOTE: The tool currently returns exit code 1 because the Eq. (16) / Table I
+WENO-combination diagnostic still fails consistency. Appendix A's direct
+full-stencil target is tracked separately and passes at high order. Most tests
+use expect_fail=True to account for the remaining diagnostic failure.
 """
 
 import json
@@ -51,6 +50,7 @@ def test_json_output():
     result = _run_tool("--quick", "--json", expect_fail=True)
     data = json.loads(result.stdout)
     assert "substencils" in data
+    assert "full_target" in data
     assert "combined" in data
     assert "all_passed" in data
     assert "failures" in data
@@ -71,18 +71,29 @@ def test_quick_mode():
 # --- All substencils are reported ---
 
 def test_all_substencils_reported():
-    """All four substencils (s0, s1, s2, s3) appear in output."""
+    """All three Table I substencils (s0, s1, s2) appear in output."""
     result = _run_tool("--quick", expect_fail=True)
-    for name in ["s0", "s1", "s2", "s3"]:
+    for name in ["s0", "s1", "s2"]:
         assert name in result.stdout, f"{name} not found in output"
+
+
+def test_appendix_a_full_target_reported_and_passes():
+    """Appendix A's direct full-stencil target is reported separately."""
+    result = _run_tool("--quick", "--json", expect_fail=True)
+    data = json.loads(result.stdout)
+    full = data["full_target"]
+    assert full["name"] == "appendix_A_full_target"
+    assert full["passed"] is True
+    assert full["observed_order"] >= 5.0
 
 
 # --- Combined scheme is reported ---
 
 def test_combined_scheme_reported():
-    """Combined CFWENO5 scheme appears in output."""
+    """Eq. (16) / Table I WENO-combination diagnostic appears in output."""
     result = _run_tool("--quick", expect_fail=True)
     assert "comb" in result.stdout
+    assert "Table I diagnostic" in result.stdout
 
 
 # --- s2 passes (corrected in v1.3-pre.8 — 1/2 factor moved to second term) ---
@@ -102,11 +113,11 @@ def test_s2_passes_consistency():
 # --- Combined scheme fails (known issue from failed implementation) ---
 
 def test_combined_fails_consistency():
-    """Combined CFWENO5 FAILS consistency check (known issue)."""
+    """Eq. (16) / Table I WENO combination still FAILS consistency."""
     result = _run_tool("--quick", "--json", expect_fail=True)
     data = json.loads(result.stdout)
     assert data["combined"]["passed"] is False, (
-        f"Combined scheme should FAIL but passed. "
+        f"Table I combined diagnostic should FAIL but passed. "
         f"observed_order={data['combined']['observed_order']}, expected ~5.0"
     )
 
@@ -165,6 +176,8 @@ def test_observed_orders_are_finite():
         assert isinstance(r["observed_order"], (int, float)), (
             f"{r['name']}: observed_order is not numeric"
         )
+    assert data["full_target"]["observed_order"] is not None
+    assert isinstance(data["full_target"]["observed_order"], (int, float))
     assert data["combined"]["observed_order"] is not None
     assert isinstance(data["combined"]["observed_order"], (int, float))
 
@@ -179,11 +192,11 @@ def test_diagnose_weights_json_output():
     assert "variants" in data
     assert "cfl" in data
     assert "resolutions" in data
-    assert len(data["variants"]) == 5
+    assert len(data["variants"]) == 6
 
 
 def test_diagnose_weights_all_variants_reported():
-    """All 5 weight variants appear in diagnosis output."""
+    """All weight/target diagnostic variants appear in diagnosis output."""
     result = _run_tool("--diagnose-weights", "--quick", "--json")
     data = json.loads(result.stdout)
     variant_names = {v["name"] for v in data["variants"]}
@@ -193,6 +206,7 @@ def test_diagnose_weights_all_variants_reported():
         "table_II_raw",
         "table_II_normalized",
         "equal_weights_debug",
+        "appendix_A_full_target",
     }
     assert variant_names == expected, f"Missing variants: {expected - variant_names}"
 
@@ -216,7 +230,7 @@ def test_diagnose_weights_exit_zero():
 
 
 def test_diagnose_weights_variants_have_required_fields():
-    """Each variant has weight_source, weight_sum, and description fields."""
+    """Each variant has target/source, optional weight_sum, and description fields."""
     result = _run_tool("--diagnose-weights", "--quick", "--json")
     data = json.loads(result.stdout)
     for v in data["variants"]:
@@ -255,3 +269,13 @@ def test_diagnose_weights_equal_baseline():
     data = json.loads(result.stdout)
     eq = [v for v in data["variants"] if v["name"] == "equal_weights_debug"][0]
     assert eq["weight_sum"] == 1.0
+
+
+def test_diagnose_weights_appendix_a_full_target_passes():
+    """The direct Appendix A full target passes as a diagnostic target."""
+    result = _run_tool("--diagnose-weights", "--quick", "--json")
+    data = json.loads(result.stdout)
+    full = [v for v in data["variants"] if v["name"] == "appendix_A_full_target"][0]
+    assert full["passed"] is True
+    assert full["observed_order"] >= 5.0
+    assert full["weight_sum"] is None

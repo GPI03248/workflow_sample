@@ -403,3 +403,14 @@ character-level check at implementation time.
 character-level verification against the rendered PDF at implementation time.
 This is a lower-risk item since the structure is clear and the main
 computational risk is in Table I/II weights, which are now human-verified.
+
+## v1.3-pre.10 Target Interpretation Update (2026-05-29)
+
+The fourth Eq. (A1) expression is now treated as the direct full-stencil averaged target for `ubar_{i+1/2}`, not as a fourth Table I substencil. The PDF line lacks the `,k` subscript that appears on the first three CFWENO5 expressions, and Table I r=3 has only three valid entries.
+
+Diagnostic evidence:
+
+- `appendix_A_full_target`: ~6.00 quick one-step order at CFL=0.5.
+- `cfweno5_table_I_combined`: ~3.00 quick one-step order with Eq. (17) normalized Table I weights.
+
+This means the direct Appendix A target is numerically high order, but the Eq. (16) / Table I WENO-combination path remains unresolved. CFWENO5 stays blocked until this target interpretation is reconciled.

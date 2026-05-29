@@ -289,3 +289,5 @@ due to medium confidence/failed_validation and consistency_status=failed.
    examples at implementation time.
 3. **Explicit human approval**: The formula confidence gate passes, but the spec requires
    a human to review and explicitly set `Approved for implementation: yes`.
+
+**v1.3-pre.10 combined target audit (2026-05-29)**: The diagnostic checker now distinguishes the three Table I substencils (`s0`, `s1`, `s2`) from the fourth Appendix A Eq. (A1) expression, which has no `,k` subscript and is treated as the direct full-stencil averaged target. That direct target reaches ~6.0 one-step order, while the Eq. (16) / normalized Table I WENO-combination diagnostic remains near ~3.0 order. CFWENO5 remains BLOCKED because the Eq. (16), Table I, and Appendix A full-target interpretation is not reconciled. See `docs/tasks/cfweno5_formula_verification/combined_target_audit.md`.

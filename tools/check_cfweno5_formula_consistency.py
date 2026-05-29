@@ -81,10 +81,16 @@ def _substencil_s2(u: np.ndarray, nu: float,
             + 0.5 * omnu * (-nu) * (u - 2.0 * u_half_right + u_ip1))
 
 
-def _substencil_s3(u: np.ndarray, nu: float,
-                   u_half_right: np.ndarray,
-                   u_half_left: np.ndarray) -> np.ndarray:
-    """Appendix A Eq. (A1), k=3: full-stencil substencil."""
+def _appendix_a_full_target(u: np.ndarray, nu: float,
+                            u_half_right: np.ndarray,
+                            u_half_left: np.ndarray) -> np.ndarray:
+    """Appendix A Eq. (A1) full-stencil averaged target.
+
+    The fourth expression printed in Eq. (A1) has no `,k` subscript in the
+    source PDF. It is the direct full-polynomial target for ubar_{i+1/2},
+    not a fourth Table I substencil. It is kept here as a diagnostic target,
+    not as production CFWENO5 implementation code.
+    """
     u_im1 = np.roll(u, 1)
     u_ip1 = np.roll(u, -1)
     omnu = 1.0 - nu
@@ -98,15 +104,20 @@ def _substencil_s3(u: np.ndarray, nu: float,
 def _cfweno5_combined(u: np.ndarray, nu: float,
                       u_half_right: np.ndarray,
                       u_half_left: np.ndarray) -> np.ndarray:
-    """Combined CFWENO5 using Table I optimal weights for k=0,1,2."""
+    """Diagnostic WENO combination using normalized Table I weights.
+
+    Eq. (17) normalizes Table I alpha numerators. This diagnostic checks the
+    Eq. (16) Table I WENO-combination path separately from Appendix A's direct
+    full-stencil target. It is expected to remain below 5th order until the
+    Table I / Eq. (16) role ambiguity is resolved.
+    """
     s0 = _substencil_s0(u, nu, u_half_right, u_half_left)
     s1 = _substencil_s1(u, nu, u_half_right, u_half_left)
     s2 = _substencil_s2(u, nu, u_half_right, u_half_left)
 
-    # Table I optimal weights (r=3, k=0,1,2; k=3 is N/A)
-    w0 = nu * (1.0 + nu) / 6.0
-    w1 = (1.0 + nu) * (2.0 - nu) / 6.0
-    w2 = (1.0 - nu) * (2.0 - nu) / 6.0
+    # Table I optimal weights / alpha numerators (r=3, k=0,1,2; k=3 is N/A).
+    # Eq. (17) normalizes these alpha factors before forming x_bar_rk.
+    w0, w1, w2, _ws = _weights_table_I_normalized(nu)
 
     return w0 * s0 + w1 * s1 + w2 * s2
 
@@ -223,6 +234,9 @@ VARIANTS = [
      _make_weight_variant("equal_weights_debug", None, None, None,
                           _weights_equal, "ubar_{i+1/2}"),
      "Equal 1/3 weights — diagnostic baseline only"),
+    ("appendix_A_full_target",
+     _appendix_a_full_target,
+     "Direct full-stencil target printed as the fourth Eq. (A1) expression - diagnostic only"),
 ]
 
 
@@ -250,10 +264,14 @@ def run_weight_diagnosis(cfl: float = 0.5, quick: bool = False) -> dict:
     variant_results = []
     for vname, vfn, vdesc in VARIANTS:
         result = _check_scheme(vname, vfn, 5.0, cfl, resolutions)
-        # Compute weight sum at this CFL
-        _, _, _, wsum = vfn._weight_fn(cfl)
-        result["weight_source"] = vfn._target
-        result["weight_sum"] = round(wsum, 6)
+        # Compute weight sum at this CFL when the variant is a weighted combination.
+        if hasattr(vfn, "_weight_fn"):
+            _, _, _, wsum = vfn._weight_fn(cfl)
+            result["weight_source"] = vfn._target
+            result["weight_sum"] = round(wsum, 6)
+        else:
+            result["weight_source"] = "Appendix A Eq. (A1) full target"
+            result["weight_sum"] = None
         result["description"] = vdesc
         variant_results.append(result)
 
@@ -269,10 +287,10 @@ SUBSTENCILS = {
     "s0": (_substencil_s0, 3.0),     # expected individual order ~3
     "s1": (_substencil_s1, 4.0),     # expected individual order ~4
     "s2": (_substencil_s2, 4.0),     # expected individual order ~4 (CURRENTLY FAILS)
-    "s3": (_substencil_s3, 4.0),     # expected individual order ~4
 }
 
-COMBINED_SCHEME = (_cfweno5_combined, 5.0)  # expected combined order ~5
+FULL_TARGET_SCHEME = (_appendix_a_full_target, 5.0)  # direct Eq. (A1) full target
+COMBINED_SCHEME = (_cfweno5_combined, 5.0)  # Eq. (16) / Table I WENO-combination diagnostic
 
 
 # --- single-step analysis ---
@@ -392,19 +410,29 @@ def run_consistency_checks(cfl: float = 0.5, quick: bool = False) -> dict:
         result = _check_scheme(name, fn, expected_order, cfl, resolutions)
         substencil_results.append(result)
 
-    # Check combined scheme
-    combined_fn, combined_expected = COMBINED_SCHEME
-    combined_result = _check_scheme("cfweno5_combined", combined_fn, combined_expected, cfl, resolutions)
+    # Check the direct Appendix A full target and the Eq. (16) WENO combination.
+    full_target_fn, full_target_expected = FULL_TARGET_SCHEME
+    full_target_result = _check_scheme("appendix_A_full_target", full_target_fn, full_target_expected, cfl, resolutions)
 
-    all_passed = all(r["passed"] for r in substencil_results) and combined_result["passed"]
+    combined_fn, combined_expected = COMBINED_SCHEME
+    combined_result = _check_scheme("cfweno5_table_I_combined", combined_fn, combined_expected, cfl, resolutions)
+
+    all_passed = (
+        all(r["passed"] for r in substencil_results)
+        and full_target_result["passed"]
+        and combined_result["passed"]
+    )
 
     # Build summary
     failures = [r["name"] for r in substencil_results if not r["passed"]]
+    if not full_target_result["passed"]:
+        failures.append("appendix_A_full_target")
     if not combined_result["passed"]:
-        failures.append("cfweno5_combined")
+        failures.append("cfweno5_table_I_combined")
 
     return {
         "substencils": substencil_results,
+        "full_target": full_target_result,
         "combined": combined_result,
         "all_passed": all_passed,
         "failures": failures,
@@ -505,11 +533,20 @@ def main(argv: list[str] | None = None) -> int:
                 for nx_str, err in r["errors"].items():
                     print(f"          nx={nx_str:>4s}  L2={err}")
         print()
+        full_target = results["full_target"]
+        ft_status = "PASS" if full_target["passed"] else "FAIL"
+        ft_obs = f"{full_target['observed_order']:.2f}" if full_target["observed_order"] is not None else "N/A"
+        ft_exp_str = f"(expected ~{full_target['expected_order']})"
+        print(f"  {'full':6s}  {ft_status}  observed_order={ft_obs}  {ft_exp_str}  [Appendix A direct target]")
+        if not args.quick:
+            for nx_str, err in full_target["errors"].items():
+                print(f"          nx={nx_str:>4s}  L2={err}")
+
         combined = results["combined"]
         c_status = "PASS" if combined["passed"] else "FAIL"
         c_obs = f"{combined['observed_order']:.2f}" if combined["observed_order"] is not None else "N/A"
         c_exp_str = f"(expected ~{combined['expected_order']})"
-        print(f"  {'comb':6s}  {c_status}  observed_order={c_obs}  {c_exp_str}")
+        print(f"  {'comb':6s}  {c_status}  observed_order={c_obs}  {c_exp_str}  [Eq. (16) Table I diagnostic]")
         if not args.quick:
             for nx_str, err in combined["errors"].items():
                 print(f"          nx={nx_str:>4s}  L2={err}")

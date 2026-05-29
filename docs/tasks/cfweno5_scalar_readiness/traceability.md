@@ -163,3 +163,11 @@ After the failed CFWENO5 implementation (commit dc78864), the formula confidence
 - **Previous hash**: dc78864 (failed attempt diagnostic)
 - **Branch**: master
 - **Push**: pending
+
+### v1.3-pre.10 combined target audit (2026-05-29)
+
+- Added `docs/tasks/cfweno5_formula_verification/combined_target_audit.md`.
+- Updated `tools/check_cfweno5_formula_consistency.py` to report Appendix A's direct full-stencil target separately from the Eq. (16) / Table I WENO-combination diagnostic.
+- Updated `tests/test_cfweno5_formula_consistency.py` for the separate `full_target` JSON field and `appendix_A_full_target` diagnostic variant.
+- Result: direct Appendix A full target reaches ~6.0 quick one-step order; normalized Table I combined diagnostic remains ~3.0.
+- CFWENO5 remains blocked; `Approved for implementation` remains `no`; no solver, `cfd/`, examples, results, release docs, or tags changed.

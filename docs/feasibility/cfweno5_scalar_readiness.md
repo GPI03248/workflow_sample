@@ -421,3 +421,18 @@ then cross-verifies against the paper's A2 expressions.
 - Required formulas: 11 at high confidence, verified — **strict check PASSES**
 - Optional formulas: 1 (A2) at medium confidence — does not block
 - Blocking formulas: **0**
+
+## v1.3-pre.10 Combined Target Audit (2026-05-29)
+
+Outcome: **still blocked**.
+
+The checker now separates Appendix A's direct full-stencil averaged target from the Eq. (16) / Table I WENO-combination diagnostic. The fourth Eq. (A1) expression has no `,k` subscript in the PDF and is treated as the direct full target, not a fourth Table I substencil.
+
+Observed quick orders at CFL=0.5:
+
+| Quantity | Observed order | Result |
+|---|---:|---|
+| Appendix A direct full target | ~6.00 | pass |
+| Eq. (16) / normalized Table I combined diagnostic | ~3.00 | fail |
+
+This shifts the leading blocker from a simple residual Appendix A coefficient error to a combined-target interpretation mismatch. The direct Appendix A full target is high order, but the Table I WENO combination still does not reproduce a 5th-order target. Do not implement CFWENO5 until Eq. (16), Table I, and the Appendix A full-target expression are reconciled.
