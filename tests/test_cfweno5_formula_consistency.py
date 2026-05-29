@@ -1,9 +1,9 @@
 """Tests for tools/check_cfweno5_formula_consistency.py.
 
-NOTE: The tool currently returns exit code 1 because the Eq. (16) / Table I
-WENO-combination diagnostic still fails consistency. Appendix A's direct
-full-stencil target is tracked separately and passes at high order. Most tests
-use expect_fail=True to account for the remaining diagnostic failure.
+NOTE: The default tool exit code is based on required scalar-linear targets:
+the three Appendix A substencils plus Appendix A's direct full-stencil target.
+The Eq. (16) / Table I WENO-combination path remains diagnostic-only and is
+reported separately because it still fails to reach 5th order.
 """
 
 import json
@@ -47,12 +47,14 @@ def test_tool_help():
 
 def test_json_output():
     """JSON output is parseable and contains expected keys."""
-    result = _run_tool("--quick", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--json")
     data = json.loads(result.stdout)
     assert "substencils" in data
     assert "full_target" in data
     assert "combined" in data
     assert "all_passed" in data
+    assert "policy_decision" in data
+    assert "diagnostic_failures" in data
     assert "failures" in data
     assert "summary" in data
     # Quick mode should have 3 resolutions
@@ -63,23 +65,23 @@ def test_json_output():
 
 def test_quick_mode():
     """Quick mode returns results faster with fewer resolutions."""
-    result = _run_tool("--quick", expect_fail=True)
+    result = _run_tool("--quick")
     assert "CFWENO5 Substencil Consistency Check" in result.stdout
-    assert "Result:" in result.stdout
+    assert "Required result:" in result.stdout
 
 
 # --- All substencils are reported ---
 
 def test_all_substencils_reported():
     """All three Table I substencils (s0, s1, s2) appear in output."""
-    result = _run_tool("--quick", expect_fail=True)
+    result = _run_tool("--quick")
     for name in ["s0", "s1", "s2"]:
         assert name in result.stdout, f"{name} not found in output"
 
 
 def test_appendix_a_full_target_reported_and_passes():
     """Appendix A's direct full-stencil target is reported separately."""
-    result = _run_tool("--quick", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--json")
     data = json.loads(result.stdout)
     full = data["full_target"]
     assert full["name"] == "appendix_A_full_target"
@@ -91,16 +93,16 @@ def test_appendix_a_full_target_reported_and_passes():
 
 def test_combined_scheme_reported():
     """Eq. (16) / Table I WENO-combination diagnostic appears in output."""
-    result = _run_tool("--quick", expect_fail=True)
+    result = _run_tool("--quick")
     assert "comb" in result.stdout
-    assert "Table I diagnostic" in result.stdout
+    assert "diagnostic-only Eq. (16) Table I" in result.stdout
 
 
 # --- s2 passes (corrected in v1.3-pre.8 — 1/2 factor moved to second term) ---
 
 def test_s2_passes_consistency():
     """s2 substencil PASSES consistency check after v1.3-pre.8 correction."""
-    result = _run_tool("--quick", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--json")
     data = json.loads(result.stdout)
     s2 = [r for r in data["substencils"] if r["name"] == "s2"][0]
     assert s2["passed"] is True, (
@@ -114,7 +116,7 @@ def test_s2_passes_consistency():
 
 def test_combined_fails_consistency():
     """Eq. (16) / Table I WENO combination still FAILS consistency."""
-    result = _run_tool("--quick", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--json")
     data = json.loads(result.stdout)
     assert data["combined"]["passed"] is False, (
         f"Table I combined diagnostic should FAIL but passed. "
@@ -126,7 +128,7 @@ def test_combined_fails_consistency():
 
 def test_s0_passes():
     """s0 substencil passes individual consistency check."""
-    result = _run_tool("--quick", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--json")
     data = json.loads(result.stdout)
     s0 = [r for r in data["substencils"] if r["name"] == "s0"][0]
     assert s0["passed"] is True, (
@@ -136,7 +138,7 @@ def test_s0_passes():
 
 def test_s1_passes():
     """s1 substencil passes individual consistency check."""
-    result = _run_tool("--quick", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--json")
     data = json.loads(result.stdout)
     s1 = [r for r in data["substencils"] if r["name"] == "s1"][0]
     assert s1["passed"] is True, (
@@ -146,11 +148,11 @@ def test_s1_passes():
 
 # --- Exit code reflects failures ---
 
-def test_exit_code_nonzero_on_failure():
-    """Tool returns non-zero exit code when consistency checks fail."""
-    result = _run_tool("--quick", expect_fail=True)
-    assert result.returncode == 1, (
-        f"Expected exit code 1, got {result.returncode}"
+def test_exit_code_zero_when_required_targets_pass():
+    """Tool returns zero when required scalar-linear targets pass."""
+    result = _run_tool("--quick")
+    assert result.returncode == 0, (
+        f"Expected exit code 0, got {result.returncode}"
     )
 
 
@@ -158,7 +160,7 @@ def test_exit_code_nonzero_on_failure():
 
 def test_cfl_parameter():
     """Custom CFL parameter is used."""
-    result = _run_tool("--quick", "--cfl", "0.3", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--cfl", "0.3", "--json")
     data = json.loads(result.stdout)
     assert data["cfl"] == 0.3
 
@@ -167,7 +169,7 @@ def test_cfl_parameter():
 
 def test_observed_orders_are_finite():
     """All observed orders are finite numbers (not None, not NaN)."""
-    result = _run_tool("--quick", "--json", expect_fail=True)
+    result = _run_tool("--quick", "--json")
     data = json.loads(result.stdout)
     for r in data["substencils"]:
         assert r["observed_order"] is not None, (
@@ -279,3 +281,13 @@ def test_diagnose_weights_appendix_a_full_target_passes():
     assert full["passed"] is True
     assert full["observed_order"] >= 5.0
     assert full["weight_sum"] is None
+
+
+def test_policy_marks_table_I_combined_diagnostic_only():
+    """The unresolved Eq. (16) / Table I path is diagnostic-only."""
+    result = _run_tool("--quick", "--json")
+    data = json.loads(result.stdout)
+    assert data["policy_decision"] == "A_direct_appendix_a_target"
+    assert "cfweno5_table_I_combined" in data["diagnostic_only_targets"]
+    assert "cfweno5_table_I_combined" in data["diagnostic_failures"]
+    assert data["all_passed"] is True

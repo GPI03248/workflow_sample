@@ -436,3 +436,11 @@ Observed quick orders at CFL=0.5:
 | Eq. (16) / normalized Table I combined diagnostic | ~3.00 | fail |
 
 This shifts the leading blocker from a simple residual Appendix A coefficient error to a combined-target interpretation mismatch. The direct Appendix A full target is high order, but the Table I WENO combination still does not reproduce a 5th-order target. Do not implement CFWENO5 until Eq. (16), Table I, and the Appendix A full-target expression are reconciled.
+
+## v1.3-pre.11 Direct Target Policy (2026-05-29)
+
+Decision: **A - direct Appendix A target accepted for the scalar linear prototype target**.
+
+The direct Appendix A Eq. (A1) full-stencil averaged target is paper-derived and reaches ~6.00 quick one-step order at CFL=0.5. The Eq. (16) / normalized Table I WENO-combination diagnostic remains near ~3.00 and is retained as diagnostic-only future work.
+
+This resolves the direct-target formula-confidence blocker for the narrow scalar linear direct-target prototype. It does not approve implementation and does not validate the full WENO-combination or nonlinear/shock-capturing method. `Approved for implementation` remains `no` pending human approval in a separate milestone.

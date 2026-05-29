@@ -165,7 +165,7 @@ formulas:
     implementation_relevance: required
     blocks_implementation: true
     consistency_status: failed
-    notes: "DEMOTED 2026-05-27: CFWENO5 implementation using these substencil formulas achieved only ~1st-order convergence (expected ~5th). CORRECTION 2026-05-27 (v1.3-pre.8): s2 (k=2) 1/2 factor moved from first to second correction term. All 4 individual substencils now pass (s0~3, s1~4, s2~4, s3~4). v1.3-pre.9 weight diagnosis: normalization fixes ~1st→~3rd but ALL weight variants (Table I normalized, Table II, equal weights) cap at ~3.0 — NOT ~5th. This confirms substencil formula coefficient errors beyond s2 and normalization. The error-term cancellation in Eq. (15)'s polynomial decomposition is broken. See docs/tasks/cfweno5_formula_verification/weight_role_audit.md for full analysis."
+    notes: "v1.3-pre.11 policy accepts the direct Appendix A Eq. (A1) full-stencil target for scalar linear prototype scope, but the conservative formula-confidence gate remains blocking until human approval updates the inventory status in a separate milestone. Direct target reaches ~6.0 quick one-step order; Eq. (16) / normalized Table I remains diagnostic-only and unresolved. See docs/tasks/cfweno5_formula_verification/direct_target_policy.md."
 
   - formula_id: appendix_A_eq_A2
     paper_id: cfweno_pof_2025
@@ -194,7 +194,7 @@ formulas:
       table: null
       equation: "Eqs. (15)-(16)"
     formula_type: stencil_assembly
-    expression: "ubar = sum_k(w_bar_k * ubar_k); u^{n+1} = sum_k(w_k * u^{n+1}_k)"
+    expression: "direct scalar-linear target: ubar from Appendix A Eq. (A1) full-stencil expression; diagnostic-only unresolved target: Eq. (16) normalized Table I combination"
     extraction_method: "structural understanding from CFWENO3 + paper Eqs. (15)-(16)"
     confidence: medium
     verification_status: failed_validation
@@ -203,7 +203,7 @@ formulas:
     implementation_relevance: required
     blocks_implementation: true
     consistency_status: failed
-    notes: "DEMOTED 2026-05-27: The combined stencil (3-substencil WENO combination with Table I weights) produced only ~1st-order convergence when implemented. v1.3-pre.9 weight diagnosis: ALL weight variants (Table I normalized, Table II, equal weights) cap at ~3.0, not ~5th. Normalization fixes the raw-weight issue but the ~3.0 ceiling is weight-independent — the substencil polynomials from Appendix A Eq. (A1) have coefficient errors beyond what normalization can fix. See docs/tasks/cfweno5_scalar_prototype/failed_attempt_diagnostic.md and docs/tasks/cfweno5_formula_verification/weight_role_audit.md."
+    notes: "v1.3-pre.11 policy accepts Appendix A's direct full-stencil averaged target as the scalar linear prototype target, but the conservative formula-confidence gate remains blocking until human approval updates inventory status in a separate milestone. Eq. (16) / normalized Table I WENO-combination remains diagnostic-only and unresolved. See docs/tasks/cfweno5_formula_verification/direct_target_policy.md."
 
   - formula_id: cfweno5_interface_reconstruction
     paper_id: cfweno_pof_2025

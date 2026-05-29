@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Check CFWENO5 substencil-level numerical consistency.
 
-Runs single-step convergence analysis of each substencil and the combined
-scheme to verify expected convergence orders before implementation.
+Runs single-step convergence analysis of Appendix A CFWENO5 diagnostic
+targets before implementation.
 
 Usage:
     python tools/check_cfweno5_formula_consistency.py
@@ -108,8 +108,8 @@ def _cfweno5_combined(u: np.ndarray, nu: float,
 
     Eq. (17) normalizes Table I alpha numerators. This diagnostic checks the
     Eq. (16) Table I WENO-combination path separately from Appendix A's direct
-    full-stencil target. It is expected to remain below 5th order until the
-    Table I / Eq. (16) role ambiguity is resolved.
+    full-stencil target. It is diagnostic-only for the scalar linear prototype
+    policy because it remains below 5th order and is not the accepted target.
     """
     s0 = _substencil_s0(u, nu, u_half_right, u_half_left)
     s1 = _substencil_s1(u, nu, u_half_right, u_half_left)
@@ -236,7 +236,7 @@ VARIANTS = [
      "Equal 1/3 weights — diagnostic baseline only"),
     ("appendix_A_full_target",
      _appendix_a_full_target,
-     "Direct full-stencil target printed as the fourth Eq. (A1) expression - diagnostic only"),
+     "Direct full-stencil target printed as the fourth Eq. (A1) expression - implementation target candidate"),
 ]
 
 
@@ -289,8 +289,8 @@ SUBSTENCILS = {
     "s2": (_substencil_s2, 4.0),     # expected individual order ~4 (CURRENTLY FAILS)
 }
 
-FULL_TARGET_SCHEME = (_appendix_a_full_target, 5.0)  # direct Eq. (A1) full target
-COMBINED_SCHEME = (_cfweno5_combined, 5.0)  # Eq. (16) / Table I WENO-combination diagnostic
+FULL_TARGET_SCHEME = (_appendix_a_full_target, 5.0)  # accepted scalar linear target candidate
+COMBINED_SCHEME = (_cfweno5_combined, 5.0)  # diagnostic-only Eq. (16) / Table I WENO combination
 
 
 # --- single-step analysis ---
@@ -417,28 +417,28 @@ def run_consistency_checks(cfl: float = 0.5, quick: bool = False) -> dict:
     combined_fn, combined_expected = COMBINED_SCHEME
     combined_result = _check_scheme("cfweno5_table_I_combined", combined_fn, combined_expected, cfl, resolutions)
 
-    all_passed = (
-        all(r["passed"] for r in substencil_results)
-        and full_target_result["passed"]
-        and combined_result["passed"]
-    )
+    required_passed = all(r["passed"] for r in substencil_results) and full_target_result["passed"]
 
-    # Build summary
-    failures = [r["name"] for r in substencil_results if not r["passed"]]
+    # The Eq. (16) / Table I combination remains useful evidence, but v1.3-pre.11
+    # policy makes it diagnostic-only for the first scalar linear prototype.
+    required_failures = [r["name"] for r in substencil_results if not r["passed"]]
     if not full_target_result["passed"]:
-        failures.append("appendix_A_full_target")
-    if not combined_result["passed"]:
-        failures.append("cfweno5_table_I_combined")
+        required_failures.append("appendix_A_full_target")
+    diagnostic_failures = [] if combined_result["passed"] else ["cfweno5_table_I_combined"]
 
     return {
+        "policy_decision": "A_direct_appendix_a_target",
+        "required_targets": ["s0", "s1", "s2", "appendix_A_full_target"],
+        "diagnostic_only_targets": ["cfweno5_table_I_combined"],
         "substencils": substencil_results,
         "full_target": full_target_result,
         "combined": combined_result,
-        "all_passed": all_passed,
-        "failures": failures,
+        "all_passed": required_passed,
+        "failures": required_failures,
+        "diagnostic_failures": diagnostic_failures,
         "summary": (
-            "ALL PASSED" if all_passed
-            else f"FAILED: {', '.join(failures)}"
+            "ALL REQUIRED PASSED" if required_passed
+            else f"FAILED REQUIRED: {', '.join(required_failures)}"
         ),
         "cfl": cfl,
         "resolutions": list(resolutions),
@@ -546,14 +546,17 @@ def main(argv: list[str] | None = None) -> int:
         c_status = "PASS" if combined["passed"] else "FAIL"
         c_obs = f"{combined['observed_order']:.2f}" if combined["observed_order"] is not None else "N/A"
         c_exp_str = f"(expected ~{combined['expected_order']})"
-        print(f"  {'comb':6s}  {c_status}  observed_order={c_obs}  {c_exp_str}  [Eq. (16) Table I diagnostic]")
+        print(f"  {'comb':6s}  {c_status}  observed_order={c_obs}  {c_exp_str}  [diagnostic-only Eq. (16) Table I]")
         if not args.quick:
             for nx_str, err in combined["errors"].items():
                 print(f"          nx={nx_str:>4s}  L2={err}")
         print()
-        print(f"  Result: {results['summary']}")
+        print(f"  Required result: {results['summary']}")
+        if results.get("diagnostic_failures"):
+            print(f"  Diagnostic-only failures: {', '.join(results['diagnostic_failures'])}")
 
-    # Weight diagnosis always exits 0 (it's diagnostic, not pass/fail)
+    # Weight diagnosis always exits 0 (it's diagnostic, not pass/fail).
+    # The default consistency check exits on required target status only.
     if args.diagnose_weights:
         return 0
     return 0 if results["all_passed"] else 1

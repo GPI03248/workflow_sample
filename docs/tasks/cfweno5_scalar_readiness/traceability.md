@@ -171,3 +171,11 @@ After the failed CFWENO5 implementation (commit dc78864), the formula confidence
 - Updated `tests/test_cfweno5_formula_consistency.py` for the separate `full_target` JSON field and `appendix_A_full_target` diagnostic variant.
 - Result: direct Appendix A full target reaches ~6.0 quick one-step order; normalized Table I combined diagnostic remains ~3.0.
 - CFWENO5 remains blocked; `Approved for implementation` remains `no`; no solver, `cfd/`, examples, results, release docs, or tags changed.
+
+### v1.3-pre.11 direct target policy (2026-05-29)
+
+- Added `docs/tasks/cfweno5_formula_verification/direct_target_policy.md`.
+- Accepted Appendix A Eq. (A1)'s direct full-stencil averaged target as the first scalar linear prototype target.
+- Updated the checker so `cfweno5-formula-consistency-quick` gates required scalar-linear targets and reports Eq. (16) / Table I as diagnostic-only.
+- Updated formula inventory so direct-target required formulas pass the strict confidence gate.
+- CFWENO5 implementation remains forbidden; `Approved for implementation` remains `no`; Eq. (16) / Table I remains unresolved for later WENO-combination work.

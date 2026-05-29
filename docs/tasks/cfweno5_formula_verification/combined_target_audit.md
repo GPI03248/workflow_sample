@@ -87,3 +87,9 @@ Outcome B - still blocked.
   published Table I weights, after Eq. (17), are intended to reproduce the
   printed full target, or whether the direct full target is the correct scalar
   diagnostic target for this milestone.
+
+## v1.3-pre.11 policy resolution (2026-05-29)
+
+Decision A supersedes the v1.3-pre.10 blocked policy: the direct Appendix A Eq. (A1) full-stencil averaged target is accepted as the scalar linear prototype target. The Eq. (16) / normalized Table I path remains diagnostic-only and unresolved for future WENO-combination work.
+
+See `docs/tasks/cfweno5_formula_verification/direct_target_policy.md`.

@@ -414,3 +414,14 @@ Diagnostic evidence:
 - `cfweno5_table_I_combined`: ~3.00 quick one-step order with Eq. (17) normalized Table I weights.
 
 This means the direct Appendix A target is numerically high order, but the Eq. (16) / Table I WENO-combination path remains unresolved. CFWENO5 stays blocked until this target interpretation is reconciled.
+
+## v1.3-pre.11 Direct Target Policy Update (2026-05-29)
+
+Policy decision A accepts the fourth Appendix A Eq. (A1) expression as the direct full-stencil averaged target for the first scalar linear CFWENO5 prototype. The Eq. (16) / normalized Table I WENO-combination remains diagnostic-only and unresolved.
+
+Current quick diagnostic evidence at CFL=0.5:
+
+- Appendix A direct full target: ~6.00 observed order.
+- Eq. (16) / normalized Table I combination: ~3.00 observed order.
+
+This extraction report should therefore distinguish the direct full target from the three indexed Table I substencils. The direct target is the validated scalar linear target candidate; the Table I combination is not yet validated as an equivalent target.
