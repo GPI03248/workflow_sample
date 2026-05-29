@@ -118,3 +118,7 @@ How the three normalized Table I substencil expressions in Eq. (16) reproduce
 That later milestone should perform an algebraic derivation from Eq. (11), Eq.
 (13), Eq. (15), Eq. (16), Table I, and Appendix A Eq. (A1), rather than tuning
 coefficients numerically.
+
+## v1.3-pre.12 gate scope follow-up
+
+The formula-confidence gate has been aligned with this policy. Appendix A Eq. (A1)'s direct full-stencil target is required for scalar linear direct-target scope; Eq. (16) / Table I remains deferred and nonblocking for that scope. See `docs/tasks/cfweno5_formula_verification/gate_scope_alignment.md`.

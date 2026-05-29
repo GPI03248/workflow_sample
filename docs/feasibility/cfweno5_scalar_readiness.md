@@ -444,3 +444,9 @@ Decision: **A - direct Appendix A target accepted for the scalar linear prototyp
 The direct Appendix A Eq. (A1) full-stencil averaged target is paper-derived and reaches ~6.00 quick one-step order at CFL=0.5. The Eq. (16) / normalized Table I WENO-combination diagnostic remains near ~3.00 and is retained as diagnostic-only future work.
 
 This resolves the direct-target formula-confidence blocker for the narrow scalar linear direct-target prototype. It does not approve implementation and does not validate the full WENO-combination or nonlinear/shock-capturing method. `Approved for implementation` remains `no` pending human approval in a separate milestone.
+
+## v1.3-pre.12 Gate Scope Alignment (2026-05-29)
+
+Decision: **A - gate aligned and ready for human approval consideration**.
+
+The formula inventory and confidence checker now distinguish scalar linear direct-target formulas from deferred nonlinear/WENO-combination formulas. The strict gate passes for the accepted Appendix A direct target scope, while Eq. (16) / normalized Table I remains diagnostic-only and deferred. CFWENO5 is still not implemented, and `Approved for implementation` remains `no`.

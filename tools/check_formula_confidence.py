@@ -96,6 +96,7 @@ def check_inventory(inventory: dict) -> dict:
             "implementation_relevance": entry.get("implementation_relevance", "unknown"),
             "blocks_implementation": entry.get("blocks_implementation", False),
             "consistency_status": entry.get("consistency_status", "not_run"),
+            "formula_scope": entry.get("formula_scope", "scalar_linear_direct"),
         }
         results["formulas"].append(formula_info)
 
@@ -114,10 +115,17 @@ def check_inventory(inventory: dict) -> dict:
 
 
 def check_strict(results: dict, spec_path: str | None = None) -> list[str]:
-    """Check strict mode: all required formulas must be high + verified,
-    and must not have consistency_status=failed."""
+    """Check strict mode for the scalar-linear direct-target scope.
+
+    Required scalar-linear formulas must be high + verified and must not have
+    consistency_status=failed. Diagnostic-only and deferred nonlinear/WENO
+    formulas are reported but intentionally do not block this target-specific
+    gate.
+    """
     failures = []
     for f in results["formulas"]:
+        if f.get("formula_scope") in ("diagnostic_only", "deferred_nonlinear_weno"):
+            continue
         if f["implementation_relevance"] != "required":
             continue
         if spec_path:
@@ -174,8 +182,10 @@ def format_report(results: dict, inventory_path: str, strict_failures: list[str]
         lines.append(f"")
         for f in high:
             cs = f.get("consistency_status", "not_run")
+            scope = f.get("formula_scope", "scalar_linear_direct")
             lines.append(f"- `{f['formula_id']}`: {f['verification_status']}, "
                          f"relevance={f['implementation_relevance']}, "
+                         f"scope={scope}, "
                          f"consistency={cs}")
         lines.append(f"")
 
@@ -186,13 +196,30 @@ def format_report(results: dict, inventory_path: str, strict_failures: list[str]
         lines.append(f"")
         for f in low_med:
             cs = f.get("consistency_status", "not_run")
+            scope = f.get("formula_scope", "scalar_linear_direct")
             lines.append(f"- `{f['formula_id']}`: confidence={f['confidence']}, "
                          f"verification={f['verification_status']}, "
                          f"relevance={f['implementation_relevance']}, "
+                         f"scope={scope}, "
                          f"blocks={f['blocks_implementation']}, "
                          f"consistency={cs}")
         lines.append(f"")
 
+
+    # Deferred / diagnostic formulas
+    deferred = [f for f in results["formulas"]
+                if f.get("formula_scope") in ("diagnostic_only", "deferred_nonlinear_weno")]
+    if deferred:
+        lines.append(f"## Deferred / Diagnostic Formulas ({len(deferred)})")
+        lines.append(f"")
+        for f in deferred:
+            cs = f.get("consistency_status", "not_run")
+            scope = f.get("formula_scope", "scalar_linear_direct")
+            lines.append(f"- `{f['formula_id']}`: scope={scope}, "
+                         f"confidence={f['confidence']}, "
+                         f"verification={f['verification_status']}, "
+                         f"consistency={cs}")
+        lines.append(f"")
     # Blocking
     if results["blocking"]:
         lines.append(f"## Blocking Formulas ({len(results['blocking'])})")
@@ -332,7 +359,8 @@ def main():
         print(f"\n  BLOCKING formulas:")
         for f in results["blocking"]:
             print(f"    - {f['formula_id']}: confidence={f['confidence']}, "
-                  f"verification={f['verification_status']}")
+                  f"verification={f['verification_status']}, "
+                  f"scope={f.get('formula_scope', 'scalar_linear_direct')}")
 
     if args.require_high_for_implementation:
         if strict_failures:

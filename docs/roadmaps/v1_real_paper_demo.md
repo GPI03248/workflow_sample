@@ -329,3 +329,9 @@ The checker now separates Appendix A's direct full-stencil averaged target from 
 **Status**: Policy resolved for scalar linear direct-target scope.
 
 Decision A accepts Appendix A's direct full-stencil averaged target as the formula/validation target for a future first scalar linear CFWENO5 prototype. Eq. (16) / normalized Table I remains diagnostic-only and unresolved for later WENO-combination or nonlinear scope. Approval remains `no`; implementation is still a separate future milestone.
+
+### Scalar CFWENO5 Gate Scope Alignment (v1.3-pre.12)
+
+**Status**: Gate aligned for scalar linear direct-target scope.
+
+The formula-confidence strict gate now passes for the accepted Appendix A direct full-stencil target. Eq. (16) / normalized Table I remains diagnostic-only and deferred to later nonlinear/WENO scope. Implementation remains a separate future milestone and approval remains `no`.

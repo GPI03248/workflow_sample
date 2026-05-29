@@ -163,16 +163,16 @@ def test_markdown_report():
         assert "High Confidence" in report
 
 
-# --- Test: CFWENO5 inventory has 2 blocking items (after Appendix A demotion) ---
+# --- Test: CFWENO5 direct-target inventory has no scalar-linear blockers ---
 
-def test_cfweno5_has_blocking_items():
-    """After Appendix A demotion, the CFWENO5 inventory has 2 blocking formulas."""
-    result = _run_tool(str(CFWENO5_INVENTORY), expect_fail=True)
+def test_cfweno5_has_no_scalar_linear_blocking_items():
+    """Direct-target gate alignment leaves no scalar-linear blocking formulas."""
+    result = _run_tool(str(CFWENO5_INVENTORY))
     assert "Blocking:" in result.stdout
     for line in result.stdout.split("\n"):
         if line.strip().startswith("Blocking:"):
             count_str = line.split("Blocking:")[-1].strip()
-            assert int(count_str) == 2, f"Expected 2 blocking, got {count_str}"
+            assert int(count_str) == 0, f"Expected 0 blocking, got {count_str}"
 
 
 # --- Test: checker does not modify inventory ---
@@ -185,19 +185,16 @@ def test_checker_does_not_modify_inventory():
     assert original == after
 
 
-# --- Test: CFWENO5 strict mode fails (after Appendix A demotion) ---
+# --- Test: CFWENO5 strict mode passes for direct-target scope ---
 
-def test_cfweno5_strict_fails():
-    """CFWENO5 strict check FAILS after Appendix A formulas demoted."""
+def test_cfweno5_strict_passes_for_direct_target_scope():
+    """CFWENO5 strict check passes for scalar-linear direct-target scope."""
     result = _run_tool(
         str(CFWENO5_INVENTORY),
         "--require-high-for-implementation",
-        expect_fail=True,
     )
-    assert result.returncode != 0
-    assert "STRICT CHECK FAILED" in result.stdout
-    # Should mention consistency_status failures
-    assert "consistency_status=failed" in result.stdout
+    assert result.returncode == 0
+    assert "STRICT CHECK PASSED" in result.stdout
 
 
 # --- Test: derived verification status is valid ---
@@ -367,3 +364,50 @@ def test_consistency_passed_does_not_block():
     ])
     result = _run_tool(inv, "--require-high-for-implementation")
     assert "STRICT CHECK PASSED" in result.stdout
+
+
+# --- Test: deferred formulas are visible but non-blocking ---
+
+def test_cfweno5_deferred_weno_formula_visible_nonblocking():
+    """Deferred Eq.16/Table I formula remains visible but does not block strict gate."""
+    result = _run_tool(str(CFWENO5_INVENTORY), "--json")
+    data = json.loads(result.stdout)
+    formulas = {f["formula_id"]: f for f in data["formulas"]}
+    deferred = formulas["cfweno5_stencil_expression"]
+    assert deferred["formula_scope"] == "deferred_nonlinear_weno"
+    assert deferred["implementation_relevance"] == "not_needed"
+    assert deferred["consistency_status"] == "failed"
+    assert data["summary"]["blocking_count"] == 0
+
+
+def test_required_formula_still_blocks_when_consistency_fails():
+    """A scalar-linear required formula with failed consistency still blocks."""
+    inv = _write_inventory([
+        {
+            "formula_id": "required_failed_direct",
+            "paper_id": "test",
+            "source": {"section": "Appendix A", "page": 24},
+            "formula_type": "stencil",
+            "expression": "inline",
+            "extraction_method": "human",
+            "confidence": "high",
+            "verification_status": "verified",
+            "used_by": ["spec.md"],
+            "implementation_relevance": "required",
+            "blocks_implementation": False,
+            "consistency_status": "failed",
+            "formula_scope": "scalar_linear_direct",
+            "notes": "failed direct-target consistency",
+        }
+    ])
+    result = _run_tool(inv, "--require-high-for-implementation", expect_fail=True)
+    assert result.returncode != 0
+    assert "consistency_status=failed" in result.stdout
+
+
+def test_cfweno5_approved_remains_no():
+    """The gate alignment does not approve implementation."""
+    subset = Path("docs/scheme_specs/cfweno5_scalar_subset.md").read_text()
+    full = Path("docs/scheme_specs/cfweno_pof_2025.md").read_text()
+    assert "Approved for implementation: no" in subset
+    assert "Approved for implementation: no" in full

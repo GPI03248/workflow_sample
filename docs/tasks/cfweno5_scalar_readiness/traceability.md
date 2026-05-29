@@ -179,3 +179,11 @@ After the failed CFWENO5 implementation (commit dc78864), the formula confidence
 - Updated the checker so `cfweno5-formula-consistency-quick` gates required scalar-linear targets and reports Eq. (16) / Table I as diagnostic-only.
 - Updated formula inventory so direct-target required formulas pass the strict confidence gate.
 - CFWENO5 implementation remains forbidden; `Approved for implementation` remains `no`; Eq. (16) / Table I remains unresolved for later WENO-combination work.
+
+### v1.3-pre.12 gate scope alignment (2026-05-29)
+
+- Added `docs/tasks/cfweno5_formula_verification/gate_scope_alignment.md`.
+- Updated formula inventory with `formula_scope` for scalar direct-target vs deferred nonlinear/WENO formulas.
+- Updated `tools/check_formula_confidence.py` so strict mode checks scalar-linear direct-target required formulas while reporting deferred diagnostics.
+- Updated `tests/test_formula_confidence.py` for direct-target strict pass, deferred formula visibility, and approval remaining `no`.
+- CFWENO5 remains unimplemented; `Approved for implementation` remains `no`; Eq. (16) / Table I remains deferred.
